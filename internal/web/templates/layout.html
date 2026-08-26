@@ -1,0 +1,30 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{.SiteName}}{{if .Title}} — {{.Title}}{{end}}</title>
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+    <nav>
+        <a href="/">{{.SiteName}}</a>
+        {{if .User}}
+            <a href="/dashboard">Uebersicht</a>
+            <form action="/logout" method="post" style="display:inline">
+                <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+                <button type="submit">Logout</button>
+            </form>
+        {{else}}
+            <a href="/login">Login</a>
+            <a href="/register">Registrieren</a>
+        {{end}}
+    </nav>
+    <main>
+        {{template "content" .}}
+    </main>
+</body>
+</html>
+{{end}}

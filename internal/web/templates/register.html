@@ -1,0 +1,20 @@
+{{define "content"}}
+<section>
+    <h1>Registrieren</h1>
+    {{if .Error}}<p class="error">{{.Error}}</p>{{end}}
+    <form method="post" action="/register">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+        <label for="name">Name</label>
+        <input type="text" id="name" name="name" required value="{{.Name}}">
+
+        <label for="email">E-Mail</label>
+        <input type="email" id="email" name="email" required value="{{.Email}}">
+
+        <label for="password">Passwort</label>
+        <input type="password" id="password" name="password" required minlength="8">
+
+        <button type="submit">Registrieren</button>
+    </form>
+    <p><a href="/login">Schon registriert? Login</a></p>
+</section>
+{{end}}

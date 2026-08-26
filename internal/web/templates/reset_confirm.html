@@ -1,0 +1,17 @@
+{{define "content"}}
+<section>
+    <h1>Neues Passwort setzen</h1>
+    {{if .Error}}<p class="error">{{.Error}}</p>{{end}}
+    {{if .Done}}
+        <p>Passwort geaendert. <a href="/login">Jetzt einloggen</a></p>
+    {{else}}
+        <form method="post" action="/reset-password/confirm">
+            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+            <input type="hidden" name="token" value="{{.Token}}">
+            <label for="password">Neues Passwort</label>
+            <input type="password" id="password" name="password" required minlength="8">
+            <button type="submit">Passwort setzen</button>
+        </form>
+    {{end}}
+</section>
+{{end}}

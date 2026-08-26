@@ -1,0 +1,15 @@
+{{define "content"}}
+<section>
+    <h1>Passwort zuruecksetzen</h1>
+    {{if .Sent}}
+        <p>Falls die Adresse registriert ist, wurde ein Link verschickt.</p>
+    {{else}}
+        <form method="post" action="/reset-password">
+            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+            <label for="email">E-Mail</label>
+            <input type="email" id="email" name="email" required>
+            <button type="submit">Link anfordern</button>
+        </form>
+    {{end}}
+</section>
+{{end}}

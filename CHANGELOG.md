@@ -24,9 +24,21 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 - Unit-Tests für Auth und Rate-Limiter
 - Entwicklungsplan, Architektur und Roadmap als Dokumente im Repo
 
-### Bekannte Lücken
+### Behoben
 
-Siehe `ROADMAP.md`, Abschnitt „Jetzt“.
+- `Dockerfile` auf Go 1.27 (D1)
+- CSRF + Rate-Limit auf `POST /waitlist` (D3)
+- Sessions beim Passwort-Reset invalidieren (D4)
+- `Register`: nur UNIQUE-Verletzung als „E-Mail vergeben“ werten (D5)
+- Migrations-System (D11)
+
+### Geändert
+
+- Spielwelt: vier NRW-Editionen (Köln, Dortmund, Duisburg, Düsseldorf) statt einer
+  fiktiven Stadt; zum Launch sind nur zwei offen
+- Architektur vereinfacht: keine eigene Persistenzschicht, SQL steht direkt in den
+  Aktionen; kein Highscore-Snapshot, kein Idempotenz-Token, keine Golden Files
+- Datenbank-Migrationssystem hinzugefügt (`internal/db/migrations`) mit Embed-FS
 
 ### Geändert
 

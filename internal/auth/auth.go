@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
+	"modernc.org/sqlite"
+	sqlite3 "modernc.org/sqlite/lib"
 )
 
 var (
@@ -25,8 +27,14 @@ func Register(db *sql.DB, name, email, password string) (int64, error) {
 		name, email, string(hash),
 	)
 	if err != nil {
-		// SQLite's UNIQUE constraint error is the only expected failure here.
-		return 0, ErrEmailTaken
+		// D5: Check specifically for UNIQUE constraint violation
+		if sqliteErr, ok := err.(*sqlite.Error); ok {
+			if sqliteErr.Code() == sqlite3.SQLITE_CONSTRAINT_UNIQUE {
+				return 0, ErrEmailTaken
+			}
+		}
+		// For all other errors, return the actual error
+		return 0, err
 	}
 	return res.LastInsertId()
 }
@@ -97,6 +105,11 @@ func ResetPassword(db *sql.DB, token, newPassword string) error {
 		return err
 	}
 	if _, err := db.Exec(`UPDATE users SET password_hash = ? WHERE id = ?`, string(hash), userID); err != nil {
+		return err
+	}
+	// D4: Invalidate all sessions for this user
+	_, err = db.Exec(`DELETE FROM sessions WHERE user_id = ?`, userID)
+	if err != nil {
 		return err
 	}
 	_, err = db.Exec(`DELETE FROM password_resets WHERE token_hash = ?`, tokenHash)

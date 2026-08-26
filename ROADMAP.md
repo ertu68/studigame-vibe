@@ -11,11 +11,11 @@ Legende: 🙋 = manuelle Aufgabe (nicht per Code lösbar) · 🚧 = blockiert et
 
 Kleine Fixes und das Fundament, das später teuer nachzurüsten wäre.
 
-- [ ] `Dockerfile` auf Go 1.27 (aktuell 1.23, Build schlägt fehl) 🚧
-- [ ] CSRF + Rate-Limit auf `POST /waitlist`
-- [ ] Sessions beim Passwort-Reset invalidieren
-- [ ] `Register`: nur UNIQUE-Verletzung als „E-Mail vergeben“ werten
-- [ ] Migrations-System (nummerierte SQL-Dateien + `schema_migrations`) 🚧 vor der ersten echten Nutzer-DB
+- [x] `Dockerfile` auf Go 1.27 (aktuell 1.23, Build schlägt fehl) 🚧
+- [x] CSRF + Rate-Limit auf `POST /waitlist`
+- [x] Sessions beim Passwort-Reset invalidieren
+- [x] `Register`: nur UNIQUE-Verletzung als „E-Mail vergeben“ werten
+- [x] Migrations-System (nummerierte SQL-Dateien + `schema_migrations`) 🚧 vor der ersten echten Nutzer-DB
 - [ ] Server-Timeouts, Graceful Shutdown, Panic-Recovery
 - [ ] `GET /healthz`, Security-Header, strukturiertes Logging
 - [ ] htmx lokal ausliefern statt per CDN

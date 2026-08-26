@@ -34,7 +34,7 @@ func main() {
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
 
 	mux.HandleFunc("GET /{$}", deps.Landing)
-	mux.HandleFunc("POST /waitlist", deps.Waitlist)
+	mux.HandleFunc("POST /waitlist", loginLimiter.Middleware(handlers.RequireCSRF(deps.Waitlist)))
 
 	mux.HandleFunc("GET /register", deps.RegisterForm)
 	mux.HandleFunc("POST /register", loginLimiter.Middleware(handlers.RequireCSRF(deps.Register)))

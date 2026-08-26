@@ -16,12 +16,12 @@ Kleine Fixes und das Fundament, das später teuer nachzurüsten wäre.
 - [x] Sessions beim Passwort-Reset invalidieren
 - [x] `Register`: nur UNIQUE-Verletzung als „E-Mail vergeben“ werten
 - [x] Migrations-System (nummerierte SQL-Dateien + `schema_migrations`) 🚧 vor der ersten echten Nutzer-DB
-- [ ] Server-Timeouts, Graceful Shutdown, Panic-Recovery
-- [ ] `GET /healthz`, Security-Header, strukturiertes Logging
-- [ ] htmx lokal ausliefern statt per CDN
-- [ ] Sweeper: abgelaufene Sessions und Reset-Tokens löschen
-- [ ] CI: `go vet` + `go test -race` bei jedem Push
-- [ ] Backup-Skript für die SQLite-Datei
+- [x] Server-Timeouts, Graceful Shutdown, Panic-Recovery
+- [x] `GET /healthz`, Security-Header, strukturiertes Logging
+- [x] htmx lokal ausliefern statt per CDN
+- [x] Sweeper: abgelaufene Sessions und Reset-Tokens löschen
+- [x] CI: `go vet` + `go test -race` bei jedem Push
+- [x] Backup-Skript für die SQLite-Datei
 - [ ] 🙋 Name + Domain festlegen 🚧 blockiert alles Öffentliche
 - [ ] 🙋 VPS bestellen, DNS setzen, `.env` befüllen
 - [ ] 🙋 Mailversand-Anbieter wählen, SPF/DKIM setzen

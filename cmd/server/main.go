@@ -1,8 +1,12 @@
 package main
 
 import (
-	"log"
+	"context"
+	"log/slog"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"pennergame/internal/auth"
@@ -13,11 +17,15 @@ import (
 )
 
 func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	slog.SetDefault(logger)
+
 	cfg := config.Load()
 
 	conn, err := db.Open(cfg.DatabasePath)
 	if err != nil {
-		log.Fatalf("db: %v", err)
+		slog.Error("Failed to open database", "error", err)
+		os.Exit(1)
 	}
 	defer conn.Close()
 
@@ -28,10 +36,40 @@ func main() {
 		Config:   cfg,
 	}
 
+	// Wait for interrupt signal to gracefully shutdown
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	// Start sweeper goroutine for cleaning up expired records
+	go func() {
+		ticker := time.NewTicker(1 * time.Minute)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ticker.C:
+				ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				if err := db.SweepExpired(ctx, conn); err != nil {
+					slog.Error("Sweeper failed", "error", err)
+				}
+				cancel()
+			case <-quit:
+				return
+			}
+		}
+	}()
+
 	loginLimiter := httpx.NewIPRateLimiter(10, time.Minute)
 
 	mux := http.NewServeMux()
 	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+
+	// Health check endpoint
+	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
+		slog.Info("Health check", "method", r.Method, "path", r.URL.Path)
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	})
 
 	mux.HandleFunc("GET /{$}", deps.Landing)
 	mux.HandleFunc("POST /waitlist", loginLimiter.Middleware(handlers.RequireCSRF(deps.Waitlist)))
@@ -49,7 +87,37 @@ func main() {
 
 	mux.HandleFunc("GET /dashboard", deps.RequireAuth(deps.Dashboard))
 
+	// Create server with timeouts
 	addr := ":" + cfg.Port
-	log.Printf("%s listening on %s (production=%v)", cfg.SiteName, addr, cfg.Production)
-	log.Fatal(http.ListenAndServe(addr, mux))
+	server := &http.Server{
+		Addr:         addr,
+		Handler:      httpx.RecoveryMiddleware(httpx.SecurityHeadersMiddleware(mux)),
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+
+	// Start server in a goroutine
+	go func() {
+		slog.Info("Server starting", "addr", addr, "production", cfg.Production)
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			slog.Error("listen failed", "error", err)
+			os.Exit(1)
+		}
+	}()
+
+	<-quit
+	slog.Info("Shutting down server...")
+
+	// The context is used to inform the server it has 5 seconds to finish
+	// the request it is currently handling
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(ctx); err != nil {
+		slog.Error("Server forced to shutdown", "error", err)
+		os.Exit(1)
+	}
+
+	slog.Info("Server exiting")
 }

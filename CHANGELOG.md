@@ -32,6 +32,17 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 - `Register`: nur UNIQUE-Verletzung als „E-Mail vergeben“ werten (D5)
 - Migrations-System (D11)
 
+### Hinzugefügt
+
+- Structured Logging mit `log/slog` in JSON-Format
+- Panik-Handling-Middleware für Serverstabilität
+- Security-Header (X-Content-Type-Options, X-Frame-Options, etc.)
+- Lokales htmx-Serving statt CDN (CSP-kompatibel)
+- Periodischer Sweeper für abgelaufene Sessions und Reset-Tokens
+- Gesundheits-Endpoint `/healthz`
+- CI/CD Pipeline mit `go vet`, `go test -race`
+- Backup-Skript für SQLite-Datenbank
+
 ### Geändert
 
 - Spielwelt: vier NRW-Editionen (Köln, Dortmund, Duisburg, Düsseldorf) statt einer
@@ -39,6 +50,8 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 - Architektur vereinfacht: keine eigene Persistenzschicht, SQL steht direkt in den
   Aktionen; kein Highscore-Snapshot, kein Idempotenz-Token, keine Golden Files
 - Datenbank-Migrationssystem hinzugefügt (`internal/db/migrations`) mit Embed-FS
+- HTTP-Server mit Timeouts und Graceful Shutdown
+- CSP zur Verstärkung der Sicherheit
 
 ### Geändert
 

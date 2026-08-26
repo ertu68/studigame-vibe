@@ -1,6 +1,14 @@
 # Pennergame Remake (Arbeitstitel)
 
-Siehe [pennergame-remake-plan.md](./pennergame-remake-plan.md) fuer Konzept und Phasenplan.
+Browser-Game im Stil von Pennergame: Go, server-rendered, SQLite, kein JS-Build.
+Spielwelt sind vier NRW-Städte als getrennte Editionen.
+
+| Dokument | Inhalt |
+| --- | --- |
+| [pennergame-remake-plan.md](./pennergame-remake-plan.md) | Konzept, Architektur, Phasenplan |
+| [ROADMAP.md](./ROADMAP.md) | was als Nächstes ansteht |
+| [CHANGELOG.md](./CHANGELOG.md) | was sich geändert hat |
+| [CLAUDE.md](./CLAUDE.md) | Arbeitsanweisungen für Coding-Agents |
 
 ## Stand
 
@@ -42,3 +50,19 @@ internal/web/templates/  Server-gerenderte Seiten (noch ungestyled, Phase 2 mach
 static/                Statische Assets (CSS-Platzhalter)
 deploy/                Caddyfile
 ```
+
+Ab Phase 3 kommen `internal/game` (reine Spielregeln, ohne DB und Uhr) und
+`internal/actions` (eine Datei pro Spieleraktion, je eine Transaktion) dazu.
+
+## Mitarbeiten
+
+Diese README ist die Dokumentation des Projekts und wird **mit jeder Änderung
+mitgezogen**, nicht hinterher. Konkret gehört zu jeder Aufgabe:
+
+1. `go build ./... && go vet ./... && go test ./...` grün
+2. README anpassen, wenn sich Struktur, Kommandos, Env-Vars oder Funktionsumfang ändern
+3. Eintrag in `CHANGELOG.md` unter `[Unreleased]`
+4. erledigte Punkte in `ROADMAP.md` abhaken
+
+Nach Abschluss einer Phase zusätzlich: Abschnitt „Stand“ auf die neue Phase heben.
+Die ausführlichen Regeln stehen in [CLAUDE.md](./CLAUDE.md).

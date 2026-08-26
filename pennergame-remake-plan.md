@@ -281,15 +281,16 @@ internal/handlers/          dünn: Formular parsen → Aktion rufen → rendern
         ▼
 internal/actions/           Transaktionsgrenze: BeginTx → laden →
         │                   game-Funktion → speichern → Ledger → Commit
-   ┌────┴────┐
-   ▼         ▼
-internal/  internal/store/   SQL, ein Repo-Typ pro Aggregat,
-game/      (Persistenz)      gibt Structs zurück, keine *sql.Rows
-(reine Regeln,
- keine DB, keine Zeit)
+        │                   SQL steht hier direkt drin
+        ▼
+internal/game/              reine Regeln, keine DB, keine Zeit
 ```
 
-**Warum diese Trennung und nicht flacher:** die Wirtschaft ist der Teil, der schiefgehen wird – Balancing, Exploits, Rundungsfehler bei Geld. Genau der muss ohne HTTP und ohne DB in Millisekunden testbar sein. Alles andere bleibt bewusst flach: kein Interface mit einer Implementierung, kein Repository-Pattern um `waitlist`, kein DI-Container.
+**Nur eine Trennung, und die verdient sie sich:** die Wirtschaft ist der Teil, der schiefgehen wird – Balancing, Exploits, Rundungsfehler bei Geld. Genau der muss ohne HTTP und ohne DB in Millisekunden testbar sein. Deshalb ist `game` abgetrennt.
+
+**Kein `internal/store`.** Eine Persistenzschicht zwischen Aktion und SQLite wäre eine Indirektion ohne zweiten Aufrufer: `actions` ist der einzige Nutzer, und die Queries sind größtenteils ein `SELECT`, das direkt neben seiner Transaktion am besten lesbar ist. `actions/collect.go` schreibt sein SQL selbst. Wenn dieselbe Query in der dritten Datei auftaucht, wandert **sie** in einen Helper – nicht vorsorglich das ganze Paket.
+
+Alles andere bleibt flach: kein Interface mit einer Implementierung, kein Repository-Pattern um `waitlist`, kein DI-Container.
 
 ### 6.3 Paketkarte (Ziel nach Phase 3)
 
@@ -301,8 +302,7 @@ game/      (Persistenz)      gibt Structs zurück, keine *sql.Rows
 | `internal/auth` | Session, CSRF, Passwörter, Mailer | fertig |
 | `internal/httpx` | Rate-Limit, `ClientIP`, Security-Header, Request-Logging, Recovery | generisch, spielunabhängig |
 | `internal/game` | **Balancing-Tabellen + reine Formeln**: Ertrag, Skillkosten, Kampf, Verbrechen, Behältergrößen | **darf nichts importieren außer stdlib** |
-| `internal/store` | `users`, `characters`, `actions`, `skills`, `items`, `gangs`, `ledger` | nur SQL |
-| `internal/actions` | eine Datei pro Spieleraktion, je eine Transaktion | Bindeglied |
+| `internal/actions` | eine Datei pro Spieleraktion: Transaktion, SQL, `game`-Aufruf | der ganze Bauch des Spiels |
 | `internal/web` | Templates + Rendering | + Template-Funktionen (Geld, Dauer) |
 | `internal/handlers` | HTTP | dünn |
 
@@ -376,9 +376,9 @@ Drei Eigenschaften, die daraus gratis folgen:
 ### 6.6 Nebenläufigkeit
 
 - SQLite läuft mit `SetMaxOpenConns(1)` → ein Schreiber, keine `SQLITE_BUSY`-Rennen. Reicht für ein rundenbasiertes Textspiel weit über tausend aktive Spieler hinaus.
-- Genau **eine** Sweeper-Goroutine (`time.Ticker`, 1 Minute) für: passives Einkommen (Instrumente, 6 h), Ablauf von Session-/Reset-Tokens, täglicher Pfandpreis, Highscore-Snapshot.
+- Genau **eine** Sweeper-Goroutine (`time.Ticker`, 1 Minute) für: passives Einkommen (Instrumente, 6 h) und das Aufräumen abgelaufener Session-/Reset-Tokens. Mehr nicht – der Pfandpreis wird aus dem Datum berechnet (keine Tabelle, kein Job) und der Highscore direkt aus `characters` sortiert (kein Snapshot, solange es keine Millionen Zeilen sind).
 - Der Sweeper nutzt dieselben `actions.*`-Funktionen wie die Handler. Kein zweiter Code-Pfad, der die Wirtschaft anders rechnet.
-- `ponytail:` Wenn ein Schreiber je zum Engpass wird: erst messen, dann Lesepfade auf eine zweite Read-Only-Verbindung legen, erst danach über Postgres reden.
+- Wenn ein Schreiber je zum Engpass wird: erst messen, dann Lesepfade auf eine zweite Read-Only-Verbindung legen, erst danach über Postgres reden.
 
 ### 6.7 Sicherheit – Basislinie
 
@@ -392,7 +392,7 @@ Drei Eigenschaften, die daraus gratis folgen:
 | Security-Header (`X-Content-Type-Options`, `Referrer-Policy`, `X-Frame-Options`, CSP) | [ ] D9 |
 | htmx lokal ausliefern statt CDN → erlaubt strenge CSP | [ ] D8 |
 | Alle Ausgaben über `html/template` (Auto-Escaping) | [x] – **niemals** `template.HTML` auf Nutzereingaben (Bandenchat, Profile, Signaturen!) |
-| Idempotenz-Token auf Aktionsformularen gegen Doppelklick/Replay | [ ] Phase 3 |
+| Doppelklick-Schutz über die Transaktion („keine laufende Aktion“) + `hx-disabled-elt` | [ ] Phase 3 |
 | Serverseitige Autorität: nie ein Ergebnis aus dem Formular übernehmen | Regel |
 
 ### 6.8 Testkonzept
@@ -418,7 +418,7 @@ Was hier abgedeckt wird:
 - Skillkosten `basis × (level+1)`, 80-%-Erstattung inkl. Rundung
 - Kampfformel: ATT/DEF-Extreme, Verlustdeckelung, Neulingsschutz
 - Verbrechen: Erfolgswahrscheinlichkeit an den Rändern (0 Skill / max Skill)
-- **Property-artiger Test:** über 10.000 Zufallsdurchläufe gilt immer `ertrag >= 0` und `gutschrift + overflow == ertrag`. Findet Rundungslecks, an die kein Tabellenfall denkt.
+- **Ein Schleifentest über Zufallseingaben:** über ein paar tausend Durchläufe muss immer `ertrag >= 0` und `gutschrift + overflow == ertrag` gelten. Zehn Zeilen, findet Rundungslecks, an die kein Tabellenfall denkt.
 
 #### Ebene 2 – Integration: `internal/actions` gegen `:memory:`-SQLite
 
@@ -465,7 +465,7 @@ Getter/Setter, Template-Rendering-Details, `config.Load()`, Mocks für Dinge mit
 
 - Nur stdlib `testing`. Kein testify, kein ginkgo, kein gomock.
 - `t.Parallel()` in Ebene 1, **nicht** in Ebene 2/3 (eine SQLite-Verbindung, ein Schreiber).
-- Golden Files nur für die Ertragstabelle: einmal geschrieben, danach schlägt jede unbeabsichtigte Balancing-Änderung sofort auf. Update per `go test -update`.
+- Keine Golden Files. Erwartete Werte stehen direkt in der Testtabelle – sichtbar im Diff, ohne zweites Dateiformat und ohne `-update`-Flag.
 - CI (Phase 1.5) fährt `go vet ./... && go test -race ./...` bei jedem Push. `-race` findet genau die Nebenläufigkeitsfehler, die im Sweeper lauern.
 
 ### 6.9 Betrieb
@@ -585,6 +585,8 @@ Erledigt: Schema, Registrierung, Login, Logout, Passwort-Reset, bcrypt, Session-
 
 **Ziel:** Ein Spieler kann sammeln, verkaufen, investieren, aufsteigen — die Schleife trägt sich allein.
 
+> **Erst spielbar, dann vollständig.** 3a + 3b + 3c ergeben zusammen ein Spiel, das man tatsächlich spielen kann: sammeln, Geld ansammeln, Behälter aufrüsten. Das ist der Punkt, an dem du zum ersten Mal merkst, ob die Schleife trägt — und der richtige Moment, das Balancing zu prüfen, **bevor** Skills, Shop und Verbrechen dieselben Zahlen nochmal verkomplizieren. Wenn sich der Kern hier langweilig anfühlt, retten ihn 3d–3f nicht.
+
 **3a – Fundament (zuerst, alles andere hängt daran)**
 
 - [ ] Migration: `characters`, `ledger`, `actions`, `districts`
@@ -632,8 +634,8 @@ Erledigt: Schema, Registrierung, Login, Logout, Passwort-Reset, bcrypt, Session-
 
 - [ ] Tabellentests für jede Formel in `internal/game`
 - [ ] Aktions-Tests gegen `:memory:`-SQLite: Doppelauflösung, Behälterüberlauf, Cooldown
-- [ ] Idempotenz-Token auf allen Aktionsformularen (Doppelklick darf nicht doppelt zahlen)
 - [ ] Rate-Limit pro Character auf allen Aktionsrouten
+- [ ] Doppelklick-Schutz: die Vorbedingung „keine laufende Aktion“ in derselben Transaktion erledigt das bereits — der zweite Request findet die Aktion vor und wird abgewiesen. Dazu `hx-disabled-elt` am Button. **Kein Idempotenz-Token**; das wäre eine zweite Sperre für ein Problem, das die erste schon löst.
 - [ ] 🙋 **DU:** Balancing spielen und bewerten. Zahlen kann ich setzen, ob sich die Kurve gut *anfühlt*, kannst nur du entscheiden.
 
 **Definition of Done:** Du spielst 30 Minuten ohne Handbuch, verstehst die Schleife und willst weiterspielen. Alle Geldbewegungen stehen im Ledger.
@@ -656,10 +658,11 @@ Erledigt: Schema, Registrierung, Login, Logout, Passwort-Reset, bcrypt, Session-
 
 **4b – Banden**
 
-- [ ] Erstellen/Beitreten (Name + Passwort), Rollen
-- [ ] Bandenkasse; Eigentum (Waffenkammer/Haus/Training/Konto), je 5 Stufen mit %-Boni
+- [ ] Erstellen/Beitreten (Name + Passwort), zwei Rollen: Chef und Mitglied. Ein feinkörniges Rechtesystem ist etwas für den Tag, an dem sich jemand über die zwei beschwert.
+- [ ] Bandenkasse; Ausbauten (Waffenkammer/Haus/Training/Konto), je 5 Stufen mit %-Boni
 - [ ] Bandenchat — **Auto-Escaping streng, kein `template.HTML`**
-- [ ] Bündnisse/Kriege, Bandenhighscore
+- [ ] Bandenhighscore
+- [ ] Bündnisse und Kriege: **erst nach dem Launch**, wenn genug Banden existieren, dass Diplomatie überhaupt eine Bedeutung hat. Vorher baut man ein Feature für drei Banden.
 
 **4c – Kommunikation**
 
@@ -668,7 +671,7 @@ Erledigt: Schema, Registrierung, Login, Logout, Passwort-Reset, bcrypt, Session-
 
 **4d – Highscore & Referral**
 
-- [ ] Highscore Spieler + Banden, nächtlicher Snapshot
+- [ ] Highscore Spieler + Banden, direkt aus `characters` sortiert — kein Snapshot-Job, solange ein `ORDER BY` mit Index unter einer Millisekunde bleibt
 - [ ] **Referral-Link** `/kleingeld/{code}` (Abschnitt 1.5): Klick → In-Game-Spende, IP-/Zeitfenster-Deduplizierung gegen Selbstklick-Farming
 - [ ] Profil mit Signatur-Snippet zum Kopieren
 
@@ -678,10 +681,9 @@ Erledigt: Schema, Registrierung, Login, Logout, Passwort-Reset, bcrypt, Session-
 
 ### Phase 5 – Mobile/PWA *(1–2 Wochen)*
 
-- [ ] `manifest.json`, Icons, installierbar
-- [ ] Service Worker: **nur** statische Assets cachen, niemals Spielzustand
-- [ ] Offline-Fallback-Seite
+- [ ] `manifest.json`, Icons, installierbar — das ist der eigentliche Nutzen: Icon auf dem Homescreen, Vollbild ohne Browserleiste
 - [ ] Performance-Pass: Lighthouse mobil > 90, HTML-Antwort < 30 kB
+- [ ] Service Worker + Offline-Seite: **nur wenn nach dem Manifest noch Lust da ist**. Ein Spiel, das ohne Server nichts anzeigen kann, gewinnt durch eine Offline-Seite genau einen hübscheren Fehlertext. Wenn doch: ausschließlich statische Assets cachen, niemals Spielzustand — ein Service Worker, der HTML cached, zeigt Spielern veralteten Kontostand.
 - [ ] Touch-Targets ≥ 44 px, Tastatur-Fokus sichtbar, Kontrast AA — die Tokens sind dunkel, das muss geprüft werden
 - [ ] Web-Push: **weglassen** (Entscheidung aus dem Plan bleibt). Stattdessen zeigt die Statusleiste, wann die Aktion fertig ist.
 - [ ] 🙋 **DU:** auf deinem echten Handy testen. Emulator zählt nicht.
@@ -723,8 +725,8 @@ Erledigt: Schema, Registrierung, Login, Logout, Passwort-Reset, bcrypt, Session-
 | Chat-Missbrauch | rechtliches + Reputationsproblem | Melden + Blockliste + Moderationsregeln in 4c |
 | Scope-Kriechen | nie fertig | Reihenfolge einhalten, Phase 4 erst nach 3g |
 | Solo-Projekt, Zeit | Stillstand | Phase 1.5 macht die Seite betriebsfähig, auch wenn Monate Pause kommen |
-
----
+| Vier Editionen, zu wenig Spieler | leere Städte, PvP tot | zum Launch nur zwei Städte offen (3.1) |
+| Plan wird gebaut statt Spiel | Monate ohne spielbaren Stand | nach 3c anhalten und spielen, bevor 3d–3f folgen |
 
 ---
 

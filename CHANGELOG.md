@@ -27,3 +27,10 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 ### Bekannte Lücken
 
 Siehe `ROADMAP.md`, Abschnitt „Jetzt“.
+
+### Geändert
+
+- Spielwelt: vier NRW-Editionen (Köln, Dortmund, Duisburg, Düsseldorf) statt einer
+  fiktiven Stadt; zum Launch sind nur zwei offen
+- Architektur vereinfacht: keine eigene Persistenzschicht, SQL steht direkt in den
+  Aktionen; kein Highscore-Snapshot, kein Idempotenz-Token, keine Golden Files

@@ -45,6 +45,7 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt“.
 - [ ] Reine Spiellogik in `internal/game` (keine DB, keine Uhr, testbar)
 - [ ] Sammeln-Aktion mit Dauerwahl und Lazy-Tick-Auflösung
 - [ ] Geld-Behälter mit Kappung, Überlauf fließt in den Charity-Pool
+- [ ] **Hier anhalten und spielen.** Sammeln + Behälter sind bereits ein Spiel. Wenn sich der Kern langweilig anfühlt, retten ihn die Punkte darunter nicht.
 - [ ] Skillsystem mit Warteschlange (2 Slots, 80 % Erstattung bei Abbruch)
 - [ ] Shop: Behälter-Upgrades, Ausrüstung, Instrumente, Wohnung
 - [ ] Verbrechen-Aktion mit Risiko und Ertrag
@@ -54,7 +55,7 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt“.
 ## Später — Sozial & PvP
 
 - [ ] Kampfsystem mit 36-h-Cooldown pro Ziel und Neulingsschutz
-- [ ] Banden: Kasse, Ausbauten, Chat, Bündnisse
+- [ ] Banden: Kasse, Ausbauten, Chat, zwei Rollen (Chef/Mitglied)
 - [ ] Nachrichten, Freunde, Blockliste, Meldefunktion
 - [ ] Highscore je Edition
 - [ ] Referral-Link `/kleingeld/{code}` mit Klick-Deduplizierung
@@ -62,7 +63,7 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt“.
 
 ## Vor dem Launch
 
-- [ ] PWA: Manifest, Icons, Service Worker für statische Assets
+- [ ] PWA: Manifest und Icons (Service Worker nur, falls danach noch Lust da ist)
 - [ ] Performance- und Accessibility-Pass
 - [ ] Unterstützer-Status: werbefrei, Badge, Kosmetik — kein Gameplay-Vorteil
 - [ ] Zahlungsanbieter mit idempotenten Webhooks
@@ -110,13 +111,15 @@ beschwert oder eine Zahl es rechtfertigt.
 
 - Öffentliches Spielerprofil mit teilbarer Signatur
 - Wochenrückblick per E-Mail (opt-in)
-- Bandenkriege mit gemeinsamem Ziel statt Einzelkämpfen
+- Bandenkriege und Bündnisse — erst sinnvoll, wenn genug Banden existieren
+- Feinkörnige Bandenrollen jenseits von Chef und Mitglied
 - Nostalgie-Quiz beim Onboarding, rein kosmetisch
 
 **Technik**
 
 - Volltextsuche über Nachrichten
 - Admin-Oberfläche statt SQL-Konsole
+- Highscore-Snapshot statt Live-Sortierung — erst, wenn das `ORDER BY` messbar bremst
 - Metriken-Endpunkt für Retention und aktive Spieler
 - Postgres — erst, wenn SQLite gemessen an eine Grenze stößt
 - Web-Push — bewusst verworfen, passt nicht zum ruhigen Ton

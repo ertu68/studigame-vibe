@@ -12,9 +12,11 @@ import (
 )
 
 var (
-	ErrEmailTaken       = errors.New("email already registered")
-	ErrInvalidLogin     = errors.New("invalid email or password")
-	ErrInvalidResetLink = errors.New("invalid or expired reset link")
+	ErrEmailTaken        = errors.New("email already registered")
+	ErrInvalidLogin      = errors.New("invalid email or password")
+	ErrInvalidResetLink  = errors.New("invalid or expired reset link")
+	ErrUnverifiedEmail   = errors.New("please verify your email first")
+	ErrInvalidVerifyLink = errors.New("invalid or expired verification link")
 )
 
 func Register(db *sql.DB, name, email, password string) (int64, error) {
@@ -42,12 +44,16 @@ func Register(db *sql.DB, name, email, password string) (int64, error) {
 func Authenticate(db *sql.DB, email, password string) (int64, error) {
 	var id int64
 	var hash string
-	err := db.QueryRow(`SELECT id, password_hash FROM users WHERE email = ?`, email).Scan(&id, &hash)
+	var verified bool
+	err := db.QueryRow(`SELECT id, password_hash, verified FROM users WHERE email = ?`, email).Scan(&id, &hash, &verified)
 	if err == sql.ErrNoRows {
 		return 0, ErrInvalidLogin
 	}
 	if err != nil {
 		return 0, err
+	}
+	if !verified {
+		return 0, ErrUnverifiedEmail
 	}
 	if bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) != nil {
 		return 0, ErrInvalidLogin
@@ -113,5 +119,48 @@ func ResetPassword(db *sql.DB, token, newPassword string) error {
 		return err
 	}
 	_, err = db.Exec(`DELETE FROM password_resets WHERE token_hash = ?`, tokenHash)
+	return err
+}
+
+// RequestEmailVerification sends a verification link to a newly registered user.
+func RequestEmailVerification(db *sql.DB, mailer Mailer, siteDomain string, userID int64, email string, ttl time.Duration) error {
+	rawToken, err := randomToken()
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec(
+		`INSERT INTO verification_tokens (token_hash, user_id, expires_at) VALUES (?, ?, ?)`,
+		hashToken(rawToken), userID, time.Now().Add(ttl),
+	)
+	if err != nil {
+		return err
+	}
+
+	link := fmt.Sprintf("https://%s/verify?token=%s", siteDomain, rawToken)
+	return mailer.Send(email, "Bestätige deine E-Mail", "Link: "+link)
+}
+
+// VerifyEmail marks a user as verified if the token is valid.
+func VerifyEmail(db *sql.DB, token string) error {
+	var userID int64
+	var expiresAt time.Time
+	tokenHash := hashToken(token)
+	err := db.QueryRow(
+		`SELECT user_id, expires_at FROM verification_tokens WHERE token_hash = ?`, tokenHash,
+	).Scan(&userID, &expiresAt)
+	if err == sql.ErrNoRows {
+		return ErrInvalidVerifyLink
+	}
+	if err != nil {
+		return err
+	}
+	if time.Now().After(expiresAt) {
+		return ErrInvalidVerifyLink
+	}
+
+	if _, err := db.Exec(`UPDATE users SET verified = TRUE WHERE id = ?`, userID); err != nil {
+		return err
+	}
+	_, err = db.Exec(`DELETE FROM verification_tokens WHERE token_hash = ?`, tokenHash)
 	return err
 }

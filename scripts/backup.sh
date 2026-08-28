@@ -16,12 +16,12 @@ mkdir -p "$BACKUP_DIR"
 
 # Create backup
 if [ -f "$DB_PATH" ]; then
-    echo "Creating backup: $BACKUP_DIR/$BACKUP_NAME"
-    cp "$DB_PATH" "$BACKUP_DIR/$BACKUP_NAME"
-    echo "Backup completed successfully"
+	echo "Creating backup: $BACKUP_DIR/$BACKUP_NAME"
+	cp "$DB_PATH" "$BACKUP_DIR/$BACKUP_NAME"
+	echo "Backup completed successfully"
 else
-    echo "Error: Database file not found at $DB_PATH"
-    exit 1
+	echo "Error: Database file not found at $DB_PATH"
+	exit 1
 fi
 
 # Cleanup old backups (keep last 30)

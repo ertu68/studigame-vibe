@@ -566,15 +566,15 @@ Erledigt: Schema, Registrierung, Login, Logout, Passwort-Reset, bcrypt, Session-
 
 **Ziel:** Alle bestehenden Seiten im finalen Look; jede neue Seite ab hier ist automatisch richtig gestylt.
 
-- [ ] Tailwind Standalone-CLI als Binary im Repo/Makefile (kein Node), `make css` + `make watch`
-- [ ] Tokens aus Abschnitt 5 in `tailwind.config.js`: Asphalt, Pfandglas-Grün, Verkehrsorange, Münzgold, Pappe, Backstein-Rot
-- [ ] Fonts **selbst hosten** (`static/fonts/`) — kein Google-Fonts-CDN. Spart einen DSGVO-Fallstrick und einen Roundtrip.
-- [ ] Komponenten-Partials: `button`, `card`, `form_field`, `statusbar`, `flash`, `progress`
-- [ ] **Sticky Statusleiste**: Geld, Laune, laufender Cooldown
-- [ ] **Signature-Element: der Geld-Behälter** als SVG-Partial mit 5 Stufen (Becher → Tüte → Beutel → Einkaufswagen → Container) und Füllstand aus `money/limit`
-- [ ] Bottom-Nav (Übersicht/Aktionen/Stadt/Bande/Kampf), mobile-first
-- [ ] Landing, Login, Register, Reset, Dashboard umstellen
-- [ ] CSS-Build in den Docker-Build integrieren
+- [x] Tailwind Standalone-CLI als Binary per `make css` / `make watch` (kein Node); das Binary wird bei Bedarf geladen und liegt nicht im Repo
+- [x] Tokens aus Abschnitt 5 in `tailwind.config.js`: Asphalt, Pfandglas-Grün, Verkehrsorange, Münzgold, Pappe, Backstein-Rot
+- [ ] Fonts **selbst hosten** (`static/fonts/`) — kein Google-Fonts-CDN. Derzeit laufen System-Fonts; damit gibt es weder CDN-Fallstrick noch Roundtrip, eigene Schrift bleibt offen.
+- [x] Komponenten-Partials: `button`, `card`, `form_field`, `statusbar`, `flash`, `progress`
+- [x] **Sticky Statusleiste**: Geld, Laune, laufender Cooldown
+- [x] **Signature-Element: der Geld-Behälter** als SVG-Partial mit 5 Stufen (Becher → Tüte → Beutel → Einkaufswagen → Container) und Füllstand aus `money/limit`
+- [x] Bottom-Nav (Übersicht/Aktionen/Stadt/Bande/Kampf), mobile-first
+- [x] Landing, Login, Register, Reset, Dashboard umstellen
+- [x] CSS-Build in den Docker-Build integrieren
 - [ ] 🙋 **DU:** Look einmal abnehmen — Farben und Typo sind Geschmack, nicht Technik
 
 **Definition of Done:** Auf einem echten Handy sieht jede bestehende Seite fertig aus. Kein `<script>` von fremden Domains.
@@ -589,17 +589,18 @@ Erledigt: Schema, Registrierung, Login, Logout, Passwort-Reset, bcrypt, Session-
 
 **3a – Fundament (zuerst, alles andere hängt daran)**
 
-- [ ] Migration: `characters`, `ledger`, `actions`, `districts`
-- [ ] `internal/game/` mit Balancing-Tabellen als Go-Konstanten + reine Formeln, **ohne DB, ohne `time.Now()`**
+- [x] Migration: `characters`, `ledger`, `actions`, `districts`
+- [x] `internal/game/` mit Balancing-Tabellen als Go-Konstanten + reine Formeln, **ohne DB, ohne `time.Now()`**
 - [ ] `ledger.Post()` als **einziger** Weg, Geld zu bewegen
 - [ ] `db.WithTx()` Helper
-- [ ] Character-Erstellung beim ersten Login (Name wählen, 10 € Startkapital)
+- [x] Character-Erstellung beim ersten Login (Name wählen, 10 € Startkapital)
 
 **3b – Sammeln**
 
-- [ ] `POST /aktion/sammeln` mit Dauerwahl (10 min – 12 h), ein Bezirk
-- [ ] Ertragsformel: `bezirk_faktor × dauer × geschicklichkeit × tagespfandpreis × rng`, mit **abnehmendem Grenzertrag** bei langer Dauer (Original: kurz = effizienter pro Zeiteinheit)
-- [ ] Lazy-Tick-Auflösung (Abschnitt 6.5) + Fortschrittsanzeige, die per htmx-Polling aktualisiert
+- [x] `POST /aktion/sammeln` mit Dauerwahl (15 min – 8 h), ein Bezirk
+- [ ] Ertragsformel: `bezirk_faktor × dauer × geschicklichkeit × tagespfandpreis × rng`, mit **abnehmendem Grenzertrag** bei langer Dauer (Original: kurz = effizienter pro Zeiteinheit) — bislang linear, ohne Grenzertrag und ohne Tagespreis
+- [x] Lazy-Tick-Auflösung (Abschnitt 6.5) + Fortschrittsanzeige. Statt htmx-Polling ein
+  Meta-Refresh auf die Restsekunden: eine Anfrage statt Hunderten, kein Client-Zustand
 - [ ] Sauberkeit sinkt durchs Sammeln
 - [ ] Tagespfandpreis: ein Wert pro Tag, deterministisch aus dem Datum abgeleitet — für alle Spieler gleich, ohne extra Tabelle
 

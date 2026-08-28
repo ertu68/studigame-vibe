@@ -1,15 +1,28 @@
 {{define "content"}}
-<section>
-    <h1>{{.SiteName}}</h1>
-    <p>Bald verfuegbar: {{.SiteName}} — inspiriert vom Kult-Browsergame Pennergame (2007),
-       aber kein offizielles Nachfolgeprojekt und ohne Verbindung zu Farbflut Entertainment.</p>
+<div class="max-w-2xl mx-auto py-12">
+  <div class="text-center mb-12">
+    <h1 class="text-4xl font-display text-pfandglas mb-6">{{.SiteName}}</h1>
+    <p class="text-xl mb-8">
+      Bald verfügbar: {{.SiteName}} — inspiriert vom Kult-Browsergame Pennergame
+      (2007), aber kein offizielles Nachfolgeprojekt und ohne Verbindung zu
+      Farbflut Entertainment.
+    </p>
+  </div>
+
+  <div class="card max-w-md mx-auto">
+    <h2 class="text-2xl font-display text-asphalt mb-4">Auf die Warteliste</h2>
 
     <div id="waitlist-form">
-        <form hx-post="/waitlist" hx-target="#waitlist-form" hx-swap="outerHTML">
-            <label for="email">E-Mail</label>
-            <input type="email" id="email" name="email" required placeholder="du@beispiel.de">
-            <button type="submit">Auf die Warteliste</button>
-        </form>
+      <form hx-post="/waitlist" hx-target="#waitlist-form" hx-swap="outerHTML">
+        {{template "form_field" dict "Type" "email" "Name" "email" "Label"
+        "E-Mail" "Placeholder" "du@beispiel.de" "Required" true}} {{template
+        "button" dict "Type" "submit" "Text" "Auf die Warteliste"}}
+      </form>
     </div>
-</section>
+  </div>
+
+  <div class="text-center mt-8 text-sm text-gray-400">
+    <p>Version 0.1.0</p>
+  </div>
+</div>
 {{end}}

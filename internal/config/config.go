@@ -10,6 +10,10 @@ type Config struct {
 	SiteName         string
 	SiteDomain       string
 	MailFrom         string
+	SMTPHost         string
+	SMTPPort         string
+	SMTPUser         string
+	SMTPPass         string
 	ResetTokenTTLMin int
 	Production       bool
 }
@@ -22,6 +26,10 @@ func Load() Config {
 		SiteName:         getenv("SITE_NAME", "TODO-Name"),
 		SiteDomain:       getenv("SITE_DOMAIN", "localhost:8080"),
 		MailFrom:         getenv("MAIL_FROM", "noreply@example.invalid"),
+		SMTPHost:         getenv("SMTP_HOST", ""),
+		SMTPPort:         getenv("SMTP_PORT", "587"),
+		SMTPUser:         getenv("SMTP_USER", ""),
+		SMTPPass:         getenv("SMTP_PASS", ""),
 		ResetTokenTTLMin: 60,
 		Production:       env == "production",
 	}

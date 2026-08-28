@@ -1,0 +1,33 @@
+{{define "statusbar"}}
+<div class="statusbar">
+  <div class="flex items-center space-x-4">
+    <!-- Money Container (Signature Element) -->
+    {{if .Money}} {{template "money_container" dict "Amount" .Money "Level"
+    .MoneyLevel "FillPercent" .MoneyFillPercent}} {{end}} {{if .Mood}}
+    <div class="flex items-center">
+      <span class="text-xs uppercase tracking-wide opacity-70">Laune</span>
+      <span class="ml-1">{{.Mood}}%</span>
+    </div>
+    {{end}} {{if .Cleanliness}}
+    <div class="flex items-center">
+      <span class="text-xs uppercase tracking-wide opacity-70">Sauber</span>
+      <span class="ml-1">{{.Cleanliness}}%</span>
+    </div>
+    {{end}}
+
+    <!-- Cooldown indicator -->
+    {{if .Cooldown}}
+    <div class="flex items-center text-verkehrsorange">
+      <span class="text-xs uppercase tracking-wide">Rest</span>
+      <span class="ml-1 text-xs">{{.Cooldown}}</span>
+    </div>
+    {{end}}
+  </div>
+
+  {{if .User}}
+  <div>
+    <span class="text-pfandglas">{{.User.Name}}</span>
+  </div>
+  {{end}}
+</div>
+{{end}}

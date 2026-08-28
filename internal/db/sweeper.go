@@ -27,11 +27,19 @@ func SweepExpired(ctx context.Context, db *sql.DB) error {
 	}
 	passwordResetsCount, _ := passwordResetsResult.RowsAffected()
 
+	// Delete expired verification tokens
+	verificationResult, err := db.ExecContext(ctx, `DELETE FROM verification_tokens WHERE expires_at < ?`, now)
+	if err != nil {
+		return err
+	}
+	verificationCount, _ := verificationResult.RowsAffected()
+
 	// Log cleanup results
-	if sessionsCount > 0 || passwordResetsCount > 0 {
-		slog.Info("Sweeper cleaned up expired records", 
-			"sessions", sessionsCount, 
-			"passwordResets", passwordResetsCount)
+	if sessionsCount > 0 || passwordResetsCount > 0 || verificationCount > 0 {
+		slog.Info("Sweeper cleaned up expired records",
+			"sessions", sessionsCount,
+			"passwordResets", passwordResetsCount,
+			"verificationTokens", verificationCount)
 	}
 
 	return nil

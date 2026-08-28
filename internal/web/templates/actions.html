@@ -1,0 +1,87 @@
+{{define "content"}}
+<div class="max-w-xl mx-auto py-8">
+  <h1 class="text-2xl font-display text-pfandglas mb-6">Flaschen sammeln</h1>
+
+  {{if .Error}}
+  <div class="flash-error mb-4">
+    <p>{{.Error}}</p>
+  </div>
+  {{end}}
+
+  {{with .Summary}}
+  <div class="card mb-6">
+    <h2 class="text-xl font-display text-asphalt mb-3">Schicht vorbei</h2>
+    <p>{{.Bottles}} Flaschen, {{.Earnings}} in der Kasse.</p>
+    {{if .HasDonation}}
+    <p class="mt-2">
+      Dein Behälter war voll. {{.Donated}} sind in den Spendentopf gegangen.
+    </p>
+    {{end}}
+    <p class="mt-2">Laune {{.MoodDelta}}.</p>
+  </div>
+  {{end}}
+
+  {{if .Open}}
+  <div class="card">
+    <div class="flex items-start justify-between">
+      <h2 class="text-xl font-display text-asphalt mb-3">Unterwegs</h2>
+      <a
+        href="/actions"
+        class="text-asphalt hover:text-verkehrsorange"
+        aria-label="Seite neu laden"
+        title="Neu laden"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+          <polyline points="21 3 21 9 15 9" />
+        </svg>
+      </a>
+    </div>
+    <p class="mb-2">Du klapperst {{.Character.DistrictName}} ab.</p>
+    <p class="mb-4">
+      Noch {{.Remaining}} — zurück gegen {{.ReturnsAt}}.
+    </p>
+    <p class="text-sm">
+      Die Ausbeute steht erst fest, wenn du zurück bist. Die Seite lädt sich dann
+      von selbst neu.
+    </p>
+  </div>
+  {{else}}
+  <div class="card">
+    <h2 class="text-xl font-display text-asphalt mb-3">
+      Wie lange gehst du los?
+    </h2>
+    <p class="text-sm mb-4">
+      Bezirk: {{.Character.DistrictName}}. Längere Schichten bringen mehr, kosten
+      aber Laune.
+    </p>
+
+    <form method="post" action="/actions/collect">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+
+      <div class="form-field">
+        <label class="form-label" for="duration">Schichtlänge</label>
+        <select class="form-input" id="duration" name="duration" required>
+          {{range .Shifts}}
+          <option value="{{.Seconds}}">{{.Label}}</option>
+          {{end}}
+        </select>
+      </div>
+
+      {{template "button" dict "Type" "submit" "Text" "Losziehen"}}
+    </form>
+  </div>
+  {{end}}
+</div>
+{{end}}

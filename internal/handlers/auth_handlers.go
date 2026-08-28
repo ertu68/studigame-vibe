@@ -15,6 +15,32 @@ func (d *Deps) RegisterForm(w http.ResponseWriter, r *http.Request) {
 	web.Render(w, "register.html", d.baseData(w, r))
 }
 
+func (d *Deps) VerifyEmail(w http.ResponseWriter, r *http.Request) {
+	token := r.URL.Query().Get("token")
+	if token == "" {
+		slog.Warn("Verify email called without token")
+		http.Error(w, "ungültiger Link", http.StatusBadRequest)
+		return
+	}
+
+	if err := auth.VerifyEmail(d.DB, token); err != nil {
+		if errors.Is(err, auth.ErrInvalidVerifyLink) {
+			slog.Info("Email verification attempt with invalid token")
+		} else {
+			slog.Error("Email verification failed with unexpected error", "error", err)
+		}
+		data := d.baseData(w, r)
+		data["Error"] = "Link ungueltig oder abgelaufen"
+		web.Render(w, "verify_confirm.html", data)
+		return
+	}
+
+	slog.Info("Email verified successfully")
+	data := d.baseData(w, r)
+	data["Success"] = true
+	web.Render(w, "verify_confirm.html", data)
+}
+
 func (d *Deps) Register(w http.ResponseWriter, r *http.Request) {
 	name := strings.TrimSpace(r.FormValue("name"))
 	email := strings.ToLower(strings.TrimSpace(r.FormValue("email")))
@@ -37,9 +63,18 @@ func (d *Deps) Register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "interner Fehler", http.StatusInternalServerError)
 		return
 	}
-	slog.Info("User registered successfully", "userID", userID, "email", email)
-	d.startSession(w, r, userID)
-	http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
+
+	// Send verification email instead of auto-login
+	if err := auth.RequestEmailVerification(d.DB, d.Mailer, d.Config.SiteDomain, userID, email, time.Hour); err != nil {
+		slog.Error("Failed to send verification email", "error", err, "userID", userID, "email", email)
+		http.Error(w, "interner Fehler", http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("User registered, verification email sent", "userID", userID, "email", email)
+	data := d.baseData(w, r)
+	data["Email"] = email
+	web.Render(w, "register_verify.html", data)
 }
 
 func (d *Deps) renderRegisterError(w http.ResponseWriter, r *http.Request, name, email, msg string) {
@@ -60,6 +95,14 @@ func (d *Deps) Login(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := auth.Authenticate(d.DB, email, password)
 	if err != nil {
+		if errors.Is(err, auth.ErrUnverifiedEmail) {
+			slog.Info("Unverified user login attempt", "email", email)
+			data := d.baseData(w, r)
+			data["Email"] = email
+			data["Error"] = "bitte bestätige zuerst deine E-Mail"
+			web.Render(w, "login.html", data)
+			return
+		}
 		if errors.Is(err, auth.ErrInvalidLogin) {
 			slog.Info("Failed login attempt", "email", email)
 		} else {

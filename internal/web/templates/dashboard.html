@@ -1,6 +1,35 @@
 {{define "content"}}
-<section>
-    <h1>Willkommen, {{.User.Name}}</h1>
-    <p>Hier entsteht die Kernschleife (Phase 3).</p>
-</section>
+<div class="py-8">
+  <div class="mb-8">
+    <h1 class="text-3xl font-display text-pfandglas mb-2">
+      {{.Character.Name}}
+    </h1>
+    <p class="text-lg">
+      {{.Character.DistrictName}}, {{.Character.EditionSlug}}
+    </p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="card">
+      <h2 class="text-xl font-display text-asphalt mb-4">Dein Stand</h2>
+      <div class="space-y-2">
+        <p><span class="font-medium">Kasse:</span> {{.Money}}</p>
+        <p><span class="font-medium">Laune:</span> {{.Character.Mood}}%</p>
+        <p><span class="font-medium">Bezirk:</span> {{.Character.DistrictName}}</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="text-xl font-display text-asphalt mb-4">Nächste Schritte</h2>
+      <ul class="list-disc list-inside space-y-2">
+        <li>Flaschen sammeln</li>
+        <li>Behälter aufrüsten</li>
+        <li>Neue Bezirke freischalten</li>
+      </ul>
+      <div class="mt-4">
+        <a href="/actions" class="btn-primary">Losziehen</a>
+      </div>
+    </div>
+  </div>
+</div>
 {{end}}

@@ -4,10 +4,13 @@ package handlers
 import (
 	"database/sql"
 	"log/slog"
+	"math/rand"
 	"net/http"
+	"time"
 
 	"pennergame/internal/auth"
 	"pennergame/internal/config"
+	"pennergame/internal/game"
 )
 
 type Deps struct {
@@ -15,6 +18,32 @@ type Deps struct {
 	Sessions *auth.SessionStore
 	Mailer   auth.Mailer
 	Config   config.Config
+
+	// Now and Roll are injected so tests can pin time and luck.
+	Now  func() time.Time
+	Roll func() float64
+}
+
+func (d *Deps) now() time.Time {
+	if d.Now != nil {
+		return d.Now()
+	}
+	return time.Now()
+}
+
+func (d *Deps) roll() float64 {
+	if d.Roll != nil {
+		return d.Roll()
+	}
+	return rand.Float64()
+}
+
+// addCharacterStatus fills the values the status bar renders.
+func (d *Deps) addCharacterStatus(data map[string]any, char Character) {
+	data["Money"] = formatCents(char.MoneyCents)
+	data["MoneyLevel"] = char.ContainerLevel
+	data["MoneyFillPercent"] = fillPercent(char.MoneyCents, game.ContainerCapacity(char.ContainerLevel))
+	data["Mood"] = char.Mood
 }
 
 type user struct {

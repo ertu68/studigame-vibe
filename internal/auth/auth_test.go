@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"pennergame/internal/config"
 	"pennergame/internal/db"
 )
 
@@ -34,9 +35,24 @@ func TestRegisterAndAuthenticate(t *testing.T) {
 		t.Fatalf("expected ErrEmailTaken, got %v", err)
 	}
 
+	// Unverified user cannot authenticate
+	if _, err := Authenticate(conn, "alice@example.com", "hunter22"); err != ErrUnverifiedEmail {
+		t.Fatalf("expected ErrUnverifiedEmail for new account, got %v", err)
+	}
+
+	// After verification, authentication succeeds
+	var mailer fakeMailer
+	if err := RequestEmailVerification(conn, &mailer, "example.com", id, "alice@example.com", time.Hour); err != nil {
+		t.Fatalf("request verification: %v", err)
+	}
+	token := tokenFromLink(t, mailer.body)
+	if err := VerifyEmail(conn, token); err != nil {
+		t.Fatalf("verify email: %v", err)
+	}
+
 	got, err := Authenticate(conn, "alice@example.com", "hunter22")
 	if err != nil || got != id {
-		t.Fatalf("authenticate: got id=%d err=%v, want id=%d", got, err, id)
+		t.Fatalf("authenticate after verify: got id=%d err=%v, want id=%d", got, err, id)
 	}
 
 	if _, err := Authenticate(conn, "alice@example.com", "wrong"); err != ErrInvalidLogin {
@@ -69,18 +85,28 @@ func TestSessionLifecycle(t *testing.T) {
 
 func TestPasswordReset(t *testing.T) {
 	conn := testDB(t)
-	Register(conn, "Carol", "carol@example.com", "oldpassword")
+	id, _ := Register(conn, "Carol", "carol@example.com", "oldpassword")
 
-	var mailer fakeMailer
-	err := RequestPasswordReset(conn, &mailer, "example.invalid", "carol@example.com", time.Hour)
+	// Verify email first so Carol can authenticate
+	var verifyMailer fakeMailer
+	if err := RequestEmailVerification(conn, &verifyMailer, "example.com", id, "carol@example.com", time.Hour); err != nil {
+		t.Fatalf("request verification: %v", err)
+	}
+	verifyToken := tokenFromLink(t, verifyMailer.body)
+	if err := VerifyEmail(conn, verifyToken); err != nil {
+		t.Fatalf("verify email: %v", err)
+	}
+
+	var resetMailer fakeMailer
+	err := RequestPasswordReset(conn, &resetMailer, "example.invalid", "carol@example.com", time.Hour)
 	if err != nil {
 		t.Fatalf("request reset: %v", err)
 	}
-	if mailer.to == "" {
+	if resetMailer.to == "" {
 		t.Fatalf("expected mailer to be called")
 	}
 
-	token := tokenFromLink(t, mailer.body)
+	token := tokenFromLink(t, resetMailer.body)
 	if err := ResetPassword(conn, token, "newpassword"); err != nil {
 		t.Fatalf("reset password: %v", err)
 	}
@@ -131,4 +157,79 @@ func tokenFromLink(t *testing.T, body string) string {
 		t.Fatalf("no token in body: %q", body)
 	}
 	return body[i+len(marker):]
+}
+
+func TestNewMailer(t *testing.T) {
+	tests := []struct {
+		name     string
+		cfg      config.Config
+		wantType string
+	}{
+		{
+			name:     "Empty SMTP host returns ConsoleMailer",
+			cfg:      config.Config{SMTPHost: ""},
+			wantType: "ConsoleMailer",
+		},
+		{
+			name: "SMTP config returns SMTPMailer",
+			cfg: config.Config{
+				SMTPHost: "smtp.example.com",
+				SMTPPort: "587",
+				SMTPUser: "user",
+				SMTPPass: "pass",
+				MailFrom: "noreply@example.com",
+			},
+			wantType: "SMTPMailer",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mailer := NewMailer(tt.cfg)
+			switch v := mailer.(type) {
+			case ConsoleMailer:
+				if tt.wantType != "ConsoleMailer" {
+					t.Fatalf("got ConsoleMailer, want %s", tt.wantType)
+				}
+			case SMTPMailer:
+				if tt.wantType != "SMTPMailer" {
+					t.Fatalf("got SMTPMailer, want %s", tt.wantType)
+				}
+				if v.host != tt.cfg.SMTPHost {
+					t.Fatalf("SMTP host mismatch: got %q, want %q", v.host, tt.cfg.SMTPHost)
+				}
+			default:
+				t.Fatalf("unknown mailer type: %T", v)
+			}
+		})
+	}
+}
+
+func TestEmailVerification(t *testing.T) {
+	conn := testDB(t)
+	id, _ := Register(conn, "Diana", "diana@example.com", "hunter22")
+
+	var mailer fakeMailer
+	if err := RequestEmailVerification(conn, &mailer, "example.com", id, "diana@example.com", time.Hour); err != nil {
+		t.Fatalf("request verification: %v", err)
+	}
+	if mailer.to == "" {
+		t.Fatalf("expected mailer to be called")
+	}
+
+	token := tokenFromLink(t, mailer.body)
+	if err := VerifyEmail(conn, token); err != nil {
+		t.Fatalf("verify email: %v", err)
+	}
+
+	// Token is single-use
+	if err := VerifyEmail(conn, token); err != ErrInvalidVerifyLink {
+		t.Fatalf("expected token to be single-use, got %v", err)
+	}
+
+	// Now authentication should succeed
+	got, err := Authenticate(conn, "diana@example.com", "hunter22")
+	if err != nil || got != id {
+		t.Fatalf("authenticate after verification: got id=%d err=%v, want id=%d", got, err, id)
+	}
 }

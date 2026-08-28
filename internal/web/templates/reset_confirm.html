@@ -1,17 +1,36 @@
 {{define "content"}}
-<section>
-    <h1>Neues Passwort setzen</h1>
-    {{if .Error}}<p class="error">{{.Error}}</p>{{end}}
+<div class="max-w-md mx-auto py-12">
+  <div class="card">
+    <h1 class="text-2xl font-display text-asphalt mb-6">
+      Neues Passwort setzen
+    </h1>
+
     {{if .Done}}
-        <p>Passwort geaendert. <a href="/login">Jetzt einloggen</a></p>
+    <div class="flash-success">
+      <p>Passwort geändert.</p>
+      <div class="mt-4">
+        <a href="/login" class="btn-primary w-full">Jetzt einloggen</a>
+      </div>
+    </div>
     {{else}}
-        <form method="post" action="/reset-password/confirm">
-            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
-            <input type="hidden" name="token" value="{{.Token}}">
-            <label for="password">Neues Passwort</label>
-            <input type="password" id="password" name="password" required minlength="8">
-            <button type="submit">Passwort setzen</button>
-        </form>
+    <form method="post" action="/reset-password/confirm">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+      <input type="hidden" name="token" value="{{.Token}}" />
+
+      {{template "form_field" dict "Type" "password" "Name" "password" "Label"
+      "Neues Passwort" "Required" true "Help" "Mindestens 8 Zeichen"}}
+      {{template "button" dict "Type" "submit" "Text" "Passwort setzen"
+      "Primary" true "Class" "w-full"}}
+    </form>
     {{end}}
-</section>
+
+    <div class="mt-4 text-center">
+      <p>
+        <a href="/login" class="text-pfandglas hover:text-verkehrsorange"
+          >← Zurück zum Login</a
+        >
+      </p>
+    </div>
+  </div>
+</div>
 {{end}}

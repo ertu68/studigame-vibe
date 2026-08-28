@@ -1,0 +1,13 @@
+{{define "button"}}
+<button
+  type="{{if .Type}}{{.Type}}{{else}}button{{end}}"
+  class="{{if .Primary}}btn-primary{{else if .Secondary}}btn-secondary{{else if .Danger}}btn-danger{{else}}btn-primary{{end}} {{if .Small}}py-1 px-2 text-sm{{else if .Large}}py-3 px-6 text-lg{{end}} {{.Class}}"
+  {{if
+  .Disabled}}disabled{{end}}
+  {{if
+  .ID}}id="{{.ID}}"
+  {{end}}
+>
+  {{.Text}}
+</button>
+{{end}}

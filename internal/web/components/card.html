@@ -1,0 +1,7 @@
+{{define "card"}}
+<div class="card {{.Class}}" {{if .ID}}id="{{.ID}}" {{end}}>
+  {{if .Title}}
+  <h2 class="text-xl font-display text-asphalt mb-4">{{.Title}}</h2>
+  {{end}} {{.Content}}
+</div>
+{{end}}

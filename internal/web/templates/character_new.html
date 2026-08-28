@@ -1,0 +1,33 @@
+{{define "content"}}
+<div class="max-w-md mx-auto py-12">
+  <div class="card">
+    <h1 class="text-2xl font-display text-asphalt mb-2">Neu anfangen</h1>
+    <p class="text-sm mb-6">
+      Such dir eine Stadt aus und einen Namen. Beides bleibt, wie es ist.
+    </p>
+
+    {{if .Error}}
+    <div class="flash-error mb-4">
+      <p>{{.Error}}</p>
+    </div>
+    {{end}}
+
+    <form method="post" action="/character/new">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+
+      <div class="form-field">
+        <label class="form-label" for="edition">Stadt</label>
+        <select class="form-input" id="edition" name="edition" required>
+          {{range .Editions}}
+          <option value="{{.Slug}}">{{.Name}}</option>
+          {{end}}
+        </select>
+      </div>
+
+      {{template "form_field" dict "Type" "text" "Name" "name" "Label"
+      "Spielername" "Value" .Name "Required" true "Help" "3 bis 20 Zeichen"}}
+      {{template "button" dict "Type" "submit" "Text" "Losgehen"}}
+    </form>
+  </div>
+</div>
+{{end}}

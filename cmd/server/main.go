@@ -9,6 +9,9 @@ import (
 	"syscall"
 	"time"
 
+	// Embeds the timezone database: the Alpine image has no system tzdata.
+	_ "time/tzdata"
+
 	"pennergame/internal/auth"
 	"pennergame/internal/config"
 	"pennergame/internal/db"
@@ -32,7 +35,7 @@ func main() {
 	deps := &handlers.Deps{
 		DB:       conn,
 		Sessions: auth.NewSessionStore(conn),
-		Mailer:   auth.ConsoleMailer{},
+		Mailer:   auth.NewMailer(cfg),
 		Config:   cfg,
 	}
 
@@ -76,6 +79,7 @@ func main() {
 
 	mux.HandleFunc("GET /register", deps.RegisterForm)
 	mux.HandleFunc("POST /register", loginLimiter.Middleware(handlers.RequireCSRF(deps.Register)))
+	mux.HandleFunc("GET /verify", deps.VerifyEmail)
 	mux.HandleFunc("GET /login", deps.LoginForm)
 	mux.HandleFunc("POST /login", loginLimiter.Middleware(handlers.RequireCSRF(deps.Login)))
 	mux.HandleFunc("POST /logout", handlers.RequireCSRF(deps.Logout))
@@ -86,6 +90,12 @@ func main() {
 	mux.HandleFunc("POST /reset-password/confirm", handlers.RequireCSRF(deps.ResetPasswordConfirm))
 
 	mux.HandleFunc("GET /dashboard", deps.RequireAuth(deps.Dashboard))
+	mux.HandleFunc("GET /character/new", deps.RequireAuth(deps.CharacterNewForm))
+	mux.HandleFunc("POST /character/new", handlers.RequireCSRF(deps.RequireAuth(deps.CharacterNew)))
+
+	actionLimiter := httpx.NewIPRateLimiter(30, time.Minute)
+	mux.HandleFunc("GET /actions", deps.RequireAuth(deps.Actions))
+	mux.HandleFunc("POST /actions/collect", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.Collect))))
 
 	// Create server with timeouts
 	addr := ":" + cfg.Port

@@ -1,0 +1,10 @@
+{{define "bottom_nav"}}
+<div class="bottom-nav">
+  <a href="/dashboard" class="nav-item">Übersicht</a>
+  <a href="/actions" class="nav-item">Sammeln</a>
+  <form method="post" action="/logout" class="nav-item">
+    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+    <button type="submit" class="nav-item">Logout</button>
+  </form>
+</div>
+{{end}}

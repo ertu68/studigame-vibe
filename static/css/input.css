@@ -1,0 +1,66 @@
+@import "tailwindcss";
+@config "../../tailwind.config.js";
+
+@layer components {
+  .card {
+    @apply bg-pappe text-asphalt rounded-sm p-4 shadow-md;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger {
+    @apply inline-block rounded-sm px-4 py-2 font-medium text-center transition;
+  }
+  .btn-primary {
+    @apply bg-pfandglas text-asphalt hover:opacity-90;
+  }
+  .btn-secondary {
+    @apply bg-pappe text-asphalt hover:opacity-90;
+  }
+  .btn-danger {
+    @apply bg-backstein text-pappe hover:opacity-90;
+  }
+
+  .form-field {
+    @apply mb-4;
+  }
+  .form-label {
+    @apply block text-sm font-medium text-pappe mb-1;
+  }
+  .form-input {
+    @apply w-full rounded-sm border-2 border-asphalt bg-pappe text-asphalt px-3 py-2;
+  }
+
+  .flash-success,
+  .flash-error,
+  .flash-info {
+    @apply rounded-sm px-4 py-2 mb-4 text-sm font-medium;
+  }
+  .flash-success {
+    @apply bg-pfandglas text-asphalt;
+  }
+  .flash-error {
+    @apply bg-backstein text-pappe;
+  }
+  .flash-info {
+    @apply bg-muenzgold text-asphalt;
+  }
+
+  .progress-bar {
+    @apply w-full h-3 rounded-sm bg-asphalt border-2 border-pappe overflow-hidden;
+  }
+  .progress-fill {
+    @apply h-full bg-muenzgold transition-all;
+  }
+
+  .statusbar {
+    @apply sticky top-0 z-10 flex items-center justify-between bg-asphalt text-pappe px-4 py-2 border-b-2 border-muenzgold;
+  }
+
+  .bottom-nav {
+    @apply fixed bottom-0 left-0 right-0 z-10 flex justify-around bg-asphalt border-t-2 border-muenzgold;
+  }
+  .nav-item {
+    @apply flex flex-col items-center justify-center flex-grow py-3 text-xs text-pappe bg-transparent border-0 cursor-pointer;
+  }
+}

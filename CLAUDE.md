@@ -1,7 +1,8 @@
 # Arbeitsanweisungen für Coding-Agents
 
-Browser-Game im Stil von Pennergame. Go, server-rendered, SQLite, kein JS-Build.
-Konzept und Phasenplan: [pennergame-remake-plan.md](./pennergame-remake-plan.md).
+Browser-Game im Geist von Pennergame, aber eigenständig: Studigame, Studentenleben
+statt Obdachlosigkeit. Go, server-rendered, SQLite, kein JS-Build.
+Konzept und Phasenplan: [studigame-plan.md](./studigame-plan.md).
 Was als Nächstes ansteht: [ROADMAP.md](./ROADMAP.md).
 
 ## Grundhaltung
@@ -44,7 +45,7 @@ Ausführlich in Abschnitt 6 des Plans. Die Kurzfassung:
 | Eine Spieleraktion = eine DB-Transaktion | kein halb-committeter Zustand |
 | Handler bleiben dünn: parsen, Aktion rufen, rendern | keine Spielregeln in HTTP-Code |
 | Aktionsergebnis erst **beim Auflösen** würfeln | sonst steht der Ausgang vorab in der DB |
-| Jede Query auf andere Spieler filtert `edition_id` | Städte sind getrennte Welten |
+| Jede Query auf andere Spieler filtert `edition_id` | Editionen sind getrennte Welten |
 
 ## Sicherheit — nicht verhandelbar
 
@@ -81,11 +82,12 @@ nicht offensichtlich ist. Nicht committen, ohne dass die Tests grün sind.
 
 ## Sensibler Inhalt
 
-Das Spiel handelt von Obdachlosigkeit. Der Ton ist Satire auf Aufstiegsträume,
-nicht auf Betroffene. Bezirke sind reale NRW-Stadtteile: sie unterscheiden sich
-über Zahlen (Ertrag, Risiko, Freischaltschwelle), nie über abwertende
-Beschreibungen. Faustregel für jeden Text: würde ich ihn der lokalen
-Stadtverwaltung zeigen?
+Das Spiel handelt vom Studentenleben (knapp bei Kasse, Prüfungsstress,
+WG-Alltag). Der Ton ist Satire auf das Studentenleben selbst, nicht auf eine
+reale verletzliche Gruppe. Uni-Stadt und Studienfächer sind fiktiv, keine
+realen Hochschulen oder Personen. Studienfächer unterscheiden sich über Zahlen
+und liebevollen Klischee-Humor, nie über echte Abwertung eines Fachs.
+Faustregel für jeden Text: würde ich ihn einem Studierendenwerk zeigen?
 
 ## Wenn etwas unklar ist
 

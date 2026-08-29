@@ -1,11 +1,12 @@
-# Pennergame Remake (Arbeitstitel)
+# Studigame
 
-Browser-Game im Stil von Pennergame: Go, server-rendered, SQLite, kein JS-Build.
-Spielwelt sind vier NRW-Städte als getrennte Editionen.
+Browser-Game im Geist von Pennergame, aber eigenständig: Studentenleben statt
+Obdachlosigkeit. Go, server-rendered, SQLite, kein JS-Build. Spielwelt ist eine
+fiktive Uni-Stadt, Studienfach übernimmt die Rolle des Klassensystems.
 
 | Dokument | Inhalt |
 | --- | --- |
-| [pennergame-remake-plan.md](./pennergame-remake-plan.md) | Konzept, Architektur, Phasenplan |
+| [studigame-plan.md](./studigame-plan.md) | Konzept, Architektur, Phasenplan |
 | [ROADMAP.md](./ROADMAP.md) | was als Nächstes ansteht |
 | [CHANGELOG.md](./CHANGELOG.md) | was sich geändert hat |
 | [CLAUDE.md](./CLAUDE.md) | Arbeitsanweisungen für Coding-Agents |
@@ -23,7 +24,12 @@ Spielwelt sind vier NRW-Städte als getrennte Editionen.
   Schichten von 15 Minuten bis 8 Stunden, Ergebnis wird beim Zurückkommen ausgewürfelt,
   Überlauf aus dem vollen Behälter geht in den Spendentopf.
 
-Name und Domain sind noch offen — siehe `.env.example`.
+Der aktuelle Code ist noch auf dem Pennergame-Stand (vier NRW-Städte als Editionen,
+Bezirke als Ertrags-/Risiko-Multiplikator). Der Umbau auf Studigame (eine fiktive
+Uni-Stadt, Studienfach statt Bezirk) ist geplant, siehe `studigame-plan.md`
+Abschnitt 3a und die entsprechenden Punkte in `ROADMAP.md`.
+
+Name ist entschieden (Studigame), Domain ist noch offen — siehe `.env.example`.
 
 ## Entwicklung
 

@@ -53,7 +53,8 @@ Kleine Fixes und das Fundament, das später teuer nachzurüsten wäre.
 
 Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt“.
 
-- [x] `characters`, `editions`, `districts`, `ledger`, `actions`
+- [x] `characters`, `editions`, `districts`, `ledger`, `actions` (Schema wird
+  im Studigame-Umbau angepasst: `districts` → `subjects`, siehe Rebrand-Abschnitt)
 - [x] Reine Spiellogik in `internal/game` (keine DB, keine Uhr, testbar)
 - [x] Charaktererstellung: Stadt wählen, Name setzen, Startkapital über das Ledger
 - [x] Sammeln-Aktion mit Dauerwahl und Lazy-Tick-Auflösung
@@ -90,20 +91,36 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt“.
 
 ---
 
+## Rebrand: Pennergame → Studigame
+
+Konzeptwechsel, Details und Begründung in `studigame-plan.md` (Abschnitt 3, 3a).
+Noch nicht umgesetzt — eigener Umsetzungsplan, bevor Code angefasst wird.
+
+- [ ] Go-Modul `pennergame` → `studigame` (go.mod, alle Imports, Docker-Image-
+  und Binary-Name) — rein mechanisch, aber repo-weit
+- [ ] `districts`-Tabelle (`yield_factor`/`risk_factor`/`unlock_at_cents`/
+  `distance_rank`) entfernen, `subjects`-Tabelle (Studienfach) einführen;
+  `characters.district_id` → `characters.subject_id`
+- [ ] Campus-Orte (Mensa/Bibliothek/Kneipenviertel) als reines Text-Label in
+  Aktionen, ohne eigene Stats-Tabelle
+- [ ] Editionen-Bootstrap auf eine fiktive Uni-Stadt reduzieren (statt vier
+  NRW-Städte); `editions`-Tabelle bleibt technisch für spätere Erweiterung
+- [ ] Migrationen `0003_core_gameplay.sql`/`0005_open_duesseldorf.sql` direkt
+  anpassen statt additiv überschreiben (noch keine echten Nutzerdaten)
+- [ ] Skill-/Mechanik-Namen aus `studigame-plan.md` Abschnitt 3 übernehmen
+  (ECTS-Punkte, Rabattcode-Jäger, Notenkonkurrenz, …), sobald die jeweilige
+  Mechanik gebaut wird
+- [ ] `CLAUDE.md`/README-Verweise auf Bezirke/Städte final auf Studienfach/
+  Edition umziehen, sobald der Code-Umbau steht
+
 ## Editionen
 
-Vier NRW-Städte als getrennte Spielwelten. Alle vier sind ab Tag 1 in Datenbank
-und Code, freigeschaltet wird per Flag.
+Eine fiktive Uni-Stadt zum Start (MVP), statt der vier NRW-Städte aus der
+Pennergame-Version — siehe Rebrand-Abschnitt oben. Weitere Uni-Städte sind als
+zusätzliche Editionen technisch vorbereitet, aber erst relevant, wenn eine
+volle erste Stadt langweilig wird (`studigame-plan.md`, Abschnitt 7b).
 
-| Stadt | Twist | Launch |
-| --- | --- | --- |
-| Köln | Event-Stadt: Feiertage bringen Spitzen | offen |
-| Dortmund | Spieltag-Stadt: belohnt Timing | offen |
-| Duisburg | Schicht-Stadt: konstant, belohnt Ausdauer | geschlossen |
-| Düsseldorf | Kontrast-Stadt: teuer, riskant, belohnt Kapital | offen |
-
-Zwei Städte zum Start, weil eine geteilte Spielerbasis sich toter anfühlt als
-eine volle Stadt. Öffnen ist ein `UPDATE`, kein Release.
+- [ ] 🙋 Name der Uni-Stadt festlegen
 
 ---
 

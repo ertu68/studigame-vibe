@@ -147,6 +147,12 @@ beschwert oder eine Zahl es rechtfertigt.
 - Wochenrückblick per E-Mail (opt-in)
 - Bandenkriege und Bündnisse — erst sinnvoll, wenn genug Banden existieren
 - Feinkörnige Bandenrollen jenseits von Chef und Mitglied
+- Mehrwert für die bei der Registrierung erfasste Uni-Stadt (bisher reine
+  Anzeige): Stadt-Leaderboard zusätzlich zum globalen Highscore; Freunde-/
+  WG-Suche nach Stadt filterbar, sobald es Freunde/Banden gibt; Flavor-Text
+  je Stadt (Mensa-Insider-Jokes o. Ä.) — günstig, viel Charme. Bewusst keine
+  Städte aus der Liste streichen: das Risiko, dass jemandes Stadt fehlt,
+  wiegt schwerer als der Pflegeaufwand einer langen Liste
 - Nostalgie-Quiz beim Onboarding, rein kosmetisch
 
 **Technik**

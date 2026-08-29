@@ -110,7 +110,7 @@ func readBody(t *testing.T, resp *http.Response) string {
 // registerVerified creates a user that can log in straight away.
 func (gs *gameLoopServer) registerVerified(name, email string) {
 	gs.t.Helper()
-	if _, err := auth.Register(gs.deps.DB, name, email, "hunter22"); err != nil {
+	if _, err := auth.Register(gs.deps.DB, name, email, "hunter22", "Köln"); err != nil {
 		gs.t.Fatalf("register: %v", err)
 	}
 	if _, err := gs.deps.DB.Exec(`UPDATE users SET verified = TRUE WHERE email = ?`, email); err != nil {

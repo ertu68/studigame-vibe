@@ -12,7 +12,7 @@ import (
 // newCharacter creates a verified user with a character in Köln.
 func newCharacter(t *testing.T, conn *sql.DB, name, email string) Character {
 	t.Helper()
-	userID, err := auth.Register(conn, name, email, "hunter22")
+	userID, err := auth.Register(conn, name, email, "hunter22", "Köln")
 	if err != nil {
 		t.Fatalf("register: %v", err)
 	}

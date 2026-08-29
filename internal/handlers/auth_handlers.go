@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -12,7 +13,9 @@ import (
 )
 
 func (d *Deps) RegisterForm(w http.ResponseWriter, r *http.Request) {
-	web.Render(w, "register.html", d.baseData(w, r))
+	data := d.baseData(w, r)
+	data["Cities"] = auth.UniCities
+	web.Render(w, "register.html", data)
 }
 
 func (d *Deps) VerifyEmail(w http.ResponseWriter, r *http.Request) {
@@ -45,18 +48,19 @@ func (d *Deps) Register(w http.ResponseWriter, r *http.Request) {
 	name := strings.TrimSpace(r.FormValue("name"))
 	email := strings.ToLower(strings.TrimSpace(r.FormValue("email")))
 	password := r.FormValue("password")
+	city := r.FormValue("city")
 
-	if name == "" || email == "" || len(password) < 8 {
+	if name == "" || email == "" || len(password) < 8 || !slices.Contains(auth.UniCities, city) {
 		slog.Warn("Registration attempt with invalid data", "name", name, "email", email)
-		d.renderRegisterError(w, r, name, email, "bitte alle Felder ausfuellen (Passwort mind. 8 Zeichen)")
+		d.renderRegisterError(w, r, name, email, city, "bitte alle Felder ausfuellen (Passwort mind. 8 Zeichen)")
 		return
 	}
 
-	userID, err := auth.Register(d.DB, name, email, password)
+	userID, err := auth.Register(d.DB, name, email, password, city)
 	if err != nil {
 		if errors.Is(err, auth.ErrEmailTaken) {
 			slog.Info("Registration attempt with existing email", "email", email)
-			d.renderRegisterError(w, r, name, email, "diese E-Mail ist bereits registriert")
+			d.renderRegisterError(w, r, name, email, city, "diese E-Mail ist bereits registriert")
 			return
 		}
 		slog.Error("Registration failed with unexpected error", "error", err, "email", email)
@@ -77,10 +81,12 @@ func (d *Deps) Register(w http.ResponseWriter, r *http.Request) {
 	web.Render(w, "register_verify.html", data)
 }
 
-func (d *Deps) renderRegisterError(w http.ResponseWriter, r *http.Request, name, email, msg string) {
+func (d *Deps) renderRegisterError(w http.ResponseWriter, r *http.Request, name, email, city, msg string) {
 	data := d.baseData(w, r)
 	data["Name"] = name
 	data["Email"] = email
+	data["City"] = city
+	data["Cities"] = auth.UniCities
 	data["Error"] = msg
 	web.Render(w, "register.html", data)
 }

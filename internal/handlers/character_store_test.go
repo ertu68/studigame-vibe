@@ -22,7 +22,7 @@ func testDB(t *testing.T) *sql.DB {
 
 func TestCreateCharacter(t *testing.T) {
 	conn := testDB(t)
-	userID, err := auth.Register(conn, "Ida", "ida@example.com", "hunter22")
+	userID, err := auth.Register(conn, "Ida", "ida@example.com", "hunter22", "Köln")
 	if err != nil {
 		t.Fatalf("register: %v", err)
 	}
@@ -61,8 +61,8 @@ func TestCreateCharacter(t *testing.T) {
 
 func TestCreateCharacterRejectsDuplicates(t *testing.T) {
 	conn := testDB(t)
-	first, _ := auth.Register(conn, "Jan", "jan@example.com", "hunter22")
-	second, _ := auth.Register(conn, "Kim", "kim@example.com", "hunter22")
+	first, _ := auth.Register(conn, "Jan", "jan@example.com", "hunter22", "Köln")
+	second, _ := auth.Register(conn, "Kim", "kim@example.com", "hunter22", "Köln")
 
 	if _, err := CreateCharacter(conn, first, "koeln", "Schnorrer"); err != nil {
 		t.Fatalf("create first character: %v", err)
@@ -86,7 +86,7 @@ func TestCreateCharacterRejectsDuplicates(t *testing.T) {
 
 func TestCreateCharacterRejectsClosedEdition(t *testing.T) {
 	conn := testDB(t)
-	userID, _ := auth.Register(conn, "Lars", "lars@example.com", "hunter22")
+	userID, _ := auth.Register(conn, "Lars", "lars@example.com", "hunter22", "Köln")
 
 	if _, err := CreateCharacter(conn, userID, "duisburg", "Frueh"); !errors.Is(err, ErrEditionNotFound) {
 		t.Fatalf("expected ErrEditionNotFound for closed edition, got %v", err)

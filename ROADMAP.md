@@ -35,6 +35,8 @@ Kleine Fixes und das Fundament, das später teuer nachzurüsten wäre.
 
 ## Als Nächstes
 
+- [x] Uni-Stadt bei der Registrierung erfassen (feste Liste, reine Anzeige,
+  keine Spielfunktion — später ggf. mit Gameplay verknüpfen)
 - [x] Double-Opt-In für Warteliste und Registrierung
 - [x] Echter SMTP-Versand statt Konsolen-Mailer
 - [x] Design-System: Tailwind-Tokens, Basiskomponenten, Statusleiste

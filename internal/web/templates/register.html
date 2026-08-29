@@ -16,8 +16,18 @@
       "Value" .Name "Required" true}} {{template "form_field" dict "Type"
       "email" "Name" "email" "Label" "E-Mail" "Value" .Email "Required" true}}
       {{template "form_field" dict "Type" "password" "Name" "password" "Label"
-      "Passwort" "Required" true "Help" "Mindestens 8 Zeichen"}} {{template
-      "button" dict "Type" "submit" "Text" "Registrieren"}}
+      "Passwort" "Required" true "Help" "Mindestens 8 Zeichen"}}
+
+      <div class="form-field">
+        <label class="form-label" for="city">Uni-Stadt</label>
+        <select class="form-input" id="city" name="city" required>
+          {{range .Cities}}
+          <option value="{{.}}" {{if eq $.City .}}selected{{end}}>{{.}}</option>
+          {{end}}
+        </select>
+      </div>
+
+      {{template "button" dict "Type" "submit" "Text" "Registrieren"}}
     </form>
 
     <div class="mt-4 text-center">

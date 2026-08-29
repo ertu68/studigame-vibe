@@ -19,14 +19,30 @@ var (
 	ErrInvalidVerifyLink = errors.New("invalid or expired verification link")
 )
 
-func Register(db *sql.DB, name, email, password string) (int64, error) {
+// UniCities is the hardcoded list of German university cities offered at
+// registration. Display only for now, no gameplay effect.
+var UniCities = []string{
+	"Aachen", "Augsburg", "Bamberg", "Bayreuth", "Berlin", "Bielefeld",
+	"Bochum", "Bonn", "Braunschweig", "Bremen", "Chemnitz", "Cottbus",
+	"Darmstadt", "Dortmund", "Dresden", "Duisburg", "Düsseldorf", "Erfurt",
+	"Erlangen", "Essen", "Frankfurt am Main", "Freiburg", "Gießen",
+	"Göttingen", "Greifswald", "Halle", "Hamburg", "Hannover", "Heidelberg",
+	"Ilmenau", "Jena", "Kaiserslautern", "Karlsruhe", "Kassel", "Kiel",
+	"Koblenz", "Köln", "Konstanz", "Leipzig", "Lübeck", "Magdeburg",
+	"Mainz", "Mannheim", "Marburg", "München", "Münster", "Oldenburg",
+	"Osnabrück", "Paderborn", "Passau", "Potsdam", "Regensburg", "Rostock",
+	"Saarbrücken", "Siegen", "Stuttgart", "Trier", "Tübingen", "Ulm",
+	"Wuppertal", "Würzburg",
+}
+
+func Register(db *sql.DB, name, email, password, city string) (int64, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return 0, err
 	}
 	res, err := db.Exec(
-		`INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)`,
-		name, email, string(hash),
+		`INSERT INTO users (name, email, password_hash, city) VALUES (?, ?, ?, ?)`,
+		name, email, string(hash), city,
 	)
 	if err != nil {
 		// D5: Check specifically for UNIQUE constraint violation

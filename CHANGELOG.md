@@ -11,6 +11,7 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ### Hinzugefügt
 
+- Uni-Stadt bei der Registrierung (Pflichtfeld, feste Liste deutscher Uni-Städte), erscheint neben dem Namen — bisher rein zur Anzeige, ohne Spielfunktion
 - Landingpage mit Teaser-Text und Warteliste (`GET /`, `POST /waitlist`), Absenden per htmx ohne Reload
 - Registrierung, Login, Logout mit bcrypt-Passworthashes
 - Passwort-Reset per E-Mail-Token (gehasht gespeichert, 60 min gültig, keine User-Enumeration)

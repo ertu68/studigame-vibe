@@ -49,6 +49,7 @@ func (d *Deps) addCharacterStatus(data map[string]any, char Character) {
 type user struct {
 	ID   int64
 	Name string
+	City string
 }
 
 // currentUser loads the logged-in user for a request, or nil if anonymous.
@@ -62,7 +63,7 @@ func (d *Deps) currentUser(r *http.Request) *user {
 		return nil
 	}
 	var u user
-	err = d.DB.QueryRow(`SELECT id, name FROM users WHERE id = ?`, sess.UserID).Scan(&u.ID, &u.Name)
+	err = d.DB.QueryRow(`SELECT id, name, city FROM users WHERE id = ?`, sess.UserID).Scan(&u.ID, &u.Name, &u.City)
 	if err != nil {
 		if err != sql.ErrNoRows {
 			slog.Error("Failed to get user", "error", err, "userID", sess.UserID)

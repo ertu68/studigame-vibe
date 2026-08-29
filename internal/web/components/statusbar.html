@@ -27,6 +27,9 @@
   {{if .User}}
   <div>
     <span class="text-pfandglas">{{.User.Name}}</span>
+    {{if .User.City}}
+    <span class="text-xs opacity-70">· {{.User.City}}</span>
+    {{end}}
   </div>
   {{end}}
 </div>

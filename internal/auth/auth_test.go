@@ -26,12 +26,12 @@ func testDB(t *testing.T) *sql.DB {
 func TestRegisterAndAuthenticate(t *testing.T) {
 	conn := testDB(t)
 
-	id, err := Register(conn, "Alice", "alice@example.com", "hunter22")
+	id, err := Register(conn, "Alice", "alice@example.com", "hunter22", "Köln")
 	if err != nil {
 		t.Fatalf("register: %v", err)
 	}
 
-	if _, err := Register(conn, "Alice2", "alice@example.com", "hunter22"); err != ErrEmailTaken {
+	if _, err := Register(conn, "Alice2", "alice@example.com", "hunter22", "Köln"); err != ErrEmailTaken {
 		t.Fatalf("expected ErrEmailTaken, got %v", err)
 	}
 
@@ -62,7 +62,7 @@ func TestRegisterAndAuthenticate(t *testing.T) {
 
 func TestSessionLifecycle(t *testing.T) {
 	conn := testDB(t)
-	id, _ := Register(conn, "Bob", "bob@example.com", "hunter22")
+	id, _ := Register(conn, "Bob", "bob@example.com", "hunter22", "Köln")
 	store := NewSessionStore(conn)
 
 	token, err := store.Create(id)
@@ -85,7 +85,7 @@ func TestSessionLifecycle(t *testing.T) {
 
 func TestPasswordReset(t *testing.T) {
 	conn := testDB(t)
-	id, _ := Register(conn, "Carol", "carol@example.com", "oldpassword")
+	id, _ := Register(conn, "Carol", "carol@example.com", "oldpassword", "Köln")
 
 	// Verify email first so Carol can authenticate
 	var verifyMailer fakeMailer
@@ -207,7 +207,7 @@ func TestNewMailer(t *testing.T) {
 
 func TestEmailVerification(t *testing.T) {
 	conn := testDB(t)
-	id, _ := Register(conn, "Diana", "diana@example.com", "hunter22")
+	id, _ := Register(conn, "Diana", "diana@example.com", "hunter22", "Köln")
 
 	var mailer fakeMailer
 	if err := RequestEmailVerification(conn, &mailer, "example.com", id, "diana@example.com", time.Hour); err != nil {

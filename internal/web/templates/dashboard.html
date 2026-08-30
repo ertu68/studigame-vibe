@@ -5,7 +5,7 @@
       {{.Character.Name}}
     </h1>
     <p class="text-lg">
-      {{.Character.DistrictName}}, {{.Character.EditionSlug}}
+      {{.Character.SubjectName}}, {{.Character.EditionSlug}}
     </p>
   </div>
 
@@ -15,16 +15,19 @@
       <div class="space-y-2">
         <p><span class="font-medium">Kasse:</span> {{.Money}}</p>
         <p><span class="font-medium">Laune:</span> {{.Character.Mood}}%</p>
-        <p><span class="font-medium">Bezirk:</span> {{.Character.DistrictName}}</p>
+        <p>
+          <span class="font-medium">Studienfach:</span>
+          {{.Character.SubjectName}}
+        </p>
       </div>
     </div>
 
     <div class="card">
       <h2 class="text-xl font-display text-asphalt mb-4">Nächste Schritte</h2>
       <ul class="list-disc list-inside space-y-2">
-        <li>Flaschen sammeln</li>
+        <li>Flaschen nach der WG-Party sammeln</li>
         <li>Behälter aufrüsten</li>
-        <li>Neue Bezirke freischalten</li>
+        <li>Fachwissen ausbauen</li>
       </ul>
       <div class="mt-4">
         <a href="/actions" class="btn-primary">Losziehen</a>

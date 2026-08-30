@@ -12,11 +12,11 @@ import (
 	// Embeds the timezone database: the Alpine image has no system tzdata.
 	_ "time/tzdata"
 
-	"pennergame/internal/auth"
-	"pennergame/internal/config"
-	"pennergame/internal/db"
-	"pennergame/internal/handlers"
-	"pennergame/internal/httpx"
+	"studigame/internal/auth"
+	"studigame/internal/config"
+	"studigame/internal/db"
+	"studigame/internal/handlers"
+	"studigame/internal/httpx"
 )
 
 func main() {

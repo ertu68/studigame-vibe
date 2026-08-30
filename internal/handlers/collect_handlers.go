@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"pennergame/internal/game"
-	"pennergame/internal/web"
+	"studigame/internal/game"
+	"studigame/internal/web"
 )
 
 // shiftOption is one selectable shift length in the collect form.
@@ -63,14 +63,7 @@ func (d *Deps) Collect(u *user, w http.ResponseWriter, r *http.Request) {
 	seconds, _ := strconv.Atoi(r.FormValue("duration"))
 	duration := time.Duration(seconds) * time.Second
 
-	district, err := DistrictByID(d.DB, char.DistrictID)
-	if err != nil {
-		slog.Error("Failed to load district", "error", err, "districtID", char.DistrictID)
-		http.Error(w, "interner Fehler", http.StatusInternalServerError)
-		return
-	}
-
-	err = StartCollect(d.DB, char, district.YieldFactor, duration, d.now())
+	err = StartCollect(d.DB, char, duration, d.now())
 	switch {
 	case errors.Is(err, ErrInvalidShift):
 		d.renderActions(w, r, char, nil, "Diese Schichtlänge gibt es nicht.")
@@ -124,7 +117,8 @@ func (d *Deps) renderActions(w http.ResponseWriter, r *http.Request, char Charac
 	web.Render(w, "actions.html", data)
 }
 
-// gameLocation is the wall clock players read: the game is set in NRW.
+// gameLocation is the wall clock players read: the imaginary uni-city has
+// German time, no matter where the server runs.
 var gameLocation = mustLoadLocation("Europe/Berlin")
 
 func mustLoadLocation(name string) *time.Location {

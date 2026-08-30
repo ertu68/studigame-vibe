@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/smtp"
 
-	"pennergame/internal/config"
+	"studigame/internal/config"
 )
 
 // Mailer abstracts outbound email so implementations can be swapped via env vars.

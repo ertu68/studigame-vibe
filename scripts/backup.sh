@@ -1,15 +1,15 @@
 #!/bin/bash
 
-# Simple backup script for pennergame SQLite database
+# Simple backup script for studigame SQLite database
 # This script should be run via cron (e.g., nightly)
 
 set -euo pipefail
 
 # Configuration
 BACKUP_DIR="${BACKUP_DIR:-./backups}"
-DB_PATH="${DB_PATH:-./pennergame.db}"
+DB_PATH="${DB_PATH:-./studigame.db}"
 DATE=$(date +%Y%m%d_%H%M%S)
-BACKUP_NAME="pennergame_${DATE}.backup"
+BACKUP_NAME="studigame_${DATE}.backup"
 
 # Create backup directory if it doesn't exist
 mkdir -p "$BACKUP_DIR"
@@ -26,6 +26,6 @@ fi
 
 # Cleanup old backups (keep last 30)
 echo "Cleaning up old backups (keeping last 30)"
-ls -t "$BACKUP_DIR"/pennergame_*.backup | tail -n +31 | xargs -r rm
+ls -t "$BACKUP_DIR"/studigame_*.backup | tail -n +31 | xargs -r rm
 
 echo "Backup script completed"

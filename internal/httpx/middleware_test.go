@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"pennergame/internal/httpx"
+	"studigame/internal/httpx"
 )
 
 func TestRecoveryMiddleware(t *testing.T) {

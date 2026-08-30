@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"pennergame/internal/auth"
-	"pennergame/internal/web"
+	"studigame/internal/auth"
+	"studigame/internal/web"
 )
 
 func (d *Deps) RegisterForm(w http.ResponseWriter, r *http.Request) {

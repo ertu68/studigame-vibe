@@ -22,7 +22,7 @@ func Load() Config {
 	env := getenv("APP_ENV", "development")
 	return Config{
 		Port:             getenv("PORT", "8080"),
-		DatabasePath:     getenv("DATABASE_PATH", "pennergame.db"),
+		DatabasePath:     getenv("DATABASE_PATH", "studigame.db"),
 		SiteName:         getenv("SITE_NAME", "TODO-Name"),
 		SiteDomain:       getenv("SITE_DOMAIN", "localhost:8080"),
 		MailFrom:         getenv("MAIL_FROM", "noreply@example.invalid"),

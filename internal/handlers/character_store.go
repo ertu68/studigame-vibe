@@ -13,6 +13,7 @@ var (
 	ErrCharacterExists   = errors.New("character already exists for this edition")
 	ErrCharacterNotFound = errors.New("character not found")
 	ErrEditionNotFound   = errors.New("edition not found or inactive")
+	ErrSubjectNotFound   = errors.New("subject not found in this edition")
 	ErrNameTaken         = errors.New("name already taken in this edition")
 )
 
@@ -35,43 +36,49 @@ func ActiveEditions(db *sql.DB) ([]Edition, error) {
 	return out, rows.Err()
 }
 
-// StartingDistrict returns the district a new character begins in
-// (the one with unlock_at_cents = 0, i.e. free from the start).
-func StartingDistrict(db *sql.DB, editionID int64) (District, error) {
-	var d District
-	err := db.QueryRow(
-		`SELECT id, edition_id, name, yield_factor, unlock_at_cents, risk_factor, distance_rank
-		 FROM districts WHERE edition_id = ? AND unlock_at_cents = 0
-		 ORDER BY distance_rank LIMIT 1`, editionID,
-	).Scan(&d.ID, &d.EditionID, &d.Name, &d.YieldFactor, &d.UnlockAtCents, &d.RiskFactor, &d.DistanceRank)
-	if err == sql.ErrNoRows {
-		return District{}, ErrEditionNotFound
+// ActiveSubjects returns the Studienfächer of an edition for the picker.
+func ActiveSubjects(db *sql.DB, editionID int64) ([]Subject, error) {
+	rows, err := db.Query(`SELECT id, edition_id, name FROM subjects WHERE edition_id = ? ORDER BY id`, editionID)
+	if err != nil {
+		return nil, err
 	}
-	return d, err
+	defer rows.Close()
+
+	var out []Subject
+	for rows.Next() {
+		var s Subject
+		if err := rows.Scan(&s.ID, &s.EditionID, &s.Name); err != nil {
+			return nil, err
+		}
+		out = append(out, s)
+	}
+	return out, rows.Err()
 }
 
-// DistrictByID loads a single district.
-func DistrictByID(db *sql.DB, id int64) (District, error) {
-	var d District
+// SubjectByID loads a subject, ensuring it belongs to the given edition.
+func SubjectByID(db *sql.DB, id, editionID int64) (Subject, error) {
+	var s Subject
 	err := db.QueryRow(
-		`SELECT id, edition_id, name, yield_factor, unlock_at_cents, risk_factor, distance_rank
-		 FROM districts WHERE id = ?`, id,
-	).Scan(&d.ID, &d.EditionID, &d.Name, &d.YieldFactor, &d.UnlockAtCents, &d.RiskFactor, &d.DistanceRank)
-	return d, err
+		`SELECT id, edition_id, name FROM subjects WHERE id = ? AND edition_id = ?`, id, editionID,
+	).Scan(&s.ID, &s.EditionID, &s.Name)
+	if err == sql.ErrNoRows {
+		return Subject{}, ErrSubjectNotFound
+	}
+	return s, err
 }
 
 // CharacterForUser loads the character a user plays in a given edition.
 func CharacterForUser(db *sql.DB, userID, editionID int64) (Character, error) {
 	var c Character
 	err := db.QueryRow(
-		`SELECT c.id, c.user_id, c.edition_id, e.slug, c.name, c.district_id, d.name,
+		`SELECT c.id, c.user_id, c.edition_id, e.slug, c.name, c.subject_id, s.name,
 		        c.money_cents, c.container_level, c.mood
 		 FROM characters c
 		 JOIN editions e ON e.id = c.edition_id
-		 JOIN districts d ON d.id = c.district_id
+		 JOIN subjects s ON s.id = c.subject_id
 		 WHERE c.user_id = ? AND c.edition_id = ?`, userID, editionID,
 	).Scan(&c.ID, &c.UserID, &c.EditionID, &c.EditionSlug, &c.Name,
-		&c.DistrictID, &c.DistrictName, &c.MoneyCents, &c.ContainerLevel, &c.Mood)
+		&c.SubjectID, &c.SubjectName, &c.MoneyCents, &c.ContainerLevel, &c.Mood)
 	if err == sql.ErrNoRows {
 		return Character{}, ErrCharacterNotFound
 	}
@@ -83,15 +90,15 @@ func CharacterForUser(db *sql.DB, userID, editionID int64) (Character, error) {
 func AnyCharacterForUser(db *sql.DB, userID int64) (Character, error) {
 	var c Character
 	err := db.QueryRow(
-		`SELECT c.id, c.user_id, c.edition_id, e.slug, c.name, c.district_id, d.name,
+		`SELECT c.id, c.user_id, c.edition_id, e.slug, c.name, c.subject_id, s.name,
 		        c.money_cents, c.container_level, c.mood
 		 FROM characters c
 		 JOIN editions e ON e.id = c.edition_id
-		 JOIN districts d ON d.id = c.district_id
+		 JOIN subjects s ON s.id = c.subject_id
 		 WHERE c.user_id = ?
 		 ORDER BY c.created_at LIMIT 1`, userID,
 	).Scan(&c.ID, &c.UserID, &c.EditionID, &c.EditionSlug, &c.Name,
-		&c.DistrictID, &c.DistrictName, &c.MoneyCents, &c.ContainerLevel, &c.Mood)
+		&c.SubjectID, &c.SubjectName, &c.MoneyCents, &c.ContainerLevel, &c.Mood)
 	if err == sql.ErrNoRows {
 		return Character{}, ErrCharacterNotFound
 	}
@@ -100,7 +107,7 @@ func AnyCharacterForUser(db *sql.DB, userID int64) (Character, error) {
 
 // CreateCharacter creates a character and books its starting capital in the
 // ledger. Both happen in one transaction so money never exists unrecorded.
-func CreateCharacter(db *sql.DB, userID int64, editionSlug, name string) (Character, error) {
+func CreateCharacter(db *sql.DB, userID int64, editionSlug string, subjectID int64, name string) (Character, error) {
 	name = strings.TrimSpace(name)
 
 	var editionID int64
@@ -112,7 +119,7 @@ func CreateCharacter(db *sql.DB, userID int64, editionSlug, name string) (Charac
 		return Character{}, err
 	}
 
-	district, err := StartingDistrict(db, editionID)
+	subject, err := SubjectByID(db, subjectID, editionID)
 	if err != nil {
 		return Character{}, err
 	}
@@ -125,9 +132,9 @@ func CreateCharacter(db *sql.DB, userID int64, editionSlug, name string) (Charac
 
 	const startCapital = 1000 // 10 € — mirrors the column default
 	res, err := tx.Exec(
-		`INSERT INTO characters (user_id, edition_id, name, district_id, money_cents)
+		`INSERT INTO characters (user_id, edition_id, name, subject_id, money_cents)
 		 VALUES (?, ?, ?, ?, ?)`,
-		userID, editionID, name, district.ID, startCapital,
+		userID, editionID, name, subject.ID, startCapital,
 	)
 	if err != nil {
 		return Character{}, translateCharacterConstraint(err)
@@ -150,15 +157,15 @@ func CreateCharacter(db *sql.DB, userID int64, editionSlug, name string) (Charac
 	}
 
 	return Character{
-		ID:           charID,
-		UserID:       userID,
-		EditionID:    editionID,
-		EditionSlug:  editionSlug,
-		Name:         name,
-		DistrictID:   district.ID,
-		DistrictName: district.Name,
-		MoneyCents:   startCapital,
-		Mood:         100,
+		ID:          charID,
+		UserID:      userID,
+		EditionID:   editionID,
+		EditionSlug: editionSlug,
+		Name:        name,
+		SubjectID:   subject.ID,
+		SubjectName: subject.Name,
+		MoneyCents:  startCapital,
+		Mood:        100,
 	}, nil
 }
 

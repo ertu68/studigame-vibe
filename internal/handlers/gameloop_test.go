@@ -5,12 +5,13 @@ import (
 	"net/http/cookiejar"
 	"net/http/httptest"
 	"net/url"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
 
-	"pennergame/internal/auth"
-	"pennergame/internal/config"
+	"studigame/internal/auth"
+	"studigame/internal/config"
 )
 
 // gameLoopServer wires the routes of the game loop against a temp database and
@@ -118,6 +119,19 @@ func (gs *gameLoopServer) registerVerified(name, email string) {
 	}
 }
 
+// subjectID resolves a Studienfach name to its id for the form.
+func (gs *gameLoopServer) subjectID(name string) string {
+	gs.t.Helper()
+	var id int64
+	err := gs.deps.DB.QueryRow(
+		`SELECT s.id FROM subjects s JOIN editions e ON e.id = s.edition_id
+		 WHERE e.slug = 'studistadt' AND s.name = ?`, name).Scan(&id)
+	if err != nil {
+		gs.t.Fatalf("resolve subject %q: %v", name, err)
+	}
+	return strconv.FormatInt(id, 10)
+}
+
 // TestGameLoop walks login, character creation, a collect shift and its payout.
 func TestGameLoop(t *testing.T) {
 	gs := newGameLoopServer(t)
@@ -140,14 +154,14 @@ func TestGameLoop(t *testing.T) {
 	}
 
 	resp, body = gs.post("/character/new", url.Values{
-		"edition": {"koeln"},
+		"subject": {gs.subjectID("Informatik")},
 		"name":    {"Tessa"},
 	})
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("create character: status %d", resp.StatusCode)
 	}
-	if !strings.Contains(body, "Altstadt") {
-		t.Fatalf("dashboard missing district: %q", truncate(body))
+	if !strings.Contains(body, "Informatik") {
+		t.Fatalf("dashboard missing subject: %q", truncate(body))
 	}
 	if !strings.Contains(body, "10,00 €") {
 		t.Fatalf("dashboard missing start capital: %q", truncate(body))

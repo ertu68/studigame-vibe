@@ -3,7 +3,7 @@
   <div class="card">
     <h1 class="text-2xl font-display text-asphalt mb-2">Neu anfangen</h1>
     <p class="text-sm mb-6">
-      Such dir eine Stadt aus und einen Namen. Beides bleibt, wie es ist.
+      Such dir ein Studienfach aus und einen Namen. Beides bleibt, wie es ist.
     </p>
 
     {{if .Error}}
@@ -16,10 +16,10 @@
       <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
 
       <div class="form-field">
-        <label class="form-label" for="edition">Stadt</label>
-        <select class="form-input" id="edition" name="edition" required>
-          {{range .Editions}}
-          <option value="{{.Slug}}">{{.Name}}</option>
+        <label class="form-label" for="subject">Studienfach</label>
+        <select class="form-input" id="subject" name="subject" required>
+          {{range .Subjects}}
+          <option value="{{.ID}}">{{.Name}}</option>
           {{end}}
         </select>
       </div>

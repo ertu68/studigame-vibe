@@ -1,32 +1,63 @@
-# Entwicklungsplan: Studigame (Pennergame-inspirierter Nachbau)
+# Entwicklungsplan: Studigame
 
-*Stand: 29.08.2026 – lebendes Dokument, wird während der Entwicklung laufend angepasst.*
+*Stand: 30.08.2026 – lebendes Dokument, wird während der Entwicklung laufend angepasst.*
+
+Browser-Game im Geist von Pennergame (2007), aber eigenständig: **Studentenleben
+statt Obdachlosigkeit.** Go, server-rendered, SQLite, kein JS-Build. Spielwelt
+ist eine fiktive Uni-Stadt, das Studienfach übernimmt die Rolle des
+Klassensystems.
+
+Dieses Dokument ist die einzige Quelle der Wahrheit für Konzept, Architektur
+und Umfang. `ROADMAP.md` hält die offenen To-Dos, `README.md` den Stand,
+`CHANGELOG.md` die Änderungen. Widerspricht sich etwas, gewinnt dieser Plan.
+
+---
 
 ## 1. Funktionsanalyse: Das Original
 
-Die offizielle Anleitung (Hamburg-, Berlin-, Atlantis-Edition) und ein ausführlicher Fan-Guide von 2009 sind noch über den Suchindex erschlossen. Dadurch lässt sich das Spiel fast vollständig rekonstruieren.
+Die offizielle Anleitung (Hamburg-, Berlin-, Atlantis-Edition) und ein
+ausführlicher Fan-Guide von 2009 sind über den Suchindex erschlossen. Dadurch
+lässt sich das Spiel fast vollständig rekonstruieren. Diese Analyse ist die
+Basis für die Kuration in Abschnitt 2.
 
 ### 1.1 Grundgerüst
+
 - Start: 10 € Startkapital, Ziel: vom Pennerleben zum "Schlossbesitzer"
-- Mehrere parallele "Editionen" pro Stadt (Hamburg, Berlin, Köln, München, Mallorca, dazu ein Fun-Server "Atlantis/Vatikan")
-- Finanzierung nur über Spenden + "Ehrenmitgliedschaft" – Premium gab laut eigener Aussage des Originals keine echten Gameplay-Vorteile, nur Kosmetik/Komfort (eigenes Haustier-Design, größeres Bandenavatar, eigene E-Mail-Adresse, kein Werbebanner)
+- Mehrere parallele "Editionen" pro Stadt (Hamburg, Berlin, Köln, München,
+  Mallorca, dazu ein Fun-Server "Atlantis/Vatikan")
+- Finanzierung nur über Spenden + "Ehrenmitgliedschaft" – Premium gab laut
+  eigener Aussage des Originals keine echten Gameplay-Vorteile, nur
+  Kosmetik/Komfort (eigenes Haustier-Design, größeres Bandenavatar, eigene
+  E-Mail-Adresse, kein Werbebanner)
 
 ### 1.2 Die Kernschleife
-1. **Ressourcen sammeln** – Pfandflaschen sammeln (Dauer wählbar 10 Min–12 h; kürzer = effizienter pro Zeiteinheit, aber absolute Menge steigt mit Dauer; Ertrag hängt von Stadtteil, Geschicklichkeit und tagesaktuellem Pfandpreis ab)
+
+1. **Ressourcen sammeln** – Pfandflaschen sammeln (Dauer wählbar 10 Min–12 h;
+   kürzer = effizienter pro Zeiteinheit, aber absolute Menge steigt mit Dauer;
+   Ertrag hängt von Stadtteil, Geschicklichkeit und tagesaktuellem Pfandpreis ab)
 2. **Verkaufen/Betteln** – Flaschen verkaufen, dazu passives Bettel-/Spenden-Einkommen
 3. **Investieren** – in Skills, Ausrüstung, Wohnung
-4. **Risiko eingehen** – Verbrechen begehen (mehr Ertrag, aber Erwischt-Risiko) oder andere Spieler angreifen
+4. **Risiko eingehen** – Verbrechen begehen (mehr Ertrag, aber Erwischt-Risiko)
+   oder andere Spieler angreifen
 5. **Aufsteigen** – bessere Stadtteile, Ausrüstung, Bande, Highscore-Rang
 
-Ein Geld-"Behälter" begrenzt, wie viel du auf einmal tragen kannst (Trinkbecher → Tüte → Beutel → Einkaufswagen → Container). Wer sein Limit nicht rechtzeitig upgradet, verliert überschüssiges Geld einfach – kleine, aber richtig clevere Mechanik, zwingt zum Reinvestieren und passt perfekt zum Thema.
+Ein Geld-"Behälter" begrenzt, wie viel man auf einmal tragen kann
+(Trinkbecher → Tüte → Beutel → Einkaufswagen → Container). Wer sein Limit nicht
+rechtzeitig upgradet, verliert überschüssiges Geld. Kleine, aber clevere
+Mechanik: zwingt zum Reinvestieren und passt zum Thema.
 
 ### 1.3 Skillsystem ("Weiterbildung")
-Kosten = Basiswert × nächstes Level. Abbruch erstattet 80 %. Zwei Skills gleichzeitig in der Warteschleife möglich.
 
-*Vermutliche Ursache fürs "schnell overpowered"-Problem: diese Kostenformel ist **linear**. Wächst das Einkommen mit dem Level mit, wird jedes weitere Level relativ günstiger statt teurer – ein Schneeball-Effekt. Fix fürs Remake: überlinear skalieren (z. B. Basiswert × Level^1.8), siehe Abschnitt 3.*
+Kosten = Basiswert × nächstes Level. Abbruch erstattet 80 %. Zwei Skills
+gleichzeitig in der Warteschleife möglich.
+
+*Vermutliche Ursache fürs "schnell overpowered"-Problem: diese Kostenformel ist
+**linear**. Wächst das Einkommen mit dem Level mit, wird jedes weitere Level
+relativ günstiger statt teurer – ein Schneeball-Effekt. Fix: überlinear
+skalieren (z. B. Basiswert × Level^1.8), siehe Abschnitt 3.*
 
 | Skill | Effekt |
-|---|---|
+| --- | --- |
 | Angriff (ATT) | Kampfstärke |
 | Verteidigung (DEF) | weniger Geldverlust bei Niederlage |
 | Geschicklichkeit | mehr Flaschen pro Suche; ab Stufe 20 siehst du eingehende Angriffe |
@@ -38,37 +69,57 @@ Kosten = Basiswert × nächstes Level. Abbruch erstattet 80 %. Zwei Skills gleic
 | Taschendiebstahl | erhöht alle Einnahmen leicht |
 
 ### 1.4 Soziales & PvP
-- **Kampf**: gleicher Gegner nur alle 36 h angreifbar, Kampfdauer abhängig von der "Entfernung" der Wohnbezirke, Kampf-Log mit Gewinn/Verlust-Historie
-- **Haustierkämpfe**: separates Wett-System mit Einsatz und Stances (Aggressiv/Defensiv/Neutral) – nebenbei der einzige Weg, Geld direkt an andere Spieler zu senden
-- **Banden**: Name+Passwort, Bandeneigentum (Waffenkammer/Bandenhaus/Training/Konto, je 5 Stufen mit %-Boni für alle Mitglieder), Bandenchat, Bündnisse/Kriege, eigener Bandenhighscore
-- **Freunde/Blockliste, Nachrichten, Forensignaturen** (jeder Klick auf die Signatur triggert eine Spende!)
+
+- **Kampf**: gleicher Gegner nur alle 36 h angreifbar, Kampfdauer abhängig von
+  der "Entfernung" der Wohnbezirke, Kampf-Log mit Gewinn/Verlust-Historie
+- **Haustierkämpfe**: separates Wett-System mit Einsatz und Stances
+  (Aggressiv/Defensiv/Neutral) – nebenbei der einzige Weg, Geld direkt an
+  andere Spieler zu senden
+- **Banden**: Name+Passwort, Bandeneigentum (Waffenkammer/Bandenhaus/Training/
+  Konto, je 5 Stufen mit %-Boni für alle Mitglieder), Bandenchat,
+  Bündnisse/Kriege, eigener Bandenhighscore
+- **Freunde/Blockliste, Nachrichten, Forensignaturen** (jeder Klick auf die
+  Signatur triggert eine Spende!)
 - **Highscore** für Spieler und Banden getrennt
 
 ### 1.5 Der eingebaute Wachstumsmotor
-Das Original hatte einen **Referral-Mechanismus direkt in der Spielfantasie eingebaut**. Jeder Spieler bekommt einen persönlichen Link (`.../change_please/{RefID}/` – "haste mal Kleingeld?"), den man in Forensignaturen oder der eigenen Profil-Homepage postet. Klickt jemand drauf, gibt es eine In-Game-Spende. Virales Wachstum, direkt an die Kernfantasie (Betteln) gekoppelt, ohne sich wie ein aufgesetzter "Invite 3 friends"-Hack anzufühlen.
+
+Das Original hatte einen Referral-Mechanismus direkt in der Spielfantasie
+eingebaut. Jeder Spieler bekommt einen persönlichen Link
+(`.../change_please/{RefID}/` – "haste mal Kleingeld?"), den man in
+Forensignaturen oder der eigenen Profil-Homepage postet. Klickt jemand drauf,
+gibt es eine In-Game-Spende. Virales Wachstum, direkt an die Kernfantasie
+(Betteln) gekoppelt, ohne wie ein aufgesetzter "Invite 3 friends"-Hack zu wirken.
 
 ### 1.6 Technischer Befund
-- Backend laut einer alten Stellenanzeige von Farbflut Entertainment: **Python + MySQL**
-- Die Domain läuft technisch noch, Neuregistrierung ist aber kaputt, keine Weiterentwicklung mehr
-- Farbflut Entertainment GmbH (Hamburg) ist laut Handelsregister weiterhin wirtschaftsaktiv – der Markenname "verwaist" also nicht, deshalb weiterhin: eigenen Namen verwenden
+
+- Backend laut einer alten Stellenanzeige von Farbflut Entertainment:
+  **Python + MySQL**
+- Die Domain läuft technisch noch, Neuregistrierung ist kaputt, keine
+  Weiterentwicklung mehr
+- Farbflut Entertainment GmbH (Hamburg) ist laut Handelsregister weiterhin
+  wirtschaftsaktiv – der Markenname "verwaist" also nicht, deshalb weiterhin:
+  eigenen Namen verwenden
 
 ---
 
 ## 2. Kuration: Übernehmen, ändern, weglassen
 
-*Hinweis: Diese Tabelle stammt aus der ursprünglichen Mechanik-Analyse. Die thematische Verpackung ist "Studigame" statt Penner-Thema (siehe Abschnitt 3) – die Entscheidungen zur Mechanik selbst gelten unverändert, mit einer Ausnahme (Bezirk/Stadtteil, siehe 3a).*
+*Thematische Verpackung ist "Studigame" statt Penner-Thema (siehe Abschnitt 3).
+Die Mechanik-Entscheidungen gelten so; eine Ausnahme (Bezirk → Studienfach)
+ist in 3a dokumentiert.*
 
 | Element | Entscheidung | Warum |
-|---|---|---|
+| --- | --- | --- |
 | Grundschleife (sammeln → verkaufen → investieren → Risiko → aufsteigen) | **Übernehmen** | Zeitlos, funktioniert einfach |
 | Geld-Behälter mit Kappung | **Übernehmen, leicht verändert** | Statt "Geld weg für immer" bei Überlauf: automatische Spende an eine echte Obdachlosenhilfe/Studierendenwerk. Gleiche Spielspannung, fühlt sich aber gut statt frustrierend an |
-| Promille-System | **Übernehmen** | Passt im Studenten-Kontext (Vorglühen, WG-Partys) organischer als im Original – braucht weniger Abschwächung, aber weiterhin mit Augenmaß umgesetzt |
-| Sauberkeit sinkt durchs Sammeln, erhöht Spenden | **Übernehmen** | Nette Nebenressource, unproblematisch |
+| Promille-System | **Übernehmen** | Passt im Studenten-Kontext (Vorglühen, WG-Partys) organischer als im Original – mit Augenmaß umgesetzt |
+| Sauberkeit sinkt durchs Sammeln, erhöht Spenden | **Weglassen (MVP)** | Willkommene Bonus-Ressource, aber zweite parallel pflegbare Ressource = doppelte UI-/Balancing-Fläche für ein Feature ohne echten Sog. Parken für "Später" (§7b), nicht streichen |
 | Referral-Link als "Spendenlink" | **Übernehmen & ausbauen** | Genialer eingebauter Wachstumsmotor, siehe 1.5 |
-| Ehrenmitgliedschaft ohne Gameplay-Vorteil | **Übernehmen** | Deckt sich mit der Monetarisierungs-Empfehlung – hat sich schon damals bewährt |
-| Reale Städte/Stadtteile (Hamburg, Berlin, St. Pauli, …) | **Ändern → fiktive Stadt, Bezirk als Multiplikator fällt weg** | Weniger Nähe zum Original, mehr kreative Freiheit; Rolle des Multiplikators übernimmt das Studienfach, siehe 3a |
+| Ehrenmitgliedschaft ohne Gameplay-Vorteil | **Übernehmen** | Deckt sich mit der Monetarisierungs-Empfehlung |
+| Reale Städte/Stadtteile (Hamburg, St. Pauli, …) | **Ändern → fiktive Uni-Stadt** | Mehr kreative Freiheit, keine Nähe zum Original; Rolle des Orts-Multiplikators übernimmt das Studienfach (3a) |
 | Shock-Humor bei manchen Item-/Haustiernamen | **Weglassen** | Harter, dated 2000er-Forenhumor, der schon damals grenzwertig war |
-| "Dein Leben beenden" als Label für Account löschen | **Ändern** | Klingt nach Selbstverletzung, auch wenn nur der Charakter gemeint ist – einfach "Account löschen" nennen |
+| "Dein Leben beenden" als Label für Account löschen | **Ändern** | Klingt nach Selbstverletzung – einfach "Account löschen" |
 | 36h-Cooldown pro Angriffsziel | **Übernehmen, Werte tunen** | Guter Anti-Griefing-Mechanismus |
 | Kein direkter Geldtransfer (nur Bandenkasse/Haustierkämpfe) | **Übernehmen** | Verhindert simples Farming/RMT |
 | Textbasiert, schlichtes UI | **Übernehmen, modernisieren** | Gleicher Minimalismus, aber mobile-first & schnell |
@@ -77,236 +128,398 @@ Das Original hatte einen **Referral-Mechanismus direkt in der Spielfantasie eing
 
 ## 3. Konzept fürs Remake: "Studigame"
 
-- **Ton**: gleiche trocken-schwarzhumorige Satire wie das Original, jetzt auf Studentenleben statt Obdachlosigkeit gemünzt – universeller relatable (fast jeder war mal pleite im Studium), niemand fühlt sich als reale verletzliche Gruppe dargestellt, trotzdem bissig
-- **Setting**: fiktive Uni-Stadt statt echter Städte/Unis. Statt der alten Stadt/Bezirk-Mechanik (reiner Ressourcen-Multiplikator) übernimmt **Studienfach die Rolle des Klassensystems** – unterschiedliche Skill-Boni, Nebenjobs und Spielweisen statt eines gekauften Orts-Multiplikators. Eine leichte Campus-Orte-Facette (Mensa/Bibliothek/Kneipenviertel) bleibt als reines Flavor obendrauf, ohne eigenes Bezirks-System (kein Ertrags-/Risiko-Multiplikator, keine eigene Unlock-Schwelle)
-- **Name**: entschieden – **Studigame**. Liegt so nah an "Pennergame" (Slang-Wort + "game"), dass der Wiedererkennungswert fast von allein kommt
+- **Ton**: gleiche trocken-schwarzhumorige Satire wie das Original, jetzt auf
+  Studentenleben statt Obdachlosigkeit gemünzt. Universeller relatable (fast
+  jeder war mal pleite im Studium), niemand fühlt sich als reale verletzliche
+  Gruppe dargestellt, trotzdem bissig.
+- **Setting**: fiktive Uni-Stadt **"Studistadt"** (final entschieden) statt echter
+  Städte/Unis. Das **Studienfach übernimmt die Rolle des
+  Klassensystems** – unterschiedliche Skill-Boni, Nebenjobs und Spielweisen
+  statt eines gekauften Orts-Multiplikators. Eine leichte Campus-Orte-Facette
+  (Mensa/Bibliothek/Kneipenviertel) bleibt als reines Flavor obendrauf, ohne
+  eigenes Bezirks-System (kein Ertrags-/Risiko-Multiplikator, keine
+  Unlock-Schwelle).
+- **Name**: entschieden – **Studigame**. Liegt so nah an "Pennergame"
+  (Slang-Wort + "game"), dass der Wiedererkennungswert fast von allein kommt.
+
+### Die Kernschleife von Studigame
+
+1. **Leergut sammeln** – nach der WG-Party. Dauer wählbar, Ergebnis wird erst
+   beim Zurückkommen ausgewürfelt.
+2. **Geld behalten** – der Behälter kappt das Tragen: Was nicht hineinpasst,
+   fließt in den Spendentopf der Uni-Stadt (Charity-Überlauf).
+3. **Reinvestieren** – Behälter aufrüsten (Geld-Sink), später Skills, Ausrüstung,
+   Wohnung.
+4. **Risiko eingehen** – Hausarbeit ghostwriten, Spickzettel verkaufen,
+   Notenkonkurrenz.
+5. **Aufsteigen** – besseres Studiensemester, Fachwissen, Highscore.
+
+**Der MVP-Kern (Phase 3, siehe 3b) ist Punkt 1–3** – erst wenn der Geld-Sink
+trägt, kommen Skills und Risiko dazu.
 
 ### Studienfächer (Klassensystem)
 
-Start mit 3–4 Fächern für den MVP, mehr später – jedes zusätzliche Fach ist mehr Balance-Arbeit:
+Start mit 3–4 Fächern für den MVP, mehr später – jedes zusätzliche Fach ist
+mehr Balance-Arbeit.
 
 | Studienfach | Bonus | Malus/Flavor |
-|---|---|---|
+| --- | --- | --- |
 | Informatik | Konzentration günstiger (Debug-Modus), gute Werkstudent-Nebenjobs | — |
 | BWL | Größerer Geld-Container von Start, günstigeres Netzwerken | Teurere "Look"-Ausrüstung für Status nötig |
 | Jura | Bonus in der Notenkonkurrenz/PvP (cutthroat, wie im echten Leben) | Teurere, längere Weiterbildungen |
 | Geisteswissenschaften | Günstige, vielseitige Skills, Sozialkontakte/Musik-Bonus | Niedrigere Einkommens-Decke (selbstironischer Running Gag, kein echtes Abwerten des Fachs) |
 
-**Fachwechsel**: spätere Mechanik – kostet Zeit/Geld, resettet etwas Fortschritt, spiegelt den echten Fachwechsel-Schmerz und liefert eine natürliche "große Entscheidung" im Spielverlauf.
+**Wichtig für den MVP:** bis das Skillsystem steht, ist das Studienfach **reine
+Identität ohne Spieleffekt** (siehe 3b). Die Boni/Mali oben werden erst mit den
+Skills aktiv.
 
-**Gegen zu schnelles Overpowered-Werden** (reales Problem im Original, siehe 1.3): Skill-Kosten überlinear skalieren UND horizontale Ziele nach dem Soft-Cap anbieten – z. B. "Zweitstudium" als Prestige-Mechanik (kleiner permanenter Bonus, dafür bei Null neu anfangen, evtl. anderes Studienfach), thematisch stimmig und ein bewährtes Muster aus Idle-Games.
+**Fachwechsel**: spätere Mechanik – kostet Zeit/Geld, resettet etwas Fortschritt,
+spiegelt den echten Fachwechsel-Schmerz und liefert eine natürliche "große
+Entscheidung" im Spielverlauf.
+
+**Gegen zu schnelles Overpowered-Werden** (reales Problem im Original, siehe
+1.3): Skill-Kosten überlinear skalieren AND horizontale Ziele nach dem Soft-Cap
+anbieten – z. B. "Zweitstudium" als Prestige-Mechanik (kleiner permanenter
+Bonus, dafür bei Null neu anfangen, evtl. anderes Studienfach), thematisch
+stimmig und ein bewährtes Muster aus Idle-Games.
 
 ### Mechanik-Übersetzung
 
 | Original | Studigame |
-|---|---|
-| Pfandflaschen sammeln | Bleibt fast wörtlich – Leergut sammeln nach der WG-Party |
-| Geld-Container (Becher→...→Container) | Portemonnaie → Jutebeutel → Rucksack → IKEA-FRAKTA-Tasche → **Bausparvertrag** (Insider-Witz als Endgame: du bist erwachsen geworden) |
-| Bildungsstufe (Skill) | Wörtlich ECTS-Punkte/Semesteranzahl – das reale Uni-System als Spielmechanik |
+| --- | --- |
+| Pfandflaschen sammeln | Leergut sammeln nach der WG-Party |
+| Verkaufen | Automatisch beim Einsammeln (kein separater Verkaufsschritt – ein Tap) |
+| Geld-Container (Becher→…→Container) | Portemonnaie → Jutebeutel → Rucksack → IKEA-FRAKTA-Tasche → **Bausparvertrag** (Insider-Witz als Endgame) |
+| Bildungsstufe (Skill) | ECTS-Punkte/Semesteranzahl – das reale Uni-System als Spielmechanik |
+| Angriff (ATT) | Durchsetzungsvermögen (Notenkonkurrenz, Gruppenarbeit) |
+| Verteidigung (DEF) | Stressresistenz (weniger Laune-/Geldverlust) |
+| Geschicklichkeit | Lerneffizienz (mehr Ertrag pro Aktion) |
+| Sprechen | Präsentationstechnik (Voraussetzung für viele andere Skills) |
 | Konzentration (Skill) | Bleibt "Konzentration" – beschleunigt Lernphasen vor Klausuren |
-| Musik (Skill) | Straßenmusik/WG-Flur-Konzerte für Trinkgeld |
+| Musik (Skill) | Straßenmusik / WG-Flur-Konzerte für Trinkgeld (passives Einkommen) |
 | Taschendiebstahl (Skill) | "Rabattcode-Jäger" – Studentenrabatte maximal ausreizen |
+| Sozialkontakte (Skill) | Networking (schaltet WGs/Wohnungen, spätere Banden frei) |
 | Verbrechen | Hausarbeit ghostwriten, Spickzettel verkaufen, Top-Tier: Prüfungsfragen aus dem Lehrstuhl klauen |
+| Passives Betteln | "Eltern um Geld bitten" (verhalten), später BAföG/Stipendium |
 | Kampf/PvP | Notenkonkurrenz bei Kurven-Klausuren, Gruppenarbeit sabotieren |
-| Banden | WGs – Bandenkrieg wird WG-Rivalität oder Fakultäten-Zoff (BWLer vs. Informatiker vs. Geisteswissenschaftler) |
+| Banden | WGs – WG-Rivalität oder Fakultäten-Zoff (BWL vs. Informatik vs. Geisteswissenschaften) |
 | Bandeneigentum | WG-Ausstattung: WLAN-Speed, Kaffeemaschine, Bücherregal, WG-Kasse |
 | Eigenheim-Leiter | WG-Zimmer → Wohnheim-Einzelzimmer → 1-Zimmer-Wohnung → Altbauwohnung → Eigentumswohnung |
 | Ehrenmitgliedschaft | "Alumni-Status"/Fördermitgliedschaft, weiterhin ohne Gameplay-Vorteil |
+| Kaffee statt Promille | Temporärer Konzentrations-Boost (Kaffee), gleiche Mechanik |
 
-- **Wartungs-/Landingpage**: *"Bald verfügbar: Studigame – im Geist der Kult-Browsergames der 2000er (u. a. Pennergame), aber ein eigenständiges, neues Projekt ohne Verbindung zu Farbflut Entertainment."* Referenziert die Inspiration ehrlich (rechtlich unproblematische nominative Nutzung), macht aber klar: eigenständiges Konzept, keine Fortsetzung. Dazu ein simples E-Mail-Waitlist-Formular.
+**Wartungs-/Landingpage**: *"Bald verfügbar: Studigame – im Geist der
+Kult-Browsergames der 2000er (u. a. Pennergame), aber ein eigenständiges, neues
+Projekt ohne Verbindung zu Farbflut Entertainment."* Referenziert die
+Inspiration ehrlich (rechtlich unproblematische nominative Nutzung), macht aber
+klar: eigenständiges Konzept, keine Fortsetzung. Dazu ein simples
+E-Mail-Waitlist-Formular.
 
 ---
 
 ## 3a. Abgleich mit dem bestehenden Code-Stand
 
-Vor diesem Dokument existierte bereits eine Codebasis für die Pennergame-Version (vier NRW-Städte als Editionen, Bezirke als Ertrags-/Risiko-Multiplikator). Entscheidungen zum Übergang, kritisch geprüft und mit dir abgestimmt:
+Vor diesem Dokument existierte bereits eine Codebasis für die Pennergame-Version
+(vier NRW-Städte als Editionen, Bezirke als Ertrags-/Risiko-Multiplikator).
+Entscheidungen zum Übergang, kritisch geprüft:
 
-- **Bezirk vs. Studienfach**: beide Systeme parallel zu betreiben (Studienfach als Klasse UND Campus-Ort als zusätzlicher Multiplikator) wäre für ein Solo-MVP doppelte Balancing-Fläche für ein Feature, das dieses Dokument selbst schon als reines Flavor einstuft. Entscheidung: **Studienfach ersetzt Bezirk vollständig.** Die bestehende `districts`-Tabelle (`yield_factor`, `risk_factor`, `unlock_at_cents`, `distance_rank`) fällt weg. Campus-Orte (Mensa/Bibliothek/Kneipenviertel) werden zu reinen Text-Labels ohne eigenen Datensatz mit Werten.
-- **Editionen**: MVP startet mit **einer** fiktiven Uni-Stadt statt vier parallelen Welten – deckt sich mit der bisherigen Roadmap-Begründung ("eine volle Stadt fühlt sich besser an als eine geteilte Spielerbasis"). Die `editions`-Tabelle bleibt technisch bestehen (ein aktiver Eintrag), damit sich später weitere Uni-Städte ohne Schema-Änderung nachrüsten lassen.
-- **Modulname**: `pennergame` → `studigame`, betrifft `go.mod`, alle Imports, Docker-Image- und Binary-Namen. Rein mechanischer, aber repo-weiter Rename – eigener Schritt mit eigenem Umsetzungsplan, nicht Teil dieser Dokumentationsrunde.
-- **Migrationen**: Es existieren noch keine echten Nutzerdaten (Projekt ist vor dem Launch). Die betroffenen Migrationsdateien (`0003_core_gameplay.sql`, `0005_open_duesseldorf.sql`) werden beim Umbau direkt angepasst statt additiv überschrieben – additive Migrationen für ein Schema, das nie live war, wären Ballast ohne Nutzen.
+- **Bezirk vs. Studienfach**: beides parallel (Studienfach als Klasse UND
+  Campus-Ort als Multiplikator) wäre für ein Solo-MVP doppelte Balancing-Fläche.
+  Entscheidung: **Studienfach ersetzt Bezirk vollständig.** Die `districts`-
+  Tabelle ist entfernt, `subjects` (Studienfach) eingeführt,
+  `characters.district_id` → `characters.subject_id`. Campus-Orte bleiben, wenn
+  sie kommen, reine Text-Labels.
+- **Editionen**: MVP startet mit **einer** fiktiven Uni-Stadt statt vier
+  parallelen Welten. Die `editions`-Tabelle bleibt technisch bestehen (ein
+  aktiver Eintrag), damit sich später weitere Uni-Städte ohne Schema-Änderung
+  nachrüsten lassen.
+- **Modulname**: `pennergame` → `studigame` (go.mod, alle Imports, DB-Dateiname,
+  Backup-Skript, docker-compose). Umgesetzt – rein mechanisch und repo-weit.
+- **Migrationen**: keine echten Nutzerdaten (Projekt vor dem Launch). Die
+  betroffene Migrationsdatei (`0003_core_gameplay.sql`) wurde direkt angepasst
+  statt additiv, `0005_open_duesseldorf.sql` gelöscht. Additive Migrationen für
+  ein Schema, das nie live war, wären Ballast ohne Nutzen.
 
-Konkrete Umsetzungsschritte stehen als Todo-Block in `ROADMAP.md`, werden aber erst über einen eigenen Umsetzungsplan angegangen (siehe `CLAUDE.md`, Abschnitt Vorgehen).
+Umsetzung abgeschlossen und grün (`go test ./...`).
+
+---
+
+## 3b. MVP-Umfang & nächster Code-Schritt
+
+Kritische Prüfung des aktuellen Stands (eine Aktion: Sammeln; Behälter mit
+Charity-Überlauf; Studienfach bisher ohne Spieleffekt): wo ist die Wirtschaft
+löchrig, was ist gerechtfertigt, was wird bewusst nicht gebaut.
+
+**Das eine echte Loch: kein Geld-Sink.** Spieler können Geld nur einsammeln und
+sich den Behälter vollaufen lassen, dann fließt der Rest an Charity. Ohne eine
+Möglichkeit, Geld sinnvoll wieder auszugeben, ist der Überlauf-Mechanik jede
+Spannung genommen – man grindet ins Leere. Der erste Code-Schritt ist deshalb
+ein minimaler, thematischer Geld-Sink, nicht der breite Shop.
+
+**Nächster Schritt (konkret, entschieden): Behälter-Upgrade als Geld-Sink.**
+
+- **Kauf sofort, ein Tap, eine Transaktion.** Kein Cooldown, keine
+  zeitgebundene Aktion (passives Upgrade, keine Schicht). Ledger-Debit mit
+  `reason='container_upgrade'`, kein `actions`-Eintrag. UI: ein Knopf auf dem
+  Dashboard, zeigt aktuelle Stufe, neue Stufe, Preis.
+- **Max-Stufe 4 (Bausparvertrag)** ist eine harte Obergrenze. Die
+  Upgrade-Kostenfunktion liefert bei Stufe 4 "nicht kaufbar", die UI blendet
+  den Knopf aus. Danach kommt ohnehin das Skillsystem.
+- **Kostenkurve** `Kosten(L→L+1) = Basiswert × (L+1)^1.8` mit
+  **Basiswert = 2000 Cent**, überlinear (anti-Schneeball, siehe §1.3).
+  Konkret (Probe gegen Sammel-Einkommen 10 €/h bei Level 0):
+
+  | Upgrade | Stufenname neu | Formel | Kosten |
+  | --- | --- | --- | --- |
+  | L0→L1 | Jutebeutel | 2000 × 1^1.8 | 20 € |
+  | L1→L2 | Rucksack | 2000 × 2^1.8 | ~70 € |
+  | L2→L3 | IKEA-FRAKTA-Tasche | 2000 × 3^1.8 | ~144 € |
+  | L3→L4 | Bausparvertrag | 2000 × 4^1.8 | ~243 € |
+
+  `Basiswert` ist der eine Tun-Knopf. Formal rein in `internal/game` als
+  `UpgradeCostCents(level, base)` — tabellengetestet, gleiches Muster wie
+  `ContainerCapacity`.
+- **Danach scharfes Spielen**: erst wenn der Core (Sammeln + Behälter +
+  Upgrade) sich langweilig anfühlt, kommt der nächste Block. Balancing wird
+  vorher abgenommen (Test auf einem Tuner-Account).
+
+**Entscheidungen zu diesem Block (keine offenen Punkte mehr):**
+- Kostenkurve `Basiswert × Level^1.8`, Basiswert 2000 Cent ✔
+- Kauf sofort + ein Tap + Ledger-Debit, kein `actions`-Eintrag ✔
+- Max-Stufe 4 (Bausparvertrag), danach nicht kaufbar ✔
+- Behälter-Stufen-Namen final: Portemonnaie → Jutebeutel → Rucksack →
+  IKEA-FRAKTA-Tasche → Bausparvertrag ✔
+- Studienfach bleibt vorerst Identität ohne Effekt (kein Bonus bis Skills) ✔
+
+**Bewusst NICHT jetzt** (nicht "für später", sondern weil es den MVP sprengen
+würde):
+
+- Breiter Shop (Ausrüstung, Instrumente, Wohnung) – braucht erst Einkommens-
+  quellen außer Flaschen, sonst kauft nichts zusammen.
+- Skillsystem – die eigentliche Differenzierung der Studienfächer, aber groß;
+  kommt als eigener Block.
+- Weitere Zustands-Stats (Schlaflosigkeit, Motivation, Sauberkeit) – geparkt,
+  Laune allein reicht.
+- Campus-Orte als Text-Label – billig, aber erst sinnvoll, wenn es eine zweite
+  Aktion mit Ortsbezug gibt.
+
+**Architektur-Stand, der Bestand hat:**
+Die generische `actions`-Tabelle mit `payload_json`/`result_json` und
+"Aktionsergebnis erst beim Auflösen würfeln" ist der richtige Rückgrat für alle
+zeitbasierten Aktionen. `ResolveDueAction` ist heute nur auf Sammeln
+geschrieben (dispatchlos). Wenn eine zweite zeitbasierte Aktion dazukommt
+(z. B. Klausur/Studium), wird die Auflösung um einen `kind`-Dispatch erweitert –
+kein Resolver-Framework, ein `switch` auf `kind` reicht. `internal/game` bleibt
+stdlib-only und infrastrukturfrei.
 
 ---
 
 ## 4. Tech-Stack (final)
 
 | Bereich | Wahl | Warum |
-|---|---|---|
-| Backend | Go, `net/http` (1.22+) oder `chi` | passt zu einem textbasierten, formularbasierten Spiel |
-| Templating | `templ` oder `html/template` | typsicher, kompiliert, kein JS-Build nötig |
+| --- | --- | --- |
+| Backend | Go, `net/http` | passt zu einem textbasierten, formularbasierten Spiel |
+| Templating | `html/template` | typsicher, kompiliert, kein JS-Build nötig |
 | Interaktivität | htmx | Server-rendered Partial-Updates statt SPA-Overhead |
-| Styling | Tailwind (Standalone-CLI, kein Node-Build) | Primärfarben & Co. als Tokens, siehe Abschnitt 5 |
-| DB | SQLite (WAL-Modus) zum Start | 1 Datei, kein DB-Service zu pflegen; Migration auf Postgres nur falls wirklich nötig |
-| Auth | **Sessions statt JWT** (Begründung unten) | einfacher & sicherer für diese Architektur |
-| Game-Ticks | goroutines + `time.Ticker` | kein Queue-System nötig |
-| Hosting | 1 VPS (z. B. Hetzner) + Caddy (Auto-HTTPS) | kein Kubernetes, auch wenn's aus dem Job vertraut ist |
-| Payments | Stripe oder Paddle (Merchant of Record, übernimmt EU-USt.) | |
+| Styling | Tailwind (Standalone-CLI, kein Node-Build) | Farben als Tokens, siehe Abschnitt 5 |
+| DB | SQLite (WAL-Modus) | 1 Datei, kein DB-Service; Migration auf Postgres nur falls wirklich nötig |
+| Auth | Sessions statt JWT | einfacher & sicherer für diese Architektur (Begründung unten) |
+| Game-Ticks | Listener in den Handlern statt Queue/Ticker | Aktionsergebnis wird beim Auflösen gewürfelt, kein Hintergrund-Ticker nötig |
+| Hosting | 1 VPS (z. B. Hetzner) + Caddy (Auto-HTTPS) | kein Kubernetes |
+| Payments | Stripe oder Paddle (Merchant of Record, übernimmt EU-USt.) | (erst Phase 6) |
 
-**Zur JWT-Frage, kurz:** Für eine klassische, server-gerenderte htmx-App ist JWT die unnötig komplizierte Wahl. JWTs lohnen sich, wenn eine zustandslose API für mehrere Clients gebraucht wird (z. B. später eine native Mobile-App). Für "eine Web-App, ein Server" ist eine simple Server-Session (bcrypt-Hash + httpOnly-Secure-Cookie + Session-Tabelle in der DB) einfacher, sicherer (kein Token-Diebstahl über localStorage, kein Revoke-Problem vor Ablauf) und schneller gebaut. Braucht es später eine echte externe API, lässt sich JWT gezielt für diesen Teil nachrüsten. Zwei Dinge dabei nicht vergessen: CSRF-Tokens auf jedem htmx-POST-Formular, und Rate-Limiting auf Login/Registrierung.
+**Zur JWT-Frage, kurz:** Für eine klassische, server-gerenderte htmx-App ist
+JWT die unnötig komplizierte Wahl. JWTs lohnen sich erst bei einer zustandslosen
+API für mehrere Clients (z. B. einer späteren nativen Mobile-App). Für "eine
+Web-App, ein Server" ist eine simple Server-Session (bcrypt-Hash +
+httpOnly-Secure-Cookie + Session-Tabelle) einfacher, sicherer und schneller
+gebaut. Braucht es später eine echte externe API, lässt sich JWT gezielt
+nachrüsten. Zwei Dinge dabei nicht vergessen: CSRF auf jedem htmx-POST, und
+Rate-Limiting auf Login/Registrierung.
 
 ---
 
 ## 5. Corporate Design – Tokens
 
-Ausgangspunkt: Straße, Improvisation, schwarzer Humor – kein generischer SaaS-Look.
+Ausgangspunkt: Straße, Improvisation, schwarzer Humor – kein generischer
+SaaS-Look.
 
 **Farben**
+
 - Asphalt (dunkler Hintergrund): `#1C1B1A`
 - Pfandglas-Grün (Primär/Akzent): `#7A9B57`
 - Verkehrsorange (Sekundär/CTA): `#D9711F`
 - Münzgold (Währung, Premium, Erfolge): `#C9A24B`
 - Pappe/Papier (helle Flächen, Karten): `#E8E1D3`
 - Backstein-Rot (Warnung, Angriff): `#A83E32`
-- Textmarker-Gelb (Highlights/Badges/Benachrichtigungen): `#E8D630` – sofort erkennbares "Studieren"-Signal
+- Textmarker-Gelb (Highlights/Badges/Benachrichtigungen): `#E8D630`
 
 **Typografie**
-- Display/Headlines: kräftige, leicht kondensierte Groteske (z. B. Archivo Black oder Barlow Condensed Bold) – wirkt wie ein Pappschild, ohne kitschig zu sein
+
+- Display/Headlines: kräftige, leicht kondensierte Groteske (z. B. Archivo
+  Black oder Barlow Condensed Bold) – wirkt wie ein Pappschild, ohne kitschig
+  zu sein
 - Fließtext: gut lesbare humanistische Sans (z. B. Inter oder Source Sans)
-- Zahlen/Stats (Geld, ATT/DEF): Monospace (z. B. JetBrains Mono) – gibt Werten einen "Ticker"-Charakter, klar abgesetzt vom Fließtext
+- Zahlen/Stats (Geld, ECTS): Monospace (z. B. JetBrains Mono) – gibt Werten
+  einen "Ticker"-Charakter, klar abgesetzt vom Fließtext
 
 **Layout**
-- Mobile-first, eine Spalte, Bottom-Nav mit den Hauptbereichen (Übersicht/Aktionen/Stadt/Bande/Kampf) statt Top-Nav – daumenfreundlich
+
+- Mobile-first, eine Spalte, Bottom-Nav (Übersicht/Aktionen/Bildung/Stadt/Bande)
+  statt Top-Nav – daumenfreundlich
 - Sticky Status-Leiste oben (Geld, Laune, laufende Cooldowns)
 
 **Signature-Element**
-Der Geld-Behälter (Portemonnaie → Jutebeutel → Rucksack → IKEA-FRAKTA-Tasche → Bausparvertrag) als durchgehend sichtbares Fortschritts-Icon im Header, das sich sichtbar füllt und bei Upgrade die Form wechselt.
+Der Geld-Behälter (Portemonnaie → … → Bausparvertrag) als durchgehend sichtbarer
+Fortschritts-Indikator im Header, der sich sichtbar füllt und beim Upgrade die
+Form wechselt.
 
 ---
 
 ## 6. Phasenplan
 
-| Phase | Ziel | Grobe Dauer* |
-|---|---|---|
-| 0 | Landingpage/Warteliste live | 1 Woche |
-| 1 | Grundgerüst: Auth, DB, Deploy-Pipeline | 2–3 Wochen |
-| 2 | Design-System umsetzen | 1 Woche |
-| 3 | Kernschleife (Wirtschaft) | 3–4 Wochen |
-| 4 | Sozial & PvP | 3–4 Wochen |
-| 5 | Mobile/PWA-Polish, Notification-Entscheidung | 1–2 Wochen |
-| 6 | Monetarisierung | 1 Woche |
-| 7 | Launch & Community | laufend |
+| Phase | Ziel | Status |
+| --- | --- | --- |
+| 0 | Landingpage/Warteliste | **erledigt** |
+| 1 | Grundgerüst: Auth, DB, Deploy | **erledigt** |
+| 2 | Design-System | **erledigt** |
+| 3 | Kernschleife (Wirtschaft) | **läuft** (Sammeln + Behälter stehen, Geld-Sink fehlt) |
+| 4 | Sozial & PvP | offen |
+| 5 | Mobile/PWA-Polish | offen |
+| 6 | Monetarisierung | offen |
+| 7 | Launch & Community | offen |
 
-*Richtwerte bei ein paar Stunden/Woche nebenbei.
+### Phase 0 – Landingpage/Warteliste (erledigt)
 
-### Phase 0 – Landingpage/Warteliste
-- [ ] Domain + Name final
-- [ ] 1-Seiter: Teaser-Text (Formulierung siehe Abschnitt 3), E-Mail-Feld, Absenden per htmx ohne Reload
-- [ ] Impressum (über Adressdienst/virtuelle Geschäftsadresse statt Privatadresse) + Datenschutzerklärung (Generator wie e-recht24.de reicht für den einfachen Fall) – beide Pflicht, siehe Erklärung unten
-- [ ] Web-Fonts selbst hosten statt von Google-CDN laden (bekannte Abmahnfalle, gleichzeitig hält's dich im "kein Cookie-Banner nötig"-Bereich)
-- [ ] Auf relevanten Kanälen posten, Reaktionen/Anmeldungen als Realitätscheck beobachten
-- [ ] Öffentliche Roadmap (simples GitHub-Projects-Board reicht) verlinkt von der Landingpage – kostenlos und gutes "Build in Public"-Material
+- [x] 1-Seiter, E-Mail-Feld, htmx ohne Reload (`GET /`, `POST /waitlist`)
+- [x] Impressum + Datenschutzerklärung
+- [x] Web-Fonts selbst hosten statt CDN (kein Cookie-Banner nötig)
+- [x] Name entschieden (Studigame, Uni-Stadt Studistadt)
+- [ ] 🙋 Domain registrieren – erledigt der Entwickler später beim Deploy
 
-**Rechtliches für den Start, kurz:** Impressum und Datenschutzerklärung sind schon für die reine Warteliste Pflicht (Gewinnerzielungsabsicht reicht, muss noch kein Umsatz da sein) – §5 DDG (seit Mai 2024, löste die alte TMG-Regel ab) bzw. Art. 13 DSGVO. Cookie-Banner ist dagegen verzichtbar, solange keine Tracking-/Analytics-Skripte laufen (§25 TDDDG, vormals TTDSG). AGB sind keine gesetzliche Pflicht und erst relevant, sobald tatsächlich Verträge/Käufe stattfinden – frühestens Phase 6. Keine Rechtsberatung, aber bei Bußgeldrahmen bis 50.000€ lohnt ein einmaliger Check vor Go-Live.
+**Rechtliches für den Start, kurz:** Impressum und Datenschutzerklärung sind
+schon für die reine Warteliste Pflicht (Gewinnerzielungsabsicht reicht) – §5 DDG
+bzw. Art. 13 DSGVO. Cookie-Banner ist verzichtbar, solange keine
+Tracking-/Analytics-Skripte laufen (§25 TDDDG). AGB erst ab tatsächlichen
+Käufen (Phase 6). Keine Rechtsberatung, aber bei Bußgeldrahmen bis 50.000 €
+lohnt ein einmaliger Check vor Go-Live.
 
-### Phase 1 – Grundgerüst
-- [ ] Repo, Go-Module, Ordnerstruktur
-- [ ] SQLite-Schema: `users`, `sessions` – DB-Datei nicht ins Git-Repo (`.gitignore`), lokaler Dev-Pfad getrennt vom Produktions-Pfad auf dem VPS
-- [ ] Registrierung (Name, E-Mail, Passwort, Bestätigungsmail, Studienfach-Auswahl), Login, Logout, Passwort-Reset
-- [ ] Session-Auth: bcrypt-Hash, httpOnly-Secure-Cookie, CSRF-Schutz, Rate-Limiting auf Login
-- [ ] Basis-Layout-Template (noch ohne finales Design), Grundnavigation
-- [ ] Deploy-Pipeline (VPS + Caddy + systemd/Docker) einmal komplett durchspielen, bevor Feature-Arbeit beginnt
+### Phase 1 – Grundgerüst (erledigt)
 
-### Phase 2 – Design-System
-- [ ] Tailwind einbinden (Standalone-CLI), Tokens aus Abschnitt 5 als Config
-- [ ] DaisyUI installieren und Theme anpassen. hier ist ein Basis Theme:
+- [x] SQLite-Schema (`users`, `sessions`, …)
+- [x] Registrierung, Login, Logout, Passwort-Reset, Double-Opt-In,
+      Studienfach-Auswahl
+- [x] Session-Auth, CSRF, Rate-Limiting
+- [x] Basis-Layout
+- [x] Deploy-Pipeline (Docker + Caddy)
 
-@plugin "daisyui/theme" {
-  name: "light";
-  default: false;
-  prefersdark: false;
-  color-scheme: "light";
-  --color-base-100: oklch(100% 0 0);
-  --color-base-200: oklch(98% 0 0);
-  --color-base-300: oklch(95% 0 0);
-  --color-base-content: oklch(21% 0.006 285.885);
-  --color-primary: oklch(45% 0.24 277.023);
-  --color-primary-content: oklch(93% 0.034 272.788);
-  --color-secondary: oklch(65% 0.241 354.308);
-  --color-secondary-content: oklch(94% 0.028 342.258);
-  --color-accent: oklch(77% 0.152 181.912);
-  --color-accent-content: oklch(38% 0.063 188.416);
-  --color-neutral: oklch(14% 0.005 285.823);
-  --color-neutral-content: oklch(92% 0.004 286.32);
-  --color-info: oklch(74% 0.16 232.661);
-  --color-info-content: oklch(29% 0.066 243.157);
-  --color-success: oklch(76% 0.177 163.223);
-  --color-success-content: oklch(37% 0.077 168.94);
-  --color-warning: oklch(82% 0.189 84.429);
-  --color-warning-content: oklch(41% 0.112 45.904);
-  --color-error: oklch(71% 0.194 13.428);
-  --color-error-content: oklch(27% 0.105 12.094);
-  --radius-selector: 0.5rem;
-  --radius-field: 0.25rem;
-  --radius-box: 0.5rem;
-  --size-selector: 0.25rem;
-  --size-field: 0.25rem;
-  --border: 1px;
-  --depth: 1;
-  --noise: 0;
-}
+### Phase 2 – Design-System (erledigt)
 
-- [ ] Basis-Komponenten mit DaisyUI ersetzen (wenn bereits gebaut): Button, Card, Formular, Status-Leiste
-- [ ] UX-Prinzip: "ein Tap = neue Aktion starten" – kein mehrstufiges Formular, damit ein Check-in zwischen zwei Vorlesungen wirklich in ~2 Minuten klappt
-- [ ] Landingpage + Login/Registrierung im finalen Design
+- [x] Tailwind (Standalone), Tokens aus Abschnitt 5 als Config
+- [x] Komponenten als handgeschriebene Tailwind-Partials (bewusst **kein
+      DaisyUI**): Button, Card, Formular, Status-Leiste, Bottom-Nav, Flash, Progress
+- [x] UX-Prinzip: "ein Tap = neue Aktion starten" – kein mehrstufiges Formular,
+      damit ein Check-in zwischen zwei Vorlesungen in ~2 Minuten klappt
 
-### Phase 3 – Kernschleife
-- [ ] Flaschensammeln-Äquivalent (Aktion mit Dauer-Wahl, Cooldown, Ertrag nach Studienfach/Skill)
-- [ ] Timer-Anzeige ohne Reload: Server sendet Ziel-Zeitstempel, erst mit reinem Vanilla-JS lösen (Alpine.js als Nachrüst-Option, falls später mehr lokaler State gebraucht wird); htmx-Polling (`hx-trigger="every 5s"`) oder SSE-Extension für Server-seitige Änderungen (neue Nachricht, Angriff)
-- [ ] Geld-Behälter-System mit Kappung + Charity-Overflow
-- [ ] Skillbaum (reduzierte Variante der 9 Original-Skills) mit Studienfach-Boni/Mali (3–4 Fächer für den Start)
-- [ ] Shop/Campus: Grundausstattung, Wohnung, ggf. Haustier, Kaffee (temporärer Konzentrations-Boost, wie Alkohol im Original)
-- [ ] BAföG (passives Grundeinkommen, gleiches Muster wie alte "Instrumente") + Stipendium (seltener, besser, ab Bildungsstufe-Schwelle)
-- [ ] Verbrechen-Aktion mit Risiko/Ertrag
+### Phase 3 – Kernschleife (läuft)
+
+Der Umfang folgt §3b: zuerst der Geld-Sink, dann scharf spielen, dann Blöcke
+dazu. Die Reihenfolge unten ist verbindlich:
+
+- [x] **Sammeln-Aktion** mit Dauer-Wahl, Cooldown, Ergebnis erst beim
+      Zurückkommen (`/actions`)
+- [x] **Timer ohne Reload**: Server sendet Ziel-Zeitstempel, Vanilla-JS löst am
+      Endzeitpunkt; Meta-Refresh einmalig, wenn fällig
+- [x] **Geld-Behälter mit Kappung + Charity-Overflow** (Portemonnaie → … →
+      Bausparvertrag)
+- [x] **Tabellentests** für die Spielregeln in `internal/game` (Sammelertrag,
+      Behältergrößen, Charity-Split, Grenzfälle)
+- [ ] **Behälter-Upgrade als Geld-Sink** (siehe §3b): Kauf, Ledger-Debit,
+      überlineare Kostenkurve in `internal/game`, tabellengetestet
+- [ ] **Balancing abnehmen:** Grundertrag 40 Flaschen/h, 25 ct je Flasche,
+      Laune-Kosten 5 Punkte/h; Behälter-/Upgrade-Kosten liegen in §3b fest und
+      werden beim ersten echten Spieldurchlauf nur noch getunt 🙋
+- [ ] **Hier anhalten und spielen.** Erst wenn der Kern sich langweilig anfühlt:
+- [ ] **Skillbaum** (reduzierte Variante der 9 Original-Skills) mit
+      Studienfach-Boni/Mali (3–4 Fächer) – auch Differenzierung der Fächer
+- [ ] **Klausur als zweite zeitbasierte Aktion** (über `kind`-Dispatch, siehe 3b)
+- [ ] **BAföG** (passives Grundeinkommen, Muster wie "Instrumente") + Stipendium
+      (seltener, besser, ab Bildungsstufe-Schwelle)
+- [ ] **Shop/Campus:** Grundausstattung, Wohnung, ggf. Haustier, Kaffee
+      (temporärer Konzentrations-Boost, gleiche Mechanik wie Promille im Original)
+- [ ] **Verbrechen-Aktion** mit Risiko/Ertrag (Hausarbeit ghostwriten,
+      Spickzettel verkaufen)
 
 ### Phase 4 – Sozial & PvP
-- [ ] Kampfsystem (ATT/DEF, Cooldown pro Ziel, Kampflog)
+
+- [ ] Kampfsystem → Notenkonkurrenz (ATT/DEF, Cooldown pro Ziel, Kampflog)
 - [ ] Banden/WGs: erstellen/beitreten, gemeinsame Kasse, gemeinsamer Chat
 - [ ] Freunde/Nachrichten
-- [ ] Highscore (Spieler + Banden)
+- [ ] Highscore (Spieler + WGs)
 
 ### Phase 5 – Mobile/PWA
+
 - [ ] `manifest.json`, Service Worker, installierbar
 - [ ] Performance-/Mobile-Pass
-- [ ] Entscheidung Web-Push-Notifications: Empfehlung erstmal weglassen – passt zum ruhigeren Nostalgie-Stil, vermeidet Sucht-Mechanik, jederzeit nachrüstbar
+- [ ] Web-Push-Notifications: Empfehlung weglassen – passt zum ruhigeren
+      Nostalgie-Stil, vermeidet Sucht-Mechanik, jederzeit nachrüstbar
 
 ### Phase 6 – Monetarisierung
-- [ ] Kosmetik-Shop + "Unterstützer"-Status (werbefrei, kein Gameplay-Vorteil – wie im Original)
+
+- [ ] Kosmetik-Shop + "Unterstützer"-Status (werbefrei, kein Gameplay-Vorteil)
 - [ ] Stripe/Paddle-Integration
 - [ ] Spenden-Button, echte Charity-Kopplung (Overflow-Feature aus Phase 3)
 
 ### Phase 7 – Launch & Community
-- [ ] Reddit: relevante Subs, immer transparent als Entwickler posten, Selbstpromo-Regeln vorher lesen
-- [ ] Discord: eigenen Server ab Phase 0 aufziehen (dient auch als Feedback-/Diskussionskanal – kein eigenes Forum bauen), zusätzlich in bestehenden Retro-/Nostalgie-Discords authentisch mitmachen statt nur Link zu posten
+
+- [ ] Reddit: relevante Subs, transparent als Entwickler posten
+- [ ] Discord: eigenen Server seit Phase 0 (auch Feedback-Kanal, kein eigenes
+      Forum bauen), in Retro-/Nostalgie-Discords authentisch mitmachen
 - [ ] TikTok/Reels im "erinnert ihr euch"-Format
-- [ ] Flyer/Aushänge an Unis – ähnliches Playbook wie früher bei Jodel (Poster mit QR-Code direkt am Campus), passt jetzt thematisch perfekt
-- [ ] Referral-Link-Feature (siehe 1.5) von Anfang an einbauen – bester Wachstumshebel, weil er direkt aus der Spielidee kommt
+- [ ] Flyer/Aushänge an Unis (Poster mit QR-Code am Campus)
+- [ ] Referral-Link-Feature (siehe 1.5) von Anfang an einbauen – bester
+      Wachstumshebel
 
 ---
 
 ## 7. Community: Alt + Neu
 
-- **Alte Spieler**: der ehrliche "inspiriert von"-Hinweis auf der Landingpage plus vertraute Begriffe/Mechaniken (Pfandflaschen, Container-Progression, Bandenkriege) lösen Wiedererkennung aus
-- **Neue Spieler**: schnelles, mobile-first Onboarding, keine Verifizierung alter Accounts nötig (technisch eh nicht möglich) – stattdessen optional ein "Warst du dabei?"-Nostalgie-Quiz beim Onboarding, rein für Spaß/Badge, keine echte Prüfung
-- Früh eingeloggte Beta-Tester bekommen einen kosmetischen "Urgestein"-Badge – belohnt Treue ohne Pay-to-win-Charakter
-
----
+- **Alte Spieler**: ehrlicher "inspiriert von"-Hinweis auf der Landingpage plus
+  vertraute Begriffe/Mechaniken (Pfandflaschen, Container-Progression,
+  WG-Rivalitäten) lösen Wiedererkennung aus
+- **Neue Spieler**: schnelles, mobile-first Onboarding, keine Verifizierung
+  alter Accounts nötig – stattdessen optional ein "Warst du dabei?"-Nostalgie-
+  Quiz beim Onboarding, rein für Spaß/Badge
+- Früh eingeloggte Beta-Tester bekommen einen kosmetischen "Urgestein"-Badge –
+  belohnt Treue ohne Pay-to-win-Charakter
 
 ## 7a. Saison-Content-Idee
 
-Der echte Semesterkalender liefert kostenlosen Event-Content, ohne dass eigene Inhalte erfunden werden müssen: **Klausurenphase** als zeitlich begrenzte Hochintensitätsphase (höhere Belohnungen, höheres Risiko), **Semesterferien** als ruhigere Phase mit mehr Nebenjob-Fokus. Später umsetzbar, kein MVP-Bestandteil.
+Der echte Semesterkalender liefert kostenlosen Event-Content: **Klausurenphase**
+als zeitlich begrenzte Hochintensitätsphase (höhere Belohnungen, höheres
+Risiko), **Semesterferien** als ruhigere Phase mit mehr Nebenjob-Fokus. Später
+umsetzbar, kein MVP-Bestandteil.
 
 ## 7b. Geparkt (bewusst nicht für den MVP)
-- **Erasmus**: guter Season-/Event-Content für später (z. B. zeitlich begrenztes "Erasmus-Semester" mit besonderen Items), nichts für den Start
-- **i18n/Englisch**: der Humor lebt von deutschen Insidern (BAföG, Mensa, ECTS-Bürokratie), die auf Englisch kaum funktionieren – und die deutsche Zielgruppe ist noch nicht mal validiert. Einzige sinnvolle "Versicherung": Texte von Anfang an nicht hart codieren, sondern über eine simple Lookup-Funktion referenzieren (kostet fast nichts), eine echte zweite Sprache aber nicht bauen
-- **Diskussionsforum**: kein eigenes bauen (komplettes Extra-System mit Threads/Mod-Tools) – Discord übernimmt diese Rolle bereits, siehe Phase 7
-- **Weitere Uni-Städte als zusätzliche Editionen**: technisch vorbereitet (siehe 3a), aber erst wenn eine volle erste Stadt langweilig wird
+
+- **Sauberkeit** (aus §2) – Bonus-Ressource für später, kein MVP
+- **Erasmus** – guter Season-/Event-Content für später
+- **i18n/Englisch** – der Humor lebt von deutschen Insidern (BAföG, Mensa,
+  ECTS-Bürokratie), die auf Englisch kaum funktionieren. Einzige sinnvolle
+  "Versicherung": Texte von Anfang an nicht hart codieren, sondern über eine
+  simple Lookup-Funktion referenzieren (kostet fast nichts), keine zweite
+  Sprache bauen
+- **Diskussionsforum** – kein eigenes bauen (komplettes Extra-System); Discord
+  übernimmt diese Rolle, siehe Phase 7
+- **Weitere Uni-Städte als zusätzliche Editionen** – technisch vorbereitet
+  (3a), erst wenn eine volle erste Stadt langweilig wird
 
 ---
 
 ## Quellen
-- Offizielle Pennergame-Anleitung (Hamburg-/Berlin-/Atlantis-Edition), erschlossen über Suchindex
+
+- Offizielle Pennergame-Anleitung (Hamburg-/Berlin-/Atlantis-Edition),
+  erschlossen über Suchindex
 - Ausführlicher Fan-Guide, pennergame-pro.blogspot.com (2009)
 - Handelsregisterauszug Farbflut Entertainment GmbH, HRB 104994
 - giga.de, gutefrage.net – aktueller Seitenstatus (2026)

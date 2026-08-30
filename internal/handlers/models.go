@@ -7,14 +7,14 @@ type Character struct {
 	EditionID      int64
 	EditionSlug    string
 	Name           string
-	DistrictID     int64
-	DistrictName   string
+	SubjectID      int64
+	SubjectName    string
 	MoneyCents     int
 	ContainerLevel int
 	Mood           int
 }
 
-// Edition is a separate game world.
+// Edition is a separate game world (MVP: one fictional uni-city).
 type Edition struct {
 	ID     int64
 	Slug   string
@@ -22,13 +22,9 @@ type Edition struct {
 	Active bool
 }
 
-// District is a collection location within an edition.
-type District struct {
-	ID            int64
-	EditionID     int64
-	Name          string
-	YieldFactor   float64
-	UnlockAtCents int
-	RiskFactor    float64
-	DistanceRank  int
+// Subject is a Studienfach, the class system of the game.
+type Subject struct {
+	ID        int64
+	EditionID int64
+	Name      string
 }

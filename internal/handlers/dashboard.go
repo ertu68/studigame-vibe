@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"pennergame/internal/web"
+	"studigame/internal/web"
 )
 
 func (d *Deps) Dashboard(u *user, w http.ResponseWriter, r *http.Request) {

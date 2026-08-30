@@ -26,9 +26,8 @@ func ValidCollectDuration(d time.Duration) bool {
 // CollectParams are the inputs to a collect shift.
 type CollectParams struct {
 	Duration       time.Duration
-	YieldFactor    float64 // district multiplier
-	ContainerLevel int     // 0-4, bigger container carries more
-	Mood           int     // 0-100, tired characters collect less
+	ContainerLevel int // 0-4, bigger container carries more
+	Mood           int // 0-100, tired characters collect less
 }
 
 // CollectOutcome is what a finished shift produced.
@@ -38,7 +37,7 @@ type CollectOutcome struct {
 	MoodDelta     int
 }
 
-// baseBottlesPerHour is the yield of a fresh character in a neutral district.
+// baseBottlesPerHour is the yield of a rested, lucky character.
 const baseBottlesPerHour = 40
 
 // centsPerBottle is the German deposit on a single bottle.
@@ -60,7 +59,7 @@ func ResolveCollect(p CollectParams, roll float64) CollectOutcome {
 	// Luck swings the result by ±20 %.
 	luckFactor := 0.8 + 0.4*clamp01(roll)
 
-	bottles := int(baseBottlesPerHour * hours * p.YieldFactor * moodFactor * containerFactor * luckFactor)
+	bottles := int(baseBottlesPerHour * hours * moodFactor * containerFactor * luckFactor)
 	if bottles < 0 {
 		bottles = 0
 	}

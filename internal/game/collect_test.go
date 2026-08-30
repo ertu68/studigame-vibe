@@ -28,7 +28,6 @@ func TestValidCollectDuration(t *testing.T) {
 func TestResolveCollect(t *testing.T) {
 	base := CollectParams{
 		Duration:       time.Hour,
-		YieldFactor:    1.0,
 		ContainerLevel: 0,
 		Mood:           100,
 	}
@@ -45,35 +44,28 @@ func TestResolveCollect(t *testing.T) {
 		{"good luck pays 20 % more", base, 0.999, 47, -5},
 		{
 			name:        "exhausted character collects 60 %",
-			params:      CollectParams{Duration: time.Hour, YieldFactor: 1, Mood: 0},
+			params:      CollectParams{Duration: time.Hour, Mood: 0},
 			roll:        0.5,
 			wantBottles: 24,
 			wantMood:    -5,
 		},
 		{
-			name:        "better district pays proportionally more",
-			params:      CollectParams{Duration: time.Hour, YieldFactor: 1.5, Mood: 100},
-			roll:        0.5,
-			wantBottles: 60,
-			wantMood:    -5,
-		},
-		{
 			name:        "container level 4 adds 60 %",
-			params:      CollectParams{Duration: time.Hour, YieldFactor: 1, ContainerLevel: 4, Mood: 100},
+			params:      CollectParams{Duration: time.Hour, ContainerLevel: 4, Mood: 100},
 			roll:        0.5,
 			wantBottles: 64,
 			wantMood:    -5,
 		},
 		{
 			name:        "short shift still costs some mood",
-			params:      CollectParams{Duration: 15 * time.Minute, YieldFactor: 1, Mood: 100},
+			params:      CollectParams{Duration: 15 * time.Minute, Mood: 100},
 			roll:        0.5,
 			wantBottles: 10,
 			wantMood:    -2,
 		},
 		{
 			name:        "long shift scales linearly",
-			params:      CollectParams{Duration: 8 * time.Hour, YieldFactor: 1, Mood: 100},
+			params:      CollectParams{Duration: 8 * time.Hour, Mood: 100},
 			roll:        0.5,
 			wantBottles: 320,
 			wantMood:    -40,
@@ -99,7 +91,7 @@ func TestResolveCollect(t *testing.T) {
 // A roll outside [0,1) must not produce a better result than a maximum roll,
 // otherwise a bad random source would turn into an exploit.
 func TestResolveCollectClampsRoll(t *testing.T) {
-	p := CollectParams{Duration: time.Hour, YieldFactor: 1, Mood: 100}
+	p := CollectParams{Duration: time.Hour, Mood: 100}
 	high := ResolveCollect(p, 5)
 	max := ResolveCollect(p, 1)
 	if high.Bottles != max.Bottles {

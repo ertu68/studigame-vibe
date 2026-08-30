@@ -6,7 +6,7 @@ import (
 	"errors"
 	"time"
 
-	"pennergame/internal/game"
+	"studigame/internal/game"
 )
 
 var (
@@ -36,10 +36,9 @@ func (a OpenAction) Remaining(now time.Time) time.Duration {
 }
 
 type collectPayload struct {
-	DurationSeconds int     `json:"duration_seconds"`
-	YieldFactor     float64 `json:"yield_factor"`
-	ContainerLevel  int     `json:"container_level"`
-	Mood            int     `json:"mood"`
+	DurationSeconds int `json:"duration_seconds"`
+	ContainerLevel  int `json:"container_level"`
+	Mood            int `json:"mood"`
 }
 
 type collectResult struct {
@@ -75,14 +74,13 @@ func FindOpenAction(db *sql.DB, characterID int64) (OpenAction, error) {
 // StartCollect books a collect shift. The inputs are frozen into the payload so
 // a later equipment change cannot retroactively improve a running shift. The
 // outcome itself is not decided here — see ResolveDueAction.
-func StartCollect(db *sql.DB, char Character, yieldFactor float64, d time.Duration, now time.Time) error {
+func StartCollect(db *sql.DB, char Character, d time.Duration, now time.Time) error {
 	if !game.ValidCollectDuration(d) {
 		return ErrInvalidShift
 	}
 
 	payload, err := json.Marshal(collectPayload{
 		DurationSeconds: int(d.Seconds()),
-		YieldFactor:     yieldFactor,
 		ContainerLevel:  char.ContainerLevel,
 		Mood:            char.Mood,
 	})
@@ -91,9 +89,9 @@ func StartCollect(db *sql.DB, char Character, yieldFactor float64, d time.Durati
 	}
 
 	_, err = db.Exec(
-		`INSERT INTO actions (character_id, kind, district_id, started_at, ends_at, payload_json)
-		 VALUES (?, 'collect', ?, ?, ?, ?)`,
-		char.ID, char.DistrictID, now, now.Add(d), string(payload),
+		`INSERT INTO actions (character_id, kind, started_at, ends_at, payload_json)
+		 VALUES (?, 'collect', ?, ?, ?)`,
+		char.ID, now, now.Add(d), string(payload),
 	)
 	if isUniqueViolation(err) {
 		return ErrActionRunning
@@ -134,7 +132,6 @@ func ResolveDueAction(db *sql.DB, char Character, now time.Time, roll float64) (
 
 	outcome := game.ResolveCollect(game.CollectParams{
 		Duration:       time.Duration(payload.DurationSeconds) * time.Second,
-		YieldFactor:    payload.YieldFactor,
 		ContainerLevel: payload.ContainerLevel,
 		Mood:           payload.Mood,
 	}, roll)

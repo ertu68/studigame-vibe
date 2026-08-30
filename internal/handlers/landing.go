@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strings"
 
-	"pennergame/internal/httpx"
-	"pennergame/internal/web"
+	"studigame/internal/httpx"
+	"studigame/internal/web"
 )
 
 func (d *Deps) Landing(w http.ResponseWriter, r *http.Request) {

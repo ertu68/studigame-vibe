@@ -1,4 +1,4 @@
-module pennergame
+module studigame
 
 go 1.27.0
 

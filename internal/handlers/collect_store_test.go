@@ -6,17 +6,17 @@ import (
 	"testing"
 	"time"
 
-	"pennergame/internal/auth"
+	"studigame/internal/auth"
 )
 
-// newCharacter creates a verified user with a character in Köln.
+// newCharacter creates a verified user with a character in Studistadt.
 func newCharacter(t *testing.T, conn *sql.DB, name, email string) Character {
 	t.Helper()
 	userID, err := auth.Register(conn, name, email, "hunter22", "Köln")
 	if err != nil {
 		t.Fatalf("register: %v", err)
 	}
-	char, err := CreateCharacter(conn, userID, "koeln", name)
+	char, err := CreateCharacter(conn, userID, "studistadt", subjectID(t, conn, "Informatik"), name)
 	if err != nil {
 		t.Fatalf("create character: %v", err)
 	}
@@ -28,7 +28,7 @@ func TestCollectHappyPath(t *testing.T) {
 	char := newCharacter(t, conn, "Mara", "mara@example.com")
 	start := time.Date(2026, 8, 26, 8, 0, 0, 0, time.UTC)
 
-	if err := StartCollect(conn, char, 1.0, time.Hour, start); err != nil {
+	if err := StartCollect(conn, char, time.Hour, start); err != nil {
 		t.Fatalf("start collect: %v", err)
 	}
 
@@ -79,7 +79,7 @@ func TestCollectResolvesOnlyOnce(t *testing.T) {
 	}
 	char.MoneyCents = 0
 
-	if err := StartCollect(conn, char, 1.0, time.Hour, start); err != nil {
+	if err := StartCollect(conn, char, time.Hour, start); err != nil {
 		t.Fatalf("start collect: %v", err)
 	}
 	first, err := ResolveDueAction(conn, char, done, 0.5)
@@ -111,10 +111,10 @@ func TestStartCollectRejectsSecondShift(t *testing.T) {
 	char := newCharacter(t, conn, "Ove", "ove@example.com")
 	start := time.Date(2026, 8, 26, 8, 0, 0, 0, time.UTC)
 
-	if err := StartCollect(conn, char, 1.0, time.Hour, start); err != nil {
+	if err := StartCollect(conn, char, time.Hour, start); err != nil {
 		t.Fatalf("start collect: %v", err)
 	}
-	if err := StartCollect(conn, char, 1.0, time.Hour, start); !errors.Is(err, ErrActionRunning) {
+	if err := StartCollect(conn, char, time.Hour, start); !errors.Is(err, ErrActionRunning) {
 		t.Fatalf("expected ErrActionRunning, got %v", err)
 	}
 }
@@ -124,7 +124,7 @@ func TestStartCollectRejectsUnknownDuration(t *testing.T) {
 	char := newCharacter(t, conn, "Pia", "pia@example.com")
 	start := time.Date(2026, 8, 26, 8, 0, 0, 0, time.UTC)
 
-	if err := StartCollect(conn, char, 1.0, 42*time.Minute, start); !errors.Is(err, ErrInvalidShift) {
+	if err := StartCollect(conn, char, 42*time.Minute, start); !errors.Is(err, ErrInvalidShift) {
 		t.Fatalf("expected ErrInvalidShift, got %v", err)
 	}
 	if _, err := FindOpenAction(conn, char.ID); !errors.Is(err, ErrNoOpenAction) {
@@ -144,7 +144,7 @@ func TestCollectOverflowGoesToCharity(t *testing.T) {
 	}
 	char.MoneyCents = 1950
 
-	if err := StartCollect(conn, char, 1.0, time.Hour, start); err != nil {
+	if err := StartCollect(conn, char, time.Hour, start); err != nil {
 		t.Fatalf("start collect: %v", err)
 	}
 	summary, err := ResolveDueAction(conn, char, start.Add(time.Hour), 0.5)

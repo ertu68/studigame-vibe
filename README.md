@@ -19,15 +19,25 @@ fiktive Uni-Stadt, Studienfach übernimmt die Rolle des Klassensystems.
   Session-Cookies, CSRF (double-submit cookie), Rate-Limiting auf Login/Register/Reset, Basis-Layout.
 - **Phase 2** (Design-System): Tailwind CSS mit benutzerdefinierten Farben, responsive
   mobile-first Layouts, wiederverwendbare Komponentenbibliothek, Statusleiste, Bottom-Navigation.
-- **Phase 3** (Kernschleife, angefangen): Editionen, Bezirke, Charaktere, Kassenbuch und
+  Komponenten sind handgebaute Tailwind-Partials, bewusst ohne DaisyUI (neue Dependency für
+  funktionierenden Code wäre Rückschritt).
+- **Phase 3** (Kernschleife): Editionen, Studienfächer, Charaktere, Kassenbuch und
   Aktionen im Schema; Charaktererstellung, Dashboard und die Sammeln-Aktion stehen.
   Schichten von 15 Minuten bis 8 Stunden, Ergebnis wird beim Zurückkommen ausgewürfelt,
   Überlauf aus dem vollen Behälter geht in den Spendentopf.
 
-Der aktuelle Code ist noch auf dem Pennergame-Stand (vier NRW-Städte als Editionen,
-Bezirke als Ertrags-/Risiko-Multiplikator). Der Umbau auf Studigame (eine fiktive
-Uni-Stadt, Studienfach statt Bezirk) ist geplant, siehe `studigame-plan.md`
-Abschnitt 3a und die entsprechenden Punkte in `ROADMAP.md`.
+Der Code ist auf dem Studigame-Stand: ein Go-Modul `studigame`, eine fiktive
+Uni-Stadt („Studistadt“) als Edition, Studienfach statt Bezirk als
+Klassensystem. Details zum Konzept in `studigame-plan.md` (Abschnitt 3, 3a, 3b).
+
+Spielregeln leben infra-frei in `internal/game`, Aktionen in
+`internal/handlers/*_store.go` — der Plan-Entwurf von getrenntem `internal/actions`
+ist verworfen, „eine Datei pro Aktion“ hat sich in `handlers` niedergeschlagen.
+
+Aktueller Kern = **eine Aktion (Sammeln) mit Geld-Behälter und Charity-Überlauf**
+plus Charaktererstellung, die das Studienfach fragt (bisher rein Flavor, ohne
+Spieleffekt). Es gibt noch keinen Geld-Sink. Nächster geplanter Code-Schritt:
+Behälter-Upgrade als Kauf (siehe `studigame-plan.md` §3b und ROADMAP).
 
 Name ist entschieden (Studigame), Domain ist noch offen — siehe `.env.example`.
 
@@ -73,8 +83,8 @@ static/fonts/         Platz für selbst gehostete Schriften (aktuell System-Font
 deploy/               Caddyfile
 ```
 
-Ab Phase 3 kommen `internal/game` (reine Spielregeln, ohne DB und Uhr) und
-`internal/actions` (eine Datei pro Spieleraktion, je eine Transaktion) dazu.
+Spielregeln (Sammelertrag, Behältergrößen, Charity-Split) liegen rein in
+`internal/game` — ohne DB und ohne Uhr, tabellengetestet.
 
 ## Mitarbeiten
 

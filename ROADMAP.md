@@ -1,7 +1,7 @@
 # Roadmap
 
 Was gebaut wird, in welcher Reihenfolge, und was bewusst noch nicht.
-Detailbegründungen stehen in [pennergame-remake-plan.md](./pennergame-remake-plan.md).
+Detailbegründungen stehen in [studigame-plan.md](./studigame-plan.md).
 
 Legende: 🙋 = manuelle Aufgabe (nicht per Code lösbar) · 🚧 = blockiert etwas
 
@@ -22,7 +22,10 @@ Kleine Fixes und das Fundament, das später teuer nachzurüsten wäre.
 - [x] Sweeper: abgelaufene Sessions und Reset-Tokens löschen
 - [x] CI: `go vet` + `go test -race` bei jedem Push
 - [x] Backup-Skript für die SQLite-Datei
-- [ ] 🙋 Name + Domain festlegen 🚧 blockiert alles Öffentliche
+- [x] Name entschieden: Spiel = Studigame, Uni-Stadt = Studistadt, Studienfächer
+  = Informatik/BWL/Jura/Geisteswissenschaften
+- [ ] 🙋 Domain registrieren 🚧 blockiert alles Öffentliche – erledigt der
+  Entwickler später beim Deploy
 - [ ] 🙋 VPS bestellen, DNS setzen, `.env` befüllen
 - [ ] 🙋 Mailversand-Anbieter wählen, SPF/DKIM setzen
 - [ ] 🙋 Impressum + Datenschutzerklärung
@@ -32,7 +35,6 @@ Kleine Fixes und das Fundament, das später teuer nachzurüsten wäre.
   `go.sum` (Transitiv-Dependency von `modernc.org/sqlite`), aber unbenutzt;
   müsste von `// indirect` zu direkter Dependency werden
 - [x] Tailwind vs. handgeschriebenes CSS entschieden: Tailwind bleibt
-- [ ] DaisyUI installieren und benutzen und Dokumentation anpassen, dass DaisyUI Komponenten benutzt werden sollen
 
 ## Als Nächstes
 
@@ -56,17 +58,27 @@ Kleine Fixes und das Fundament, das später teuer nachzurüsten wäre.
 
 Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt“.
 
-- [x] `characters`, `editions`, `districts`, `ledger`, `actions` (Schema wird
-  im Studigame-Umbau angepasst: `districts` → `subjects`, siehe Rebrand-Abschnitt)
+- [x] `characters`, `editions`, `subjects`, `ledger`, `actions` (Studigame-Umbau:
+  `districts` → `subjects`, siehe Rebrand-Abschnitt)
 - [x] Reine Spiellogik in `internal/game` (keine DB, keine Uhr, testbar)
-- [x] Charaktererstellung: Stadt wählen, Name setzen, Startkapital über das Ledger
+- [x] Charaktererstellung: Studienfach wählen, Name setzen, Startkapital über das Ledger
 - [x] Sammeln-Aktion mit Dauerwahl und Lazy-Tick-Auflösung
 - [x] Geld-Behälter mit Kappung, Überlauf fließt in den Charity-Pool
-- [ ] **Hier anhalten und spielen.** Sammeln + Behälter sind bereits ein Spiel. Wenn sich der Kern langweilig anfühlt, retten ihn die Punkte darunter nicht.
+- [ ] **Behälter-Upgrade als erster Geld-Sink** (kein weiterer Bar-Punkt!): Kauf
+  "Behälter aufrüsten", `container_level` +1, Ledger-Debit, überlineare Kosten-
+  kurve (`Basiswert × Level^1.8`) in `internal/game`, tabellengetestet.
+  Begründung: ohne Ausgabe-Möglichkeit ist der Charity-Überlauf spannungslos,
+  man grindet ins Leere. (Details: `studigame-plan.md` §3b.)
 - [ ] 🙋 Balancing der Sammeln-Aktion abnehmen: 40 Flaschen/h, 25 ct je Flasche,
-  Behälterstufen 20/50/200/1000/5000 €, Laune kostet 5 Punkte je Stunde
-- [ ] Skillsystem mit Warteschlange (2 Slots, 80 % Erstattung bei Abbruch)
-- [ ] Shop: Behälter-Upgrades, Ausrüstung, Instrumente, Wohnung
+  Behälterstufen 20/50/200/1000/5000 €, Upgrade-Kosten, Laune 5 Punkte/h
+- [ ] **Hier anhalten und spielen.** Sammeln + Behälter + Upgrade sind bereits ein
+  Spiel. Wenn sich der Kern langweilig anfühlt, retten ihn die Punkte darunter nicht.
+- [ ] Zweite zeitbasierte Aktion (z. B. Klausur/Studium): Auflösung per
+  `kind`-Dispatch erweitern (aktuell nur Sammeln) — ein `switch`, kein Framework
+- [ ] Skillsystem mit Warteschlange (2 Slots, 80 % Erstattung bei Abbruch) —
+  auch die Differenzierung der Studienfächer
+- [ ] Breiter Shop (Ausrüstung, Instrumente, Wohnung) — erst nach weiteren
+  Einkommensquellen, sonst kauft nichts zusammen
 - [ ] Verbrechen-Aktion mit Risiko und Ertrag
 - [x] Tabellentests für jede Formel, Integrationstests für jede Aktion
 - [ ] 🙋 Balancing spielen und bewerten
@@ -97,19 +109,21 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt“.
 ## Rebrand: Pennergame → Studigame
 
 Konzeptwechsel, Details und Begründung in `studigame-plan.md` (Abschnitt 3, 3a).
-Noch nicht umgesetzt — eigener Umsetzungsplan, bevor Code angefasst wird.
+Der Code-Umbau ist umgesetzt und grün (`go test ./...`).
 
-- [ ] Go-Modul `pennergame` → `studigame` (go.mod, alle Imports, Docker-Image-
-  und Binary-Name) — rein mechanisch, aber repo-weit
-- [ ] `districts`-Tabelle (`yield_factor`/`risk_factor`/`unlock_at_cents`/
-  `distance_rank`) entfernen, `subjects`-Tabelle (Studienfach) einführen;
-  `characters.district_id` → `characters.subject_id`
+- [x] Go-Modul `pennergame` → `studigame` (go.mod, alle Imports, DB-Dateiname,
+  Backup-Skript, docker-compose)
+- [x] `districts`-Tabelle (`yield_factor`/`risk_factor`/`unlock_at_cents`/
+  `distance_rank`) entfernt, `subjects`-Tabelle (Studienfach) eingeführt;
+  `characters.district_id` → `characters.subject_id`; Charaktererstellung
+  fragt das Studienfach ab statt einer Stadt
 - [ ] Campus-Orte (Mensa/Bibliothek/Kneipenviertel) als reines Text-Label in
   Aktionen, ohne eigene Stats-Tabelle
-- [ ] Editionen-Bootstrap auf eine fiktive Uni-Stadt reduzieren (statt vier
+- [x] Editionen-Bootstrap auf eine fiktive Uni-Stadt reduziert (statt vier
   NRW-Städte); `editions`-Tabelle bleibt technisch für spätere Erweiterung
-- [ ] Migrationen `0003_core_gameplay.sql`/`0005_open_duesseldorf.sql` direkt
-  anpassen statt additiv überschreiben (noch keine echten Nutzerdaten)
+- [x] Migrationen `0003_core_gameplay.sql` direkt angepasst statt additiv
+  überschrieben, `0005_open_duesseldorf.sql` gelöscht (keine echten
+  Nutzerdaten)
 - [ ] Skill-/Mechanik-Namen aus `studigame-plan.md` Abschnitt 3 übernehmen
   (ECTS-Punkte, Rabattcode-Jäger, Notenkonkurrenz, …), sobald die jeweilige
   Mechanik gebaut wird
@@ -123,7 +137,7 @@ Pennergame-Version — siehe Rebrand-Abschnitt oben. Weitere Uni-Städte sind al
 zusätzliche Editionen technisch vorbereitet, aber erst relevant, wenn eine
 volle erste Stadt langweilig wird (`studigame-plan.md`, Abschnitt 7b).
 
-- [ ] 🙋 Name der Uni-Stadt festlegen
+- [x] Name der Uni-Stadt festgelegt: **Studistadt**
 
 ---
 
@@ -164,3 +178,6 @@ beschwert oder eine Zahl es rechtfertigt.
 - Metriken-Endpunkt für Retention und aktive Spieler
 - Postgres — erst, wenn SQLite gemessen an eine Grenze stößt
 - Web-Push — bewusst verworfen, passt nicht zum ruhigen Ton
+- DaisyUI — verworfen: Phase-2-Komponenten sind bereits handgebaute Tailwind-Partials
+  in `internal/web/components`. Neue Dependency nur um funktionierenden Code zu ersetzen
+  wäre Rückschritt (siehe CLAUDE.md-Regeln)

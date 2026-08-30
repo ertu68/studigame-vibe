@@ -6,9 +6,7 @@
   <div class="flash-error mb-4">
     <p>{{.Error}}</p>
   </div>
-  {{end}}
-
-  {{with .Summary}}
+  {{end}} {{with .Summary}}
   <div class="card mb-6">
     <h2 class="text-xl font-display text-asphalt mb-3">Schicht vorbei</h2>
     <p>{{.Bottles}} Flaschen, {{.Earnings}} in der Kasse.</p>
@@ -19,9 +17,7 @@
     {{end}}
     <p class="mt-2">Laune {{.MoodDelta}}.</p>
   </div>
-  {{end}}
-
-  {{if .Open}}
+  {{end}} {{if .Open}}
   <div class="card">
     <div class="flex items-start justify-between">
       <h2 class="text-xl font-display text-asphalt mb-3">Unterwegs</h2>
@@ -48,13 +44,11 @@
         </svg>
       </a>
     </div>
-    <p class="mb-2">Du klapperst {{.Character.DistrictName}} ab.</p>
-    <p class="mb-4">
-      Noch {{.Remaining}} — zurück gegen {{.ReturnsAt}}.
-    </p>
+    <p class="mb-2">Du sammelst Leergut nach der WG-Party ein.</p>
+    <p class="mb-4">Noch {{.Remaining}} — zurück gegen {{.ReturnsAt}}.</p>
     <p class="text-sm">
-      Die Ausbeute steht erst fest, wenn du zurück bist. Die Seite lädt sich dann
-      von selbst neu.
+      Die Ausbeute steht erst fest, wenn du zurück bist. Die Seite lädt sich
+      dann von selbst neu.
     </p>
   </div>
   {{else}}
@@ -63,8 +57,7 @@
       Wie lange gehst du los?
     </h2>
     <p class="text-sm mb-4">
-      Bezirk: {{.Character.DistrictName}}. Längere Schichten bringen mehr, kosten
-      aber Laune.
+      Längere Schichten bringen mehr, kosten aber Laune.
     </p>
 
     <form method="post" action="/actions/collect">

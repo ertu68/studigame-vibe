@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"time"
 
-	"pennergame/internal/auth"
-	"pennergame/internal/config"
-	"pennergame/internal/game"
+	"studigame/internal/auth"
+	"studigame/internal/config"
+	"studigame/internal/game"
 )
 
 type Deps struct {

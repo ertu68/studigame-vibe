@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"pennergame/internal/config"
-	"pennergame/internal/db"
+	"studigame/internal/config"
+	"studigame/internal/db"
 )
 
 func testDB(t *testing.T) *sql.DB {

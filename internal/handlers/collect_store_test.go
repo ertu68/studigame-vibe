@@ -49,8 +49,8 @@ func TestCollectHappyPath(t *testing.T) {
 	if summary == nil {
 		t.Fatal("expected a summary for a finished shift")
 	}
-	if summary.Bottles != 40 {
-		t.Fatalf("bottles: got %d, want 40", summary.Bottles)
+	if got := summary.Detail; got != "40 Flaschen, 10,00 €" {
+		t.Fatalf("detail: got %q, want %q", got, "40 Flaschen, 10,00 €")
 	}
 
 	reloaded, err := CharacterForUser(conn, char.UserID, char.EditionID)

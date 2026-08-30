@@ -81,8 +81,49 @@ func (d *Deps) Collect(u *user, w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/actions", http.StatusSeeOther)
 }
 
+// Job starts a working-student shift of the requested length.
+func (d *Deps) Job(u *user, w http.ResponseWriter, r *http.Request) {
+	char, err := AnyCharacterForUser(d.DB, u.ID)
+	if errors.Is(err, ErrCharacterNotFound) {
+		http.Redirect(w, r, "/character/new", http.StatusSeeOther)
+		return
+	}
+	if err != nil {
+		slog.Error("Failed to load character", "error", err, "userID", u.ID)
+		http.Error(w, "interner Fehler", http.StatusInternalServerError)
+		return
+	}
+
+	// A finished shift is settled first, so the player cannot stack two.
+	if _, char, err = d.settleDueAction(char); err != nil {
+		slog.Error("Failed to resolve action", "error", err, "characterID", char.ID)
+		http.Error(w, "interner Fehler", http.StatusInternalServerError)
+		return
+	}
+
+	seconds, _ := strconv.Atoi(r.FormValue("duration"))
+	duration := time.Duration(seconds) * time.Second
+
+	err = StartJob(d.DB, char, duration, d.now())
+	switch {
+	case errors.Is(err, ErrInvalidShift):
+		d.renderActions(w, r, char, nil, "Diese Schichtlänge gibt es nicht.")
+		return
+	case errors.Is(err, ErrActionRunning):
+		d.renderActions(w, r, char, nil, "Du bist noch unterwegs.")
+		return
+	case err != nil:
+		slog.Error("Failed to start job", "error", err, "characterID", char.ID)
+		http.Error(w, "interner Fehler", http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("Job started", "characterID", char.ID, "seconds", seconds)
+	http.Redirect(w, r, "/actions", http.StatusSeeOther)
+}
+
 // settleDueAction resolves a finished shift and returns the refreshed character.
-func (d *Deps) settleDueAction(char Character) (*CollectSummary, Character, error) {
+func (d *Deps) settleDueAction(char Character) (*ActionSummary, Character, error) {
 	summary, err := ResolveDueAction(d.DB, char, d.now(), d.roll())
 	if err != nil || summary == nil {
 		return nil, char, err
@@ -94,7 +135,7 @@ func (d *Deps) settleDueAction(char Character) (*CollectSummary, Character, erro
 	return summary, refreshed, nil
 }
 
-func (d *Deps) renderActions(w http.ResponseWriter, r *http.Request, char Character, summary *CollectSummary, msg string) {
+func (d *Deps) renderActions(w http.ResponseWriter, r *http.Request, char Character, summary *ActionSummary, msg string) {
 	data := d.baseData(w, r)
 	d.addCharacterStatus(data, char)
 	data["Character"] = char

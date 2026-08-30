@@ -49,6 +49,7 @@ func newGameLoopServer(t *testing.T) *gameLoopServer {
 	mux.HandleFunc("GET /dashboard", gs.deps.RequireAuth(gs.deps.Dashboard))
 	mux.HandleFunc("GET /actions", gs.deps.RequireAuth(gs.deps.Actions))
 	mux.HandleFunc("POST /actions/collect", RequireCSRF(gs.deps.RequireAuth(gs.deps.Collect)))
+	mux.HandleFunc("POST /actions/job", RequireCSRF(gs.deps.RequireAuth(gs.deps.Job)))
 	mux.HandleFunc("POST /actions/upgrade-container", RequireCSRF(gs.deps.RequireAuth(gs.deps.ContainerUpgrade)))
 
 	gs.server = httptest.NewServer(mux)
@@ -180,7 +181,7 @@ func TestGameLoop(t *testing.T) {
 	// Halfway through nothing has been paid out.
 	gs.now = gs.now.Add(30 * time.Minute)
 	_, body = gs.get("/actions")
-	if strings.Contains(body, "Schicht vorbei") {
+	if strings.Contains(body, "Leergut eingesammelt") {
 		t.Fatalf("shift resolved early: %q", truncate(body))
 	}
 	if !strings.Contains(body, "30 min") {
@@ -195,7 +196,7 @@ func TestGameLoop(t *testing.T) {
 	// After the shift the payout shows up once.
 	gs.now = gs.now.Add(30 * time.Minute)
 	_, body = gs.get("/actions")
-	if !strings.Contains(body, "Schicht vorbei") {
+	if !strings.Contains(body, "Leergut eingesammelt") {
 		t.Fatalf("expected the payout: %q", truncate(body))
 	}
 	if !strings.Contains(body, "40 Flaschen") {
@@ -207,7 +208,7 @@ func TestGameLoop(t *testing.T) {
 
 	// Reloading does not pay a second time.
 	_, body = gs.get("/actions")
-	if strings.Contains(body, "Schicht vorbei") {
+	if strings.Contains(body, "Leergut eingesammelt") {
 		t.Fatalf("payout shown twice: %q", truncate(body))
 	}
 
@@ -274,6 +275,42 @@ func TestGameLoopUpgrade(t *testing.T) {
 	}
 	if !strings.Contains(body, "0,00 €") {
 		t.Fatalf("dashboard missing spent balance: %q", truncate(body))
+	}
+}
+
+// TestGameLoopJob walks a working-student shift through the HTTP layer.
+func TestGameLoopJob(t *testing.T) {
+	gs := newGameLoopServer(t)
+	gs.registerVerified("Joni", "joni@example.com")
+	gs.get("/login")
+	gs.post("/login", url.Values{"email": {"joni@example.com"}, "password": {"hunter22"}})
+	gs.post("/character/new", url.Values{"subject": {gs.subjectID("Informatik")}, "name": {"Joni"}})
+
+	// The idle actions page offers both actions.
+	_, body := gs.get("/actions")
+	if !strings.Contains(body, "Leergut sammeln") || !strings.Contains(body, "Werkstudenten-Job") {
+		t.Fatalf("actions hub missing an action: %q", truncate(body))
+	}
+
+	gs.post("/actions/job", url.Values{"duration": {"3600"}})
+	_, body = gs.get("/actions")
+	if !strings.Contains(body, "Unterwegs") {
+		t.Fatalf("expected a running job: %q", truncate(body))
+	}
+
+	gs.now = gs.now.Add(time.Hour)
+	_, body = gs.get("/actions")
+	if !strings.Contains(body, "Werkstudenten-Job erledigt") {
+		t.Fatalf("expected the job payout: %q", truncate(body))
+	}
+	if !strings.Contains(body, "8,00 € verdient") {
+		t.Fatalf("expected the job wage: %q", truncate(body))
+	}
+
+	// 10 € start capital plus 8 € wage.
+	_, body = gs.get("/dashboard")
+	if !strings.Contains(body, "18,00 €") {
+		t.Fatalf("dashboard missing new balance: %q", truncate(body))
 	}
 }
 

@@ -11,6 +11,12 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ### Geändert
 
+- **Werkstudenten-Job als zweite zeitbasierte Aktion**: Neben dem
+  Flaschensammeln gibt es jetzt einen Job mit festem Stundenlohn (kein Glück,
+  aber verlässlich). Die Auflösung läuft über einen `kind`-Dispatch
+  (`collect`/`job`) mit gemeinsamem Buchungspfad für Geld, Laune, Ledger und
+  Charity — Geld fließt weiterhin in denselben Behälter. Klausur/Studium folgt
+  erst mit dem Skillsystem.
 - **Behälter-Upgrade als erster Geld-Sink**: Der Behälter lässt sich auf dem
   Dashboard sofort aufrüsten (ein Tap, eine Transaktion; Ledger-Debit mit
   `reason='container_upgrade'`). Überlineare Kostenkurve `2000 × Level^1.8` Cent,

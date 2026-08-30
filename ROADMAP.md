@@ -71,10 +71,17 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt“.
   man grindet ins Leere. (Details: `studigame-plan.md` §3b.)
 - [ ] 🙋 Balancing der Sammeln-Aktion abnehmen: 40 Flaschen/h, 25 ct je Flasche,
   Behälterstufen 20/50/200/1000/5000 €, Upgrade-Kosten, Laune 5 Punkte/h
+- [ ] Alpine.js einbinden und die laufende Aktion live runterzählen: auf
+  `/actions` der offenen Schicht einen echten Countdown im Browser statt des
+  Meta-Refresh (Meta-Refresh als Fallback behalten). Dafür wird htmx ergänzt.
 - [ ] **Hier anhalten und spielen.** Sammeln + Behälter + Upgrade sind bereits ein
   Spiel. Wenn sich der Kern langweilig anfühlt, retten ihn die Punkte darunter nicht.
-- [ ] Zweite zeitbasierte Aktion (z. B. Klausur/Studium): Auflösung per
-  `kind`-Dispatch erweitern (aktuell nur Sammeln) — ein `switch`, kein Framework
+- [x] Zweite zeitbasierte Aktion: Werkstudenten-Job (fester Stundenlohn, kein
+  Glück) neben dem Flaschensammeln. Auflösung per `kind`-Dispatch erweitert
+  (ein `switch` über `collect`/`job`, gemeinsamer Buchungspfad für Geld/Laune/
+  Ledger/Charity)
+- [ ] Klausur/Studium als dritte Aktion — sinnvoll erst mit dem Skillsystem
+  (ECTS-Produktion), daher bewusst später
 - [ ] Skillsystem mit Warteschlange (2 Slots, 80 % Erstattung bei Abbruch) —
   auch die Differenzierung der Studienfächer
 - [ ] Breiter Shop (Ausrüstung, Instrumente, Wohnung) — erst nach weiteren

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"studigame/internal/game"
@@ -43,21 +44,28 @@ type collectPayload struct {
 	Mood            int `json:"mood"`
 }
 
-type collectResult struct {
-	Bottles       int `json:"bottles"`
-	EarningsCents int `json:"earnings_cents"`
-	KeptCents     int `json:"kept_cents"`
-	DonatedCents  int `json:"donated_cents"`
-	MoodDelta     int `json:"mood_delta"`
+// jobPayload is the frozen input of a job shift.
+type jobPayload struct {
+	DurationSeconds int `json:"duration_seconds"`
+	Mood            int `json:"mood"`
 }
 
-// CollectSummary is the resolved outcome shown to the player once.
-type CollectSummary struct {
-	Bottles     int
-	Earnings    string
+// ActionSummary is the resolved outcome shown to the player once, for any kind
+// of action. Title and Detail describe the result in German; Donated is set
+// only when the container overflowed into the charity pool.
+type ActionSummary struct {
+	Title       string
+	Detail      string
 	Donated     string
 	HasDonation bool
 	MoodDelta   int
+}
+
+// actionOutcome carries what a resolution produces before it is booked.
+type actionOutcome struct {
+	EarningsCents int
+	MoodDelta     int
+	Detail        string
 }
 
 // FindOpenAction returns the character's unresolved action, if any.
@@ -101,10 +109,37 @@ func StartCollect(db *sql.DB, char Character, d time.Duration, now time.Time) er
 	return err
 }
 
-// ResolveDueAction settles a finished shift: it rolls the outcome, moves the
-// money and marks the action resolved — all in one transaction, so a reload
-// mid-way cannot pay out twice. It returns nil if nothing was due.
-func ResolveDueAction(db *sql.DB, char Character, now time.Time, roll float64) (*CollectSummary, error) {
+// StartJob books a working-student shift. Same contract as StartCollect: the
+// inputs are frozen so a later container upgrade cannot boost a running shift,
+// and the open-action index guarantees at most one shift per character.
+func StartJob(db *sql.DB, char Character, d time.Duration, now time.Time) error {
+	if !game.ValidCollectDuration(d) {
+		return ErrInvalidShift
+	}
+
+	payload, err := json.Marshal(jobPayload{
+		DurationSeconds: int(d.Seconds()),
+		Mood:            char.Mood,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(
+		`INSERT INTO actions (character_id, kind, started_at, ends_at, payload_json)
+		 VALUES (?, 'job', ?, ?, ?)`,
+		char.ID, now, now.Add(d), string(payload),
+	)
+	if isUniqueViolation(err) {
+		return ErrActionRunning
+	}
+	return err
+}
+
+// ResolveDueAction settles a finished shift: it resolves the outcome by kind,
+// moves the money and marks the action resolved — all in one transaction, so a
+// reload mid-way cannot pay out twice. It returns nil if nothing was due.
+func ResolveDueAction(db *sql.DB, char Character, now time.Time, roll float64) (*ActionSummary, error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
@@ -114,12 +149,12 @@ func ResolveDueAction(db *sql.DB, char Character, now time.Time, roll float64) (
 	// The row lock is the WHERE clause: resolved_at is set inside this
 	// transaction, so a concurrent request finds nothing to resolve.
 	var actionID int64
-	var payloadJSON string
+	var kind, payloadJSON string
 	err = tx.QueryRow(
-		`SELECT id, payload_json FROM actions
+		`SELECT id, kind, payload_json FROM actions
 		 WHERE character_id = ? AND resolved_at IS NULL AND ends_at <= ?`,
 		char.ID, now,
-	).Scan(&actionID, &payloadJSON)
+	).Scan(&actionID, &kind, &payloadJSON)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -127,54 +162,100 @@ func ResolveDueAction(db *sql.DB, char Character, now time.Time, roll float64) (
 		return nil, err
 	}
 
-	var payload collectPayload
-	if err := json.Unmarshal([]byte(payloadJSON), &payload); err != nil {
+	outcome, err := resolveOutcome(kind, payloadJSON, char, roll)
+	if err != nil {
 		return nil, err
 	}
-
-	outcome := game.ResolveCollect(game.CollectParams{
-		Duration:       time.Duration(payload.DurationSeconds) * time.Second,
-		ContainerLevel: payload.ContainerLevel,
-		Mood:           payload.Mood,
-	}, roll)
-
-	capacity := game.ContainerCapacity(char.ContainerLevel)
-	kept, donated := game.SplitAtCapacity(char.MoneyCents, outcome.EarningsCents, capacity)
-	balance := char.MoneyCents + kept
-	mood := game.ApplyMood(char.Mood, outcome.MoodDelta)
-
-	result, err := json.Marshal(collectResult{
-		Bottles:       outcome.Bottles,
-		EarningsCents: outcome.EarningsCents,
-		KeptCents:     kept,
-		DonatedCents:  donated,
-		MoodDelta:     outcome.MoodDelta,
-	})
+	summary, err := bookOutcome(tx, char, kind, actionID, outcome, now)
 	if err != nil {
 		return nil, err
 	}
 
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+	return &summary, nil
+}
+
+// resolveOutcome computes the earned money and mood for a finished action,
+// dispatching on its kind. A new action adds a case here — a switch, no
+// resolver framework (plan §3b).
+func resolveOutcome(kind, payloadJSON string, char Character, roll float64) (actionOutcome, error) {
+	switch kind {
+	case "collect":
+		var p collectPayload
+		if err := json.Unmarshal([]byte(payloadJSON), &p); err != nil {
+			return actionOutcome{}, err
+		}
+		out := game.ResolveCollect(game.CollectParams{
+			Duration:       time.Duration(p.DurationSeconds) * time.Second,
+			ContainerLevel: p.ContainerLevel,
+			Mood:           p.Mood,
+		}, roll)
+		return actionOutcome{
+			EarningsCents: out.EarningsCents,
+			MoodDelta:     out.MoodDelta,
+			Detail:        fmt.Sprintf("%d Flaschen, %s", out.Bottles, formatCents(out.EarningsCents)),
+		}, nil
+
+	case "job":
+		var p jobPayload
+		if err := json.Unmarshal([]byte(payloadJSON), &p); err != nil {
+			return actionOutcome{}, err
+		}
+		out := game.ResolveJob(game.JobParams{
+			Duration: time.Duration(p.DurationSeconds) * time.Second,
+			Mood:     p.Mood,
+		})
+		return actionOutcome{
+			EarningsCents: out.EarningsCents,
+			MoodDelta:     out.MoodDelta,
+			Detail:        formatCents(out.EarningsCents) + " verdient",
+		}, nil
+
+	default:
+		return actionOutcome{}, fmt.Errorf("unknown action kind %q", kind)
+	}
+}
+
+// bookOutcome moves a resolution's money and mood onto the character, books
+// the ledger and updates the charity pool — the one booking path shared by all
+// action kinds, so a new action can never fork the money handling.
+func bookOutcome(tx *sql.Tx, char Character, kind string, actionID int64, out actionOutcome, now time.Time) (ActionSummary, error) {
+	capacity := game.ContainerCapacity(char.ContainerLevel)
+	kept, donated := game.SplitAtCapacity(char.MoneyCents, out.EarningsCents, capacity)
+	balance := char.MoneyCents + kept
+	mood := game.ApplyMood(char.Mood, out.MoodDelta)
+
+	summary := ActionSummary{
+		Title:       actionTitle(kind),
+		Detail:      out.Detail,
+		Donated:     formatCents(donated),
+		HasDonation: donated > 0,
+		MoodDelta:   out.MoodDelta,
+	}
+
 	if _, err := tx.Exec(
 		`UPDATE actions SET resolved_at = ?, result_json = ? WHERE id = ?`,
-		now, string(result), actionID,
+		now, out.Detail, actionID,
 	); err != nil {
-		return nil, err
+		return ActionSummary{}, err
 	}
 
 	if _, err := tx.Exec(
 		`UPDATE characters SET money_cents = ?, mood = ? WHERE id = ?`,
 		balance, mood, char.ID,
 	); err != nil {
-		return nil, err
+		return ActionSummary{}, err
 	}
 
 	if kept > 0 {
 		if _, err := tx.Exec(
 			`INSERT INTO ledger (character_id, delta_cents, balance_after, reason, ref_id)
-			 VALUES (?, ?, ?, 'collect', ?)`,
-			char.ID, kept, balance, actionID,
+			 VALUES (?, ?, ?, ?, ?)`,
+			char.ID, kept, balance, kind, actionID,
 		); err != nil {
-			return nil, err
+			return ActionSummary{}, err
 		}
 	}
 
@@ -183,21 +264,23 @@ func ResolveDueAction(db *sql.DB, char Character, now time.Time, roll float64) (
 			`UPDATE charity_pool SET cents = cents + ? WHERE edition_id = ?`,
 			donated, char.EditionID,
 		); err != nil {
-			return nil, err
+			return ActionSummary{}, err
 		}
 	}
 
-	if err := tx.Commit(); err != nil {
-		return nil, err
-	}
+	return summary, nil
+}
 
-	return &CollectSummary{
-		Bottles:     outcome.Bottles,
-		Earnings:    formatCents(kept),
-		Donated:     formatCents(donated),
-		HasDonation: donated > 0,
-		MoodDelta:   outcome.MoodDelta,
-	}, nil
+// actionTitle is the German headline for a resolved action, per kind.
+func actionTitle(kind string) string {
+	switch kind {
+	case "collect":
+		return "Leergut eingesammelt"
+	case "job":
+		return "Werkstudenten-Job erledigt"
+	default:
+		return "Aktion vorbei"
+	}
 }
 
 // CharityPool is the donated total of an edition, for display.

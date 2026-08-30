@@ -307,11 +307,11 @@ würde):
 **Architektur-Stand, der Bestand hat:**
 Die generische `actions`-Tabelle mit `payload_json`/`result_json` und
 "Aktionsergebnis erst beim Auflösen würfeln" ist der richtige Rückgrat für alle
-zeitbasierten Aktionen. `ResolveDueAction` ist heute nur auf Sammeln
-geschrieben (dispatchlos). Wenn eine zweite zeitbasierte Aktion dazukommt
-(z. B. Klausur/Studium), wird die Auflösung um einen `kind`-Dispatch erweitert –
-kein Resolver-Framework, ein `switch` auf `kind` reicht. `internal/game` bleibt
-stdlib-only und infrastrukturfrei.
+zeitbasierten Aktionen. `ResolveDueAction` löst heute per `kind`-Dispatch auf:
+ein `switch` über `collect`/`job` mit gemeinsamen Buchungspfad (Geld, Laune,
+Ledger, Charity) in `bookOutcome`. Eine neue Aktion fügt eine Case im `switch`
+hinzu — kein Resolver-Framework. `internal/game` bleibt stdlib-only und
+infrastrukturfrei.
 
 ---
 
@@ -437,13 +437,16 @@ dazu. Die Reihenfolge unten ist verbindlich:
       Behältergrößen, Charity-Split, Grenzfälle)
 - [x] **Behälter-Upgrade als Geld-Sink** (siehe §3b): Kauf, Ledger-Debit,
       überlineare Kostenkurve in `internal/game`, tabellengetestet
+- [x] **Werkstudenten-Job als zweite Aktion**: fester Stundenlohn (kein Glück),
+      Auflösung per `kind`-Dispatch (`collect`/`job`) mit gemeinsamen Buchungspfad
 - [ ] **Balancing abnehmen:** Grundertrag 40 Flaschen/h, 25 ct je Flasche,
       Laune-Kosten 5 Punkte/h; Behälter-/Upgrade-Kosten liegen in §3b fest und
       werden beim ersten echten Spieldurchlauf nur noch getunt 🙋
 - [ ] **Hier anhalten und spielen.** Erst wenn der Kern sich langweilig anfühlt:
 - [ ] **Skillbaum** (reduzierte Variante der 9 Original-Skills) mit
       Studienfach-Boni/Mali (3–4 Fächer) – auch Differenzierung der Fächer
-- [ ] **Klausur als zweite zeitbasierte Aktion** (über `kind`-Dispatch, siehe 3b)
+- [ ] **Klausur als dritte zeitbasierte Aktion** (ECTS-Produktion) – sinnvoll
+      erst mit dem Skillsystem, daher bewusst später
 - [ ] **BAföG** (passives Grundeinkommen, Muster wie "Instrumente") + Stipendium
       (seltener, besser, ab Bildungsstufe-Schwelle)
 - [ ] **Shop/Campus:** Grundausstattung, Wohnung, ggf. Haustier, Kaffee

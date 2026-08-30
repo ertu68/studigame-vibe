@@ -22,11 +22,22 @@ func (d *Deps) Dashboard(u *user, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Settle passive income the moment it is due, so the toggle stays honest.
+	bafog, char, err := d.collectBafog(char)
+	if err != nil {
+		slog.Error("Failed to collect BAföG", "error", err, "characterID", char.ID)
+		http.Error(w, "interner Fehler", http.StatusInternalServerError)
+		return
+	}
+
 	data := d.baseData(w, r)
 	d.addCharacterStatus(data, char)
 	data["Character"] = char
 	addUpgradeData(data, char)
 	addSkillOverview(data, d.DB, char)
+	data["BafogEnabled"] = char.BafogNextAt != nil
+	data["BafogPayoutText"] = web.FormatCents(game.BafogPayoutCents)
+	data["BafogSummary"] = bafog
 	web.Render(w, "dashboard.html", data)
 }
 

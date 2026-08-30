@@ -70,18 +70,20 @@ func SubjectByID(db *sql.DB, id, editionID int64) (Subject, error) {
 // CharacterForUser loads the character a user plays in a given edition.
 func CharacterForUser(db *sql.DB, userID, editionID int64) (Character, error) {
 	var c Character
+	var next sql.NullString
 	err := db.QueryRow(
 		`SELECT c.id, c.user_id, c.edition_id, e.slug, c.name, c.subject_id, s.name,
-		        c.money_cents, c.container_level, c.mood
+		        c.money_cents, c.container_level, c.mood, c.bafog_next_at
 		 FROM characters c
 		 JOIN editions e ON e.id = c.edition_id
 		 JOIN subjects s ON s.id = c.subject_id
 		 WHERE c.user_id = ? AND c.edition_id = ?`, userID, editionID,
 	).Scan(&c.ID, &c.UserID, &c.EditionID, &c.EditionSlug, &c.Name,
-		&c.SubjectID, &c.SubjectName, &c.MoneyCents, &c.ContainerLevel, &c.Mood)
+		&c.SubjectID, &c.SubjectName, &c.MoneyCents, &c.ContainerLevel, &c.Mood, &next)
 	if err == sql.ErrNoRows {
 		return Character{}, ErrCharacterNotFound
 	}
+	c.BafogNextAt = parseBafogNext(next)
 	return c, err
 }
 
@@ -89,19 +91,21 @@ func CharacterForUser(db *sql.DB, userID, editionID int64) (Character, error) {
 // so the dashboard knows whether onboarding is still needed.
 func AnyCharacterForUser(db *sql.DB, userID int64) (Character, error) {
 	var c Character
+	var next sql.NullString
 	err := db.QueryRow(
 		`SELECT c.id, c.user_id, c.edition_id, e.slug, c.name, c.subject_id, s.name,
-		        c.money_cents, c.container_level, c.mood
+		        c.money_cents, c.container_level, c.mood, c.bafog_next_at
 		 FROM characters c
 		 JOIN editions e ON e.id = c.edition_id
 		 JOIN subjects s ON s.id = c.subject_id
 		 WHERE c.user_id = ?
 		 ORDER BY c.created_at LIMIT 1`, userID,
 	).Scan(&c.ID, &c.UserID, &c.EditionID, &c.EditionSlug, &c.Name,
-		&c.SubjectID, &c.SubjectName, &c.MoneyCents, &c.ContainerLevel, &c.Mood)
+		&c.SubjectID, &c.SubjectName, &c.MoneyCents, &c.ContainerLevel, &c.Mood, &next)
 	if err == sql.ErrNoRows {
 		return Character{}, ErrCharacterNotFound
 	}
+	c.BafogNextAt = parseBafogNext(next)
 	return c, err
 }
 

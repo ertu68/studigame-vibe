@@ -102,6 +102,7 @@ func main() {
 	mux.HandleFunc("GET /skills", deps.RequireAuth(deps.Skills))
 	mux.HandleFunc("POST /skills/train", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.TrainSkill))))
 	mux.HandleFunc("POST /skills/cancel", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.CancelSkill))))
+	mux.HandleFunc("POST /bafog/toggle", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.Bafog))))
 
 	// Create server with timeouts
 	addr := ":" + cfg.Port

@@ -451,8 +451,8 @@ dazu. Die Reihenfolge unten ist verbindlich:
       beim Aktion-Start eingefroren
 - [ ] **Klausur als dritte zeitbasierte Aktion** (ECTS-Produktion) – sinnvoll
       erst mit dem Skillsystem, daher bewusst später
-- [ ] **BAföG** (passives Grundeinkommen, Muster wie "Instrumente") + Stipendium
-      (seltener, besser, ab Bildungsstufe-Schwelle)
+- [x] **BAföG** (passives Grundeinkommen, Muster wie "Instrumente") + Stipendium
+      (seltener, besser, ab Bildungsstufe-Schwelle — Stipendium noch offen)
 - [ ] **Shop/Campus:** Grundausstattung, Wohnung, ggf. Haustier, Kaffee
       (temporärer Konzentrations-Boost, gleiche Mechanik wie Promille im Original)
 - [ ] **Verbrechen-Aktion** mit Risiko/Ertrag (Hausarbeit ghostwriten,

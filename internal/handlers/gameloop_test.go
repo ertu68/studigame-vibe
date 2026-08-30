@@ -54,6 +54,7 @@ func newGameLoopServer(t *testing.T) *gameLoopServer {
 	mux.HandleFunc("GET /skills", gs.deps.RequireAuth(gs.deps.Skills))
 	mux.HandleFunc("POST /skills/train", RequireCSRF(gs.deps.RequireAuth(gs.deps.TrainSkill)))
 	mux.HandleFunc("POST /skills/cancel", RequireCSRF(gs.deps.RequireAuth(gs.deps.CancelSkill)))
+	mux.HandleFunc("POST /bafog/toggle", RequireCSRF(gs.deps.RequireAuth(gs.deps.Bafog)))
 
 	gs.server = httptest.NewServer(mux)
 	t.Cleanup(gs.server.Close)
@@ -389,6 +390,51 @@ func TestGameLoopJob(t *testing.T) {
 	_, body = gs.get("/dashboard")
 	if !strings.Contains(body, "18,00 €") {
 		t.Fatalf("dashboard missing new balance: %q", truncate(body))
+	}
+}
+
+// TestBafogLoop walks passive Förderung end to end: the toggle appears on the
+// dashboard, applying activates it, and the first payout lands one period later.
+func TestBafogLoop(t *testing.T) {
+	gs := newGameLoopServer(t)
+	gs.registerVerified("Nora", "nora@example.com")
+	gs.get("/login")
+	gs.post("/login", url.Values{"email": {"nora@example.com"}, "password": {"hunter22"}})
+	gs.post("/character/new", url.Values{"subject": {gs.subjectID("Informatik")}, "name": {"Nora"}})
+
+	// Fresh character: not applied, so the dashboard offers the application.
+	_, body := gs.get("/dashboard")
+	if !strings.Contains(body, "Beantragen") {
+		t.Fatalf("dashboard missing BAföG application: %q", truncate(body))
+	}
+
+	// Apply: the card switches to the running state.
+	resp, body := gs.post("/bafog/toggle", url.Values{"enabled": {"1"}})
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("apply: status %d", resp.StatusCode)
+	}
+	if !strings.Contains(body, "Dein Bescheid läuft") {
+		t.Fatalf("expected running BAföG after applying: %q", truncate(body))
+	}
+
+	// Before one period passes nothing is paid out.
+	gs.now = gs.now.Add(5 * time.Hour)
+	_, body = gs.get("/dashboard")
+	if strings.Contains(body, "BAföG eingegangen") {
+		t.Fatalf("payout before the period: %q", truncate(body))
+	}
+
+	// After one full period the payout is collected and shown once.
+	gs.now = gs.now.Add(time.Hour)
+	_, body = gs.get("/dashboard")
+	if !strings.Contains(body, "BAföG eingegangen") {
+		t.Fatalf("expected the BAföG payout: %q", truncate(body))
+	}
+
+	// Reload no longer shows the payout summary.
+	_, body = gs.get("/dashboard")
+	if strings.Contains(body, "BAföG eingegangen") {
+		t.Fatalf("payout shown twice: %q", truncate(body))
 	}
 }
 

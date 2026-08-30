@@ -1,5 +1,7 @@
 package handlers
 
+import "time"
+
 // Character holds a player character for a specific edition.
 type Character struct {
 	ID             int64
@@ -12,6 +14,8 @@ type Character struct {
 	MoneyCents     int
 	ContainerLevel int
 	Mood           int
+	// BafogNextAt is the next BAföG payout; nil means the student has not applied.
+	BafogNextAt *time.Time
 }
 
 // Edition is a separate game world (MVP: one fictional uni-city).

@@ -69,5 +69,31 @@
     </form>
     {{end}}
   </div>
+
+  <div class="card mt-6">
+    <h2 class="text-xl font-display text-asphalt mb-3">BAföG</h2>
+    {{if .BafogSummary}}
+    <p class="mb-3">{{.BafogSummary.Title}}: {{.BafogSummary.Detail}}</p>
+    {{end}} {{if .BafogEnabled}}
+    <p class="mb-3">
+      Dein Bescheid läuft. Alle 6 Stunden kommen {{.BafogPayoutText}} rein.
+    </p>
+    <form method="post" action="/bafog/toggle">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+      <input type="hidden" name="enabled" value="0" />
+      <button type="submit" class="btn-primary">Förderung abbestellen</button>
+    </form>
+    {{else}}
+    <p class="text-sm mb-4">
+      Passives Grundeinkommen: {{.BafogPayoutText}} alle 6 Stunden, ohne zu
+      arbeiten. Das Amt überweist in deinen Behälter.
+    </p>
+    <form method="post" action="/bafog/toggle">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+      <input type="hidden" name="enabled" value="1" />
+      <button type="submit" class="btn-primary">Beantragen</button>
+    </form>
+    {{end}}
+  </div>
 </div>
 {{end}}

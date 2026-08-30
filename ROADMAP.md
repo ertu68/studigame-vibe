@@ -90,6 +90,13 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt“.
   langsamer, Informatik loyal bei Konzentration). Der Skill-Bonus wird beim
   Start einer Aktion eingefroren, damit ein Level-Up mitten in der Schicht
   nichts rückwirkend aufbläht
+- [x] Passives **BAföG** als Grundeinkommen: nach dem Beantragen (Dashboard-Knopf)
+  trifft alle 6 h ein fester Betrag (30,00 €) in den Behälter, ohne Schicht und
+  ohne Laune-Kosten. Booking, Ledger und Auszahlungs-Zeiger in einer Transaktion
+  (kein Doppelzahlen beim Neuladen); ein 4-Perioden-Grenzwert begrenzt die
+  Nachzahlung für vernachlässigte Accounts; Überlauf geht in den Spendentopf.
+  Abrechnung in `dashboard.go` und `collect_handlers.go`, reine Regeln in
+  `internal/game/bafog.go`
 - [ ] Breiter Shop (Ausrüstung, Instrumente, Wohnung) — erst nach weiteren
   Einkommensquellen, sonst kauft nichts zusammen
 - [ ] Verbrechen-Aktion mit Risiko und Ertrag

@@ -123,10 +123,38 @@ func (d *Deps) Job(u *user, w http.ResponseWriter, r *http.Request) {
 }
 
 // settleDueAction resolves a finished shift and returns the refreshed character.
+// Passive BAföG income is settled alongside, so a return after downtime books
+// both without a second reload.
 func (d *Deps) settleDueAction(char Character) (*ActionSummary, Character, error) {
-	summary, err := ResolveDueAction(d.DB, char, d.now(), d.roll())
-	if err != nil || summary == nil {
+	bafog, char, err := d.collectBafog(char)
+	if err != nil {
 		return nil, char, err
+	}
+	summary, err := ResolveDueAction(d.DB, char, d.now(), d.roll())
+	if err != nil {
+		return nil, char, err
+	}
+	if summary == nil && bafog == nil {
+		return nil, char, nil
+	}
+	refreshed, err := CharacterForUser(d.DB, char.UserID, char.EditionID)
+	if err != nil {
+		return summary, char, err
+	}
+	if summary == nil {
+		summary = bafog
+	}
+	return summary, refreshed, nil
+}
+
+// collectBafog books any due passive payout and returns the refreshed character.
+func (d *Deps) collectBafog(char Character) (*ActionSummary, Character, error) {
+	summary, err := CollectBafog(d.DB, char, d.now())
+	if err != nil {
+		return nil, char, err
+	}
+	if summary == nil {
+		return nil, char, nil
 	}
 	refreshed, err := CharacterForUser(d.DB, char.UserID, char.EditionID)
 	if err != nil {

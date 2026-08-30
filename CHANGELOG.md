@@ -18,6 +18,13 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
   (`Basis × Stufe^1.8`), Studienfächer differenzieren Kosten und Dauer.
   Der Skill-Bonus wird beim Start einer Aktion eingefroren. Erreichbar über
   „Lernen“ in der Bottom-Navigation.
+- **BAföG als passives Grundeinkommen**: nach dem Beantragen (Knopf auf dem
+  Dashboard) trifft alle 6 Stunden ein fester Betrag (30,00 €) in den Behälter
+  — ohne Schicht, ohne Laune-Kosten. Überlauf geht wie jedes Einkommen in den
+  Spendentopf. Ein 4-Perioden-Grenzwert verhindert, dass ein vernachlässigter
+  Account eine Wochen-Auszahlung anspart; die Auszahlungs-Phase bleibt an der
+  ursprünglichen Kadenz verankert (Booking, Ledger und Pointer in einer
+  Transaktion, sodass ein Neuladen nicht doppelt zahlt).
 
 ### Geändert
 

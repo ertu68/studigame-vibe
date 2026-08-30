@@ -83,7 +83,7 @@ func CharacterForUser(db *sql.DB, userID, editionID int64) (Character, error) {
 	if err == sql.ErrNoRows {
 		return Character{}, ErrCharacterNotFound
 	}
-	c.BafogNextAt = parseBafogNext(next)
+	c.BafogNextAt = parseNextAt(next)
 	return c, err
 }
 
@@ -105,7 +105,7 @@ func AnyCharacterForUser(db *sql.DB, userID int64) (Character, error) {
 	if err == sql.ErrNoRows {
 		return Character{}, ErrCharacterNotFound
 	}
-	c.BafogNextAt = parseBafogNext(next)
+	c.BafogNextAt = parseNextAt(next)
 	return c, err
 }
 

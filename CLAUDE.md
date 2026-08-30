@@ -13,7 +13,11 @@ Abstraktion, sondern zu viel davon. Im Zweifel: die kürzere Lösung.
 - Kein Interface mit einer Implementierung. Konkreter Typ, bis es einen zweiten gibt.
 - Keine neue Dependency für etwas, das die stdlib kann.
 - Keine Konfigurationsoption für einen Wert, der sich nie ändert.
-- Kein Code „für später“. Später kann sich selbst bedienen.
+- Kein Code „für später". Später kann sich selbst bedienen.
+- **Sanktionierte Ausnahme**: die `editions`-Tabelle bleibt (ein aktiver
+  Eintrag), damit sich spätere Uni-Städte ohne Schema-Änderung nachrüsten
+  lassen (Begründung: `studigame-plan.md` §3a). Diese eine Ausnahme ist
+  gewollt — bei anderen Tabellen gilt die Regel oben weiter.
 - Löschen ist eine Verbesserung.
 
 ## Nach jeder Aufgabe

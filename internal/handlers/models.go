@@ -16,6 +16,8 @@ type Character struct {
 	Mood           int
 	// BafogNextAt is the next BAföG payout; nil means the student has not applied.
 	BafogNextAt *time.Time
+	// CaffeineUntil is when a coffee boost runs out; nil means no boost.
+	CaffeineUntil *time.Time
 }
 
 // Edition is a separate game world (MVP: one fictional uni-city).

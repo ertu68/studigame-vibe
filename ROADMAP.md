@@ -54,9 +54,32 @@ Kleine Fixes und das Fundament, das später teuer nachzurüsten wäre.
 - [x] Plan-Checkbox „Fonts selbst hosten" korrigiert — System-Fonts sind der aktuelle Stand
 - [x] Phase-3/4-Tabellen (`0002_phase3_tables.sql`) gelöscht — kein Code nutzte sie, MVP-Regel "kein Code für später"
 
+## Bewertung & Nacharbeiten (aus der Doku-Analyse)
+
+Bewusst von der Kernschleife getrennt: hier geht es nicht um neuen Spielinhalt,
+sondern um dokumentierte Lücken und Balance-Fälle, die ein späterer Leser sonst
+übersieht. Jeder Punkt bezieht sich auf eine konkrete Fundstelle.
+
+- [ ] BAföG-Passivertrag prüfen: bezahlt 5 €/h fürs Nichtstun (30 €/6 h,
+  `internal/game/bafog.go`), der aktive Job 8 €/h (`job.go`). Passiv ist damit
+  fast so gut wie aktiv, ohne Laune-, Risiko- oder Aktionskosten. Entweder
+  Abstand vergrößern oder bewusst so lassen — Entscheidung festhalten
+- [ ] Endgame-Loch nach Behälter-Maxl: alle 4 Stufen kosten kumuliert ~477 €,
+  danach ist der Charity-Überlauf ohne Geld-Sink, bis der Shop kommt. Sink-Plan
+  für die Lücke zwischen „Bausparvertrag voll" und Shop klären, sonst kehrt
+  §3b „grindet ins Leere" zurück, nur verschoben
+- [ ] Schicksal der gestrichenen 6 Skills entscheiden (Bildungsstufe,
+  Sozialkontakte, Musik, Taschendiebstahl, ATT, DEF): kommen sie als
+  „Später"-Umfang zurück oder sind sie permanent weg? Wohnungsleiter
+  (WG-Zimmer→Eigentumswohnung) und die Fach-Boni (`studigame-plan.md` §3)
+  hängen genau an ihnen und sind sonst nicht baubar. Entscheidung im Plan
+  festhalten, damit der nächste Agent nicht in die Lücke tappt
+- [ ] Kaffee-Boost (`0009_coffee.sql`, `shop.go`) zum Abschluss in CHANGELOG &
+  ROADMAP nachziehen — uncommitted WIP, nicht vergessen beim Commit
+
 ## Danach — Kernschleife
 
-Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt“.
+Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt".
 
 - [x] `characters`, `editions`, `subjects`, `ledger`, `actions` (Studigame-Umbau:
   `districts` → `subjects`, siehe Rebrand-Abschnitt)

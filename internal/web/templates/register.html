@@ -19,7 +19,7 @@
       "Passwort" "Required" true "Help" "Mindestens 8 Zeichen"}}
 
       <div class="form-field">
-        <label class="form-label" for="city">Uni-Stadt</label>
+        <label class="form-label" for="city">Heimatstadt</label>
         <select class="form-input" id="city" name="city" required>
           {{range .Cities}}
           <option value="{{.}}" {{if eq $.City .}}selected{{end}}>{{.}}</option>

@@ -28,6 +28,11 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ### Geändert
 
+- **Registrierungsfeld „Uni-Stadt" → „Heimatstadt"**: Das Feld, in dem
+  Spieler ihre echte Herkunftsstadt angeben (reine Anzeige, keine
+  Spielfunktion), heißt jetzt „Heimatstadt". Der alte Name kollidierte mit
+  der fiktiven Spielwelt „Studistadt" (`editions`).
+
 - **Karten-Abstand und Skill-Werte auf dem Dashboard**: Die Karten auf
   `/actions` und `/skills` haben mehr Luft (einheitlicher `space-y-8`-Abstand),
   und das Dashboard zeigt im Kartenblock „Dein Stand“ die aktuellen

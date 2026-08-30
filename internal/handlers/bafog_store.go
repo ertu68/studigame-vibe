@@ -8,9 +8,9 @@ import (
 	"studigame/internal/web"
 )
 
-// parseBafogNext turns a nullable DATETIME TEXT column into *time.Time,
-// nil when the student has not applied.
-func parseBafogNext(s sql.NullString) *time.Time {
+// parseNextAt turns a nullable DATETIME TEXT column into *time.Time,
+// nil when unset.
+func parseNextAt(s sql.NullString) *time.Time {
 	if !s.Valid || s.String == "" {
 		return nil
 	}

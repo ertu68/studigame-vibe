@@ -147,7 +147,10 @@ ist in 3a dokumentiert.*
 1. **Leergut sammeln** – nach der WG-Party. Dauer wählbar, Ergebnis wird erst
    beim Zurückkommen ausgewürfelt.
 2. **Geld behalten** – der Behälter kappt das Tragen: Was nicht hineinpasst,
-   fließt in den Spendentopf der Uni-Stadt (Charity-Überlauf).
+   fließt in den Spendentopf der Uni-Stadt (Charity-Überlauf). 🙋 Der
+   Übergang von diesem virtuellen Overflow zu einer echten Spende (wer zahlt,
+   Kurs, Buchhaltung/Steuer) ist vor Phase 6 (Payments) ungeklärt — siehe
+   ROADMAP „Vor dem Launch", nicht per Code lösbar.
 3. **Reinvestieren** – Behälter aufrüsten (Geld-Sink), später Skills, Ausrüstung,
    Wohnung.
 4. **Risiko eingehen** – Hausarbeit ghostwriten, Spickzettel verkaufen,
@@ -172,6 +175,16 @@ mehr Balance-Arbeit.
 **Wichtig für den MVP:** bis das Skillsystem steht, ist das Studienfach **reine
 Identität ohne Spieleffekt** (siehe 3b). Die Boni/Mali oben werden erst mit den
 Skills aktiv.
+
+**Deferred Skills — Statusklärung:** Die MVP-Skills sind drei (Lerneffizienz,
+Auftreten, Konzentration, siehe §3b). Die übrigen sechs aus der
+Mechanik-Übersetzung (Bildungsstufe, Sozialkontakte, Musik, Taschendiebstahl,
+ATT, DEF) sind **aufgeschoben, nicht gestrichen** — Wohnungsleiter
+(WG-Zimmer→Eigentumswohnung) und die Fach-Boni (Sozialkontakte/Musik,
+BWL-Netzwerken, Jura-PvP) bauen genau darauf auf. Solange sie nicht gebaut
+sind, sind die zugehörigen Tabellen-/Fach-Zeilen Zukunftsziel, kein
+Ist-Zustand. Die explizite Entscheidung (zurückkommen vs. endgültig weg) steht
+in ROADMAP „Bewertung & Nacharbeiten" aus.
 
 **Fachwechsel**: spätere Mechanik – kostet Zeit/Geld, resettet etwas Fortschritt,
 spiegelt den echten Fachwechsel-Schmerz und liefert eine natürliche "große

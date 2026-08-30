@@ -286,6 +286,15 @@ func TestSkillLoop(t *testing.T) {
 	if !strings.Contains(body, "1/20") {
 		t.Fatalf("expected Lerneffizienz level 1/20: %q", truncate(body))
 	}
+
+	// The dashboard "Dein Stand" card shows the learned skill level.
+	resp, body = gs.get("/dashboard")
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("GET /dashboard: status %d", resp.StatusCode)
+	}
+	if !strings.Contains(body, "Lerneffizienz: 1/20") {
+		t.Fatalf("dashboard missing skill in overview: %q", truncate(body))
+	}
 }
 
 // TestGameLoopRequiresLogin checks the game routes are not open to anonymous visitors.

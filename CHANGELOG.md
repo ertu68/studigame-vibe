@@ -21,6 +21,10 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ### Geändert
 
+- **Karten-Abstand und Skill-Werte auf dem Dashboard**: Die Karten auf
+  `/actions` und `/skills` haben mehr Luft (einheitlicher `space-y-8`-Abstand),
+  und das Dashboard zeigt im Kartenblock „Dein Stand“ die aktuellen
+  Skill-Stufen (z. B. `Lerneffizienz: 1/20`).
 - **Alpine.js und Live-Countdown für laufende Aktionen**: Die Restzeit einer
   offenen Schicht zählt auf `/actions` im Browser sekündlich runter (Alpine.js,
   vendored, kein Build-Schritt) und lädt beim Ablauf automatisch neu, damit der

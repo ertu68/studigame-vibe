@@ -33,7 +33,8 @@ fiktive Uni-Stadt, Studienfach übernimmt die Rolle des Klassensystems.
   Ledger-Debit in einer Transaktion. Dazu ein **Skillbaum (Weiterbildung)** mit drei
   Skills (Lerneffizienz, Auftreten, Konzentration), einem Slot pro Charakter,
   überlinearer Kostenkurve und Studienfach-Boni — erreichbar über „Lernen“ in der
-  Bottom-Navigation.
+  Bottom-Navigation. Das Dashboard zeigt die Skill-Stufen im Kartenblock
+  „Dein Stand“.
 
 Der Code ist auf dem Studigame-Stand: ein Go-Modul `studigame`, eine fiktive
 Uni-Stadt („Studistadt“) als Edition, Studienfach statt Bezirk als

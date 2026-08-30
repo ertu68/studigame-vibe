@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -25,6 +26,7 @@ func (d *Deps) Dashboard(u *user, w http.ResponseWriter, r *http.Request) {
 	d.addCharacterStatus(data, char)
 	data["Character"] = char
 	addUpgradeData(data, char)
+	addSkillOverview(data, d.DB, char)
 	web.Render(w, "dashboard.html", data)
 }
 
@@ -72,6 +74,32 @@ func addUpgradeData(data map[string]any, char Character) {
 	cost := game.UpgradeCostCents(level, game.ContainerUpgradeBaseCents)
 	data["UpgradeCost"] = web.FormatCents(cost)
 	data["UpgradeAffordable"] = char.MoneyCents >= cost
+}
+
+// SkillOverviewItem is one skill's level for the dashboard "Dein Stand" card.
+type SkillOverviewItem struct {
+	Name     string
+	Level    int
+	MaxLevel int
+}
+
+// addSkillOverview fills the current skill levels shown in the "Dein Stand" card.
+func addSkillOverview(data map[string]any, db *sql.DB, char Character) {
+	levels, err := SkillLevels(db, char.ID)
+	if err != nil {
+		// Skills are cosmetic on the dashboard; a failure must not break it.
+		data["SkillOverview"] = nil
+		return
+	}
+	items := make([]SkillOverviewItem, 0, len(game.SkillCatalog))
+	for _, s := range game.SkillCatalog {
+		items = append(items, SkillOverviewItem{
+			Name:     s.Name,
+			Level:    levels[s.Slug],
+			MaxLevel: s.MaxLevel,
+		})
+	}
+	data["SkillOverview"] = items
 }
 
 // fillPercent is the container fill level for the status bar, capped at 100.

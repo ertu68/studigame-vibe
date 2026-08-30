@@ -26,10 +26,11 @@ fiktive Uni-Stadt, Studienfach übernimmt die Rolle des Klassensystems.
   Schichten von 15 Minuten bis 8 Stunden, Ergebnis wird beim Zurückkommen ausgewürfelt,
   Überlauf aus dem vollen Behälter geht in den Spendentopf. Zwei Aktionen: das
   Flaschensammeln (Glück + Behälter) und der **Werkstudenten-Job** (fester Stundenlohn),
-  aufgelöst über einen `kind`-Dispatch mit gemeinsamem Buchungspfad. Der erste Geld-Sink
-  steht: **Behälter-Upgrade** als sofortiger Kauf (überlineare Kostenkurve
-  `2000 × Level^1.8` Cent, Max-Stufe 4), Knopf auf dem Dashboard, Ledger-Debit in einer
-  Transaktion.
+  aufgelöst über einen `kind`-Dispatch mit gemeinsamem Buchungspfad. Die Restzeit einer
+  laufenden Schicht zählt im Browser live runter (Alpine.js), der Meta-Refresh bleibt als
+  No-JS-Fallback. Der erste Geld-Sink steht: **Behälter-Upgrade** als sofortiger Kauf
+  (überlineare Kostenkurve `2000 × Level^1.8` Cent, Max-Stufe 4), Knopf auf dem Dashboard,
+  Ledger-Debit in einer Transaktion.
 
 Der Code ist auf dem Studigame-Stand: ein Go-Modul `studigame`, eine fiktive
 Uni-Stadt („Studistadt“) als Edition, Studienfach statt Bezirk als
@@ -40,9 +41,10 @@ Spielregeln leben infra-frei in `internal/game`, Aktionen in
 ist verworfen, „eine Datei pro Aktion“ hat sich in `handlers` niedergeschlagen.
 
 Aktueller Kern = **Sammeln + Werkstudenten-Job mit Geld-Behälter und
-Charity-Überlauf plus Behälter-Upgrade als erster Geld-Sink**. Charaktererstellung
-fragt das Studienfach (bisher rein Flavor, ohne Spieleffekt). Als Nächstes: die
-laufende Aktion live im Browser runterzählen (Alpine.js) und dann das Balancing
+Charity-Überlauf plus Behälter-Upgrade als erster Geld-Sink**. Die Restzeit
+laufender Aktionen zählt im Browser live runter (Alpine.js, neben htmx als
+einziges Frontend-JS, kein Build-Schritt). Charaktererstellung fragt das
+Studienfach (bisher rein Flavor, ohne Spieleffekt). Als Nächstes: das Balancing
 spielen und bewerten (siehe `studigame-plan.md` §3b und ROADMAP).
 
 Name ist entschieden (Studigame), Domain ist noch offen — siehe `.env.example`.

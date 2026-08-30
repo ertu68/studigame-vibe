@@ -71,9 +71,10 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt“.
   man grindet ins Leere. (Details: `studigame-plan.md` §3b.)
 - [ ] 🙋 Balancing der Sammeln-Aktion abnehmen: 40 Flaschen/h, 25 ct je Flasche,
   Behälterstufen 20/50/200/1000/5000 €, Upgrade-Kosten, Laune 5 Punkte/h
-- [ ] Alpine.js einbinden und die laufende Aktion live runterzählen: auf
+- [x] Alpine.js einbinden und die laufende Aktion live runterzählen: auf
   `/actions` der offenen Schicht einen echten Countdown im Browser statt des
-  Meta-Refresh (Meta-Refresh als Fallback behalten). Dafür wird htmx ergänzt.
+  Meta-Refresh (Meta-Refresh als Fallback behalten). Dafür ist Alpine.js als
+  Frontend-JS neben htmx eingebunden (vendored, kein Build-Schritt).
 - [ ] **Hier anhalten und spielen.** Sammeln + Behälter + Upgrade sind bereits ein
   Spiel. Wenn sich der Kern langweilig anfühlt, retten ihn die Punkte darunter nicht.
 - [x] Zweite zeitbasierte Aktion: Werkstudenten-Job (fester Stundenlohn, kein

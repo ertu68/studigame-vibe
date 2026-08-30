@@ -2,6 +2,43 @@
 <div class="max-w-xl mx-auto py-8">
   <h1 class="text-2xl font-display text-pfandglas mb-6">Aktionen</h1>
 
+  <script>
+    // Live countdown for the running action; the meta refresh stays as the
+    // no-JS fallback. Reloads when the shift is due so the server settles it.
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('countdown', (endsAtIso) => ({
+        end: new Date(endsAtIso),
+        now: new Date(),
+        init() {
+          const tick = () => {
+            if (this.left <= 0) {
+              location.reload();
+              return;
+            }
+            this.now = new Date();
+          };
+          tick();
+          setInterval(tick, 1000);
+        },
+        get left() {
+          return Math.max(0, this.end - this.now);
+        },
+        get expired() {
+          return this.left <= 0;
+        },
+        get display() {
+          const t = Math.floor(this.left / 1000);
+          const h = Math.floor(t / 3600);
+          const m = Math.floor((t % 3600) / 60);
+          const s = t % 60;
+          const mm = String(m).padStart(2, '0');
+          const ss = String(s).padStart(2, '0');
+          return h > 0 ? h + ':' + mm + ':' + ss : mm + ':' + ss;
+        },
+      }));
+    });
+  </script>
+
   {{if .Error}}
   <div class="flash-error mb-4">
     <p>{{.Error}}</p>
@@ -49,7 +86,17 @@
     {{else}}
     <p class="mb-2">Du sammelst Leergut nach der WG-Party ein.</p>
     {{end}}
-    <p class="mb-4">Noch {{.Remaining}} — zurück gegen {{.ReturnsAt}}.</p>
+    <div
+      x-data="countdown('{{.EndsAtIso}}')"
+      data-ends-at="{{.EndsAtIso}}"
+      class="mb-4"
+    >
+      <p x-show="!expired">Noch <span class="font-display text-lg" x-text="display"></span>.</p>
+      <p x-show="expired">Gleich fertig, lädt neu …</p>
+    </div>
+    <noscript>
+      <p class="mb-4">Noch {{.Remaining}} — zurück gegen {{.ReturnsAt}}.</p>
+    </noscript>
     <p class="text-sm">
       Die Ausbeute steht erst fest, wenn du zurück bist. Die Seite lädt sich
       dann von selbst neu.

@@ -147,6 +147,7 @@ func (d *Deps) renderActions(w http.ResponseWriter, r *http.Request, char Charac
 		data["Open"] = open
 		data["Remaining"] = formatDuration(remaining)
 		data["ReturnsAt"] = formatClock(open.EndsAt)
+		data["EndsAtIso"] = open.EndsAt.UTC().Format(time.RFC3339)
 		// One second of slack so the reload never arrives before the shift is due.
 		data["MetaRefresh"] = int(remaining.Seconds()) + 1
 	} else if !errors.Is(err, ErrNoOpenAction) {

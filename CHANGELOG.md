@@ -11,6 +11,10 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ### Geändert
 
+- **Alpine.js und Live-Countdown für laufende Aktionen**: Die Restzeit einer
+  offenen Schicht zählt auf `/actions` im Browser sekündlich runter (Alpine.js,
+  vendored, kein Build-Schritt) und lädt beim Ablauf automatisch neu, damit der
+  Server auszahlt. Der Meta-Refresh bleibt als No-JS-Fallback erhalten.
 - **Werkstudenten-Job als zweite zeitbasierte Aktion**: Neben dem
   Flaschensammeln gibt es jetzt einen Job mit festem Stundenlohn (kein Glück,
   aber verlässlich). Die Auflösung läuft über einen `kind`-Dispatch

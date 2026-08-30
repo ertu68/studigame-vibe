@@ -429,8 +429,9 @@ dazu. Die Reihenfolge unten ist verbindlich:
 
 - [x] **Sammeln-Aktion** mit Dauer-Wahl, Cooldown, Ergebnis erst beim
       Zurückkommen (`/actions`)
-- [x] **Timer ohne Reload**: Server sendet Ziel-Zeitstempel, Vanilla-JS löst am
-      Endzeitpunkt; Meta-Refresh einmalig, wenn fällig
+- [x] **Live-Countdown**: Alpine.js zählt die Restzeit einer laufenden Schicht
+      im Browser runter und lädt beim Ablauf neu; Meta-Refresh bleibt als
+      No-JS-Fallback, Ergebnis wird serverseitig beim Zurückkommen aufgelöst
 - [x] **Geld-Behälter mit Kappung + Charity-Overflow** (Portemonnaie → … →
       Bausparvertrag)
 - [x] **Tabellentests** für die Spielregeln in `internal/game` (Sammelertrag,

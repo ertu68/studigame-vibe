@@ -188,6 +188,12 @@ func TestGameLoop(t *testing.T) {
 		t.Fatalf("expected remaining time: %q", truncate(body))
 	}
 
+	// The remaining time counts down live in the browser (Alpine).
+	if !strings.Contains(body, `x-data="countdown('2026-08-26T09:00:00Z')"`) ||
+		!strings.Contains(body, `data-ends-at="2026-08-26T09:00:00Z"`) {
+		t.Fatalf("expected a live countdown: %q", truncate(body))
+	}
+
 	// The page schedules its own reload for the moment the shift is due.
 	if !strings.Contains(body, `http-equiv="refresh" content="1801"`) {
 		t.Fatalf("expected a meta refresh for the remaining 30 min: %q", truncate(body))

@@ -188,8 +188,11 @@ func TestGameLoop(t *testing.T) {
 		t.Fatalf("expected remaining time: %q", truncate(body))
 	}
 
-	// The remaining time counts down live in the browser (Alpine).
-	if !strings.Contains(body, `x-data="countdown('2026-08-26T09:00:00Z')"`) ||
+	// The remaining time counts down live in the browser (Alpine). The
+	// component lives in a 'self'-served file because the CSP forbids inline
+	// scripts.
+	if !strings.Contains(body, `<script src="/static/js/actions.js"></script>`) ||
+		!strings.Contains(body, `x-data="countdown('2026-08-26T09:00:00Z')"`) ||
 		!strings.Contains(body, `data-ends-at="2026-08-26T09:00:00Z"`) {
 		t.Fatalf("expected a live countdown: %q", truncate(body))
 	}

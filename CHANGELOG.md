@@ -14,7 +14,8 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 - **Alpine.js und Live-Countdown für laufende Aktionen**: Die Restzeit einer
   offenen Schicht zählt auf `/actions` im Browser sekündlich runter (Alpine.js,
   vendored, kein Build-Schritt) und lädt beim Ablauf automatisch neu, damit der
-  Server auszahlt. Der Meta-Refresh bleibt als No-JS-Fallback erhalten.
+  Server auszahlt. Der Meta-Refresh bleibt als No-JS-Fallback, der manuelle
+  Neu-laden-Knopf ist dafür entfallen.
 - **Werkstudenten-Job als zweite zeitbasierte Aktion**: Neben dem
   Flaschensammeln gibt es jetzt einen Job mit festem Stundenlohn (kein Glück,
   aber verlässlich). Die Auflösung läuft über einen `kind`-Dispatch
@@ -87,6 +88,13 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
   Komponenten (button, card, form_field, flash, progress, statusbar, bottom_nav)
 
 ### Behoben
+
+- **Live-Countdown brach unter CSP**: Die Content-Security-Policy
+  (`script-src 'self'`) blockierte Alpine.js – es wertet `x-data`/`x-show`
+  zur Laufzeit aus und braucht `'unsafe-eval'`; der Registrierungs-Code lag
+  als Inline-Script. Beides gelöst: Komponente nach `static/js/actions.js`
+  ausgelagert (`'self'`-Datei, keine Inline-Skripte) und `script-src` um
+  `'unsafe-eval'` ergänzt.
 
 - Dockerfile auf Go 1.27 (D1)
 - CSRF + Rate-Limit auf `POST /waitlist` (D3)

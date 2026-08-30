@@ -2,42 +2,7 @@
 <div class="max-w-xl mx-auto py-8">
   <h1 class="text-2xl font-display text-pfandglas mb-6">Aktionen</h1>
 
-  <script>
-    // Live countdown for the running action; the meta refresh stays as the
-    // no-JS fallback. Reloads when the shift is due so the server settles it.
-    document.addEventListener('alpine:init', () => {
-      Alpine.data('countdown', (endsAtIso) => ({
-        end: new Date(endsAtIso),
-        now: new Date(),
-        init() {
-          const tick = () => {
-            if (this.left <= 0) {
-              location.reload();
-              return;
-            }
-            this.now = new Date();
-          };
-          tick();
-          setInterval(tick, 1000);
-        },
-        get left() {
-          return Math.max(0, this.end - this.now);
-        },
-        get expired() {
-          return this.left <= 0;
-        },
-        get display() {
-          const t = Math.floor(this.left / 1000);
-          const h = Math.floor(t / 3600);
-          const m = Math.floor((t % 3600) / 60);
-          const s = t % 60;
-          const mm = String(m).padStart(2, '0');
-          const ss = String(s).padStart(2, '0');
-          return h > 0 ? h + ':' + mm + ':' + ss : mm + ':' + ss;
-        },
-      }));
-    });
-  </script>
+  <script src="/static/js/actions.js"></script>
 
   {{if .Error}}
   <div class="flash-error mb-4">
@@ -56,31 +21,7 @@
   </div>
   {{end}} {{if .Open}}
   <div class="card">
-    <div class="flex items-start justify-between">
-      <h2 class="text-xl font-display text-asphalt mb-3">Unterwegs</h2>
-      <a
-        href="/actions"
-        class="text-asphalt hover:text-verkehrsorange"
-        aria-label="Seite neu laden"
-        title="Neu laden"
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          aria-hidden="true"
-        >
-          <path d="M21 12a9 9 0 1 1-2.64-6.36" />
-          <polyline points="21 3 21 9 15 9" />
-        </svg>
-      </a>
-    </div>
+    <h2 class="text-xl font-display text-asphalt mb-3">Unterwegs</h2>
     {{if eq .Open.Kind "job"}}
     <p class="mb-2">Du jobbst als Werkstudent.</p>
     {{else}}
@@ -91,7 +32,9 @@
       data-ends-at="{{.EndsAtIso}}"
       class="mb-4"
     >
-      <p x-show="!expired">Noch <span class="font-display text-lg" x-text="display"></span>.</p>
+      <p x-show="!expired">
+        Noch <span class="font-display text-lg" x-text="display"></span>.
+      </p>
       <p x-show="expired">Gleich fertig, lädt neu …</p>
     </div>
     <noscript>
@@ -105,9 +48,7 @@
   {{else}}
   <div class="space-y-6">
     <div class="card">
-      <h2 class="text-xl font-display text-asphalt mb-3">
-        Leergut sammeln
-      </h2>
+      <h2 class="text-xl font-display text-asphalt mb-3">Leergut sammeln</h2>
       <p class="text-sm mb-4">
         Nach der WG-Party Flaschen einsammeln. Ertrag hängt von Glück und
         Behälter ab.
@@ -116,7 +57,12 @@
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
         <div class="form-field">
           <label class="form-label" for="collect-duration">Schichtlänge</label>
-          <select class="form-input" id="collect-duration" name="duration" required>
+          <select
+            class="form-input"
+            id="collect-duration"
+            name="duration"
+            required
+          >
             {{range .Shifts}}
             <option value="{{.Seconds}}">{{.Label}}</option>
             {{end}}
@@ -127,9 +73,7 @@
     </div>
 
     <div class="card">
-      <h2 class="text-xl font-display text-asphalt mb-3">
-        Werkstudenten-Job
-      </h2>
+      <h2 class="text-xl font-display text-asphalt mb-3">Werkstudenten-Job</h2>
       <p class="text-sm mb-4">
         Fester Lohn je Stunde, kein Glück. Plackerei, aber verlässlich.
       </p>

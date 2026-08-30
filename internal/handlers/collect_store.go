@@ -53,6 +53,12 @@ type jobPayload struct {
 	SkillFactor     float64 `json:"skill_factor,omitempty"`
 }
 
+// crimePayload is the frozen input of a crime shift. Skill-neutral in the MVP.
+type crimePayload struct {
+	DurationSeconds int `json:"duration_seconds"`
+	Mood            int `json:"mood"`
+}
+
 // ActionSummary is the resolved outcome shown to the player once, for any kind
 // of action. Title and Detail describe the result in German; Donated is set
 // only when the container overflowed into the charity pool.
@@ -151,6 +157,33 @@ func StartJob(db *sql.DB, char Character, d time.Duration, now time.Time) error 
 	return err
 }
 
+// StartCrime books a "Nebenverdienst" shift. Same contract as StartJob: the
+// inputs are frozen, and the open-action index guarantees one shift per
+// character. No skill factor yet — crime is skill-neutral in the MVP.
+func StartCrime(db *sql.DB, char Character, d time.Duration, now time.Time) error {
+	if !game.ValidCollectDuration(d) {
+		return ErrInvalidShift
+	}
+
+	payload, err := json.Marshal(crimePayload{
+		DurationSeconds: int(d.Seconds()),
+		Mood:            char.Mood,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(
+		`INSERT INTO actions (character_id, kind, started_at, ends_at, payload_json)
+		 VALUES (?, 'crime', ?, ?, ?)`,
+		char.ID, now, now.Add(d), string(payload),
+	)
+	if isUniqueViolation(err) {
+		return ErrActionRunning
+	}
+	return err
+}
+
 // ResolveDueAction settles a finished shift: it resolves the outcome by kind,
 // moves the money and marks the action resolved — all in one transaction, so a
 // reload mid-way cannot pay out twice. It returns nil if nothing was due.
@@ -230,6 +263,28 @@ func resolveOutcome(kind, payloadJSON string, char Character, roll float64) (act
 			Detail:        web.FormatCents(out.EarningsCents) + " verdient",
 		}, nil
 
+	case "crime":
+		var p crimePayload
+		if err := json.Unmarshal([]byte(payloadJSON), &p); err != nil {
+			return actionOutcome{}, err
+		}
+		out := game.ResolveCrime(game.CrimeParams{
+			Duration: time.Duration(p.DurationSeconds) * time.Second,
+			Mood:     p.Mood,
+		}, roll)
+		if out.Caught {
+			return actionOutcome{
+				EarningsCents: out.EarningsCents,
+				MoodDelta:     out.MoodDelta,
+				Detail:        "Erwischt worden, nur " + web.FormatCents(out.EarningsCents) + "übrig",
+			}, nil
+		}
+		return actionOutcome{
+			EarningsCents: out.EarningsCents,
+			MoodDelta:     out.MoodDelta,
+			Detail:        "Abgeliefert, " + web.FormatCents(out.EarningsCents) + " verdient",
+		}, nil
+
 	default:
 		return actionOutcome{}, fmt.Errorf("unknown action kind %q", kind)
 	}
@@ -295,6 +350,8 @@ func actionTitle(kind string) string {
 		return "Leergut eingesammelt"
 	case "job":
 		return "Werkstudenten-Job erledigt"
+	case "crime":
+		return "Nebenverdienst bezahlt"
 	default:
 		return "Aktion vorbei"
 	}

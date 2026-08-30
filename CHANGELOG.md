@@ -31,6 +31,12 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
   Mehrere Käufe stapeln das Fenster; Ledger-Buchung und Boost-Pointer liegen in
   einer Transaktion. Verbrauchter Boost ist die erste Verwendung des
   `caffeine_until`-Felds.
+- **Dritte Aktion: Nebenverdienst (Verbrechen)**: Eine Hausarbeit ghostwriten
+  oder einen Spickzettel verticken — höherer Stundenlohn als der Job (15 €/h
+  statt 8 €/h), dafür 30 % Risiko, erwischt zu werden. Ein drohender Schlag
+  kürzt die Kohle auf ein Viertel und kostet doppelt Laune; sauber läuft die
+  Auszahlung voll. Risiko wird erst beim Auflösen gewürfelt, Skill-neutral im
+  MVP (Taschendiebstahl/Stressresistenz sind aufgeschoben).
 
 ### Geändert
 

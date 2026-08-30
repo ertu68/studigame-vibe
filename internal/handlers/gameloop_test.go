@@ -50,6 +50,7 @@ func newGameLoopServer(t *testing.T) *gameLoopServer {
 	mux.HandleFunc("GET /actions", gs.deps.RequireAuth(gs.deps.Actions))
 	mux.HandleFunc("POST /actions/collect", RequireCSRF(gs.deps.RequireAuth(gs.deps.Collect)))
 	mux.HandleFunc("POST /actions/job", RequireCSRF(gs.deps.RequireAuth(gs.deps.Job)))
+	mux.HandleFunc("POST /actions/crime", RequireCSRF(gs.deps.RequireAuth(gs.deps.Crime)))
 	mux.HandleFunc("POST /actions/upgrade-container", RequireCSRF(gs.deps.RequireAuth(gs.deps.ContainerUpgrade)))
 	mux.HandleFunc("GET /skills", gs.deps.RequireAuth(gs.deps.Skills))
 	mux.HandleFunc("POST /skills/train", RequireCSRF(gs.deps.RequireAuth(gs.deps.TrainSkill)))
@@ -469,6 +470,35 @@ func TestCoffeeLoop(t *testing.T) {
 	}
 	if !strings.Contains(body, "halbiert die Dauer") {
 		t.Fatalf("expected the coffee offer after expiry: %q", truncate(body))
+	}
+}
+
+func TestCrimeLoop(t *testing.T) {
+	gs := newGameLoopServer(t)
+	gs.registerVerified("Nora", "nora@example.com")
+	gs.get("/login")
+	gs.post("/login", url.Values{"email": {"nora@example.com"}, "password": {"hunter22"}})
+	gs.post("/character/new", url.Values{"subject": {gs.subjectID("Informatik")}, "name": {"Nora"}})
+
+	// The actions screen offers the Nebenverdienst.
+	_, body := gs.get("/actions")
+	if !strings.Contains(body, "Nebenverdienst") {
+		t.Fatalf("actions missing the Nebenverdienst: %q", truncate(body))
+	}
+
+	// Start an hour-long shift (roll is fixed at 0.5 -> always a clean payout).
+	// The client follows the redirect, so post returns the landing page.
+	gs.post("/actions/crime", url.Values{"duration": {"3600"}})
+	_, body = gs.get("/actions")
+	if !strings.Contains(body, "Du schreibst nebenbei eine Hausarbeit") {
+		t.Fatalf("expected running crime shift: %q", truncate(body))
+	}
+
+	// After the shift the payout lands.
+	gs.now = gs.now.Add(2 * time.Hour)
+	_, body = gs.get("/actions")
+	if !strings.Contains(body, "Abgeliefert") {
+		t.Fatalf("expected crime payout: %q", truncate(body))
 	}
 }
 

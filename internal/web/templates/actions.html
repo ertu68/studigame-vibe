@@ -24,6 +24,8 @@
     <h2 class="text-xl font-display text-asphalt mb-3">Unterwegs</h2>
     {{if eq .Open.Kind "job"}}
     <p class="mb-2">Du jobbst als Werkstudent.</p>
+    {{else if eq .Open.Kind "crime"}}
+    <p class="mb-2">Du schreibst nebenbei eine Hausarbeit.</p>
     {{else}}
     <p class="mb-2">Du sammelst Leergut nach der WG-Party ein.</p>
     {{end}}
@@ -88,6 +90,33 @@
           </select>
         </div>
         {{template "button" dict "Type" "submit" "Text" "Jobben"}}
+      </form>
+    </div>
+
+    <div class="card">
+      <h2 class="text-xl font-display text-asphalt mb-3">Nebenverdienst</h2>
+      <p class="text-sm mb-4">
+        Eine Hausarbeit ghostwriten oder einen Spickzettel verticken. Mehr Geld
+        als der Job, aber wenn es auffliegt, bleibt wenig übrig und die Laune
+        leidet doppelt. Keine Frage, ob das erlaubt ist — die Frage ist, ob du
+        erwischt wirst.
+      </p>
+      <form method="post" action="/actions/crime">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+        <div class="form-field">
+          <label class="form-label" for="crime-duration">Schichtlänge</label>
+          <select
+            class="form-input"
+            id="crime-duration"
+            name="duration"
+            required
+          >
+            {{range .Shifts}}
+            <option value="{{.Seconds}}">{{.Label}}</option>
+            {{end}}
+          </select>
+        </div>
+        {{template "button" dict "Type" "submit" "Text" "Ans Werk"}}
       </form>
     </div>
   </div>

@@ -105,7 +105,10 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt".
   (ein `switch` über `collect`/`job`, gemeinsamer Buchungspfad für Geld/Laune/
   Ledger/Charity)
 - [ ] Klausur/Studium als dritte Aktion (ECTS-Produktion) — das Skillsystem
-  steht, danach schlüssig als Nächstes
+  steht, danach schlüssig als Nächstes. Blocker: ECTS hat bisher keinen
+  Abnehmer — der Konsument wäre die aufgeschobene Bildungsstufe (Skill) und
+  das Stipendium; erst entscheiden, was ECTS bezahlt, sonst steht ungenutzter
+  Fortschritt in der DB
 - [x] Skillsystem (reduzierter MVP): drei Skills (Lerneffizienz, Auftreten,
   Konzentration), ein Weiterbildungs-Slot pro Charakter (bewusst statt zweien),
   80 % Erstattung bei Abbruch, überlineare Kostenkurve; Studienfächer
@@ -127,7 +130,15 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt".
   `POST /kiosk/coffee`
 - [ ] Breiter Shop (Ausrüstung, Instrumente, Wohnung) — erst nach weiteren
   Einkommensquellen, sonst kauft nichts zusammen
-- [ ] Verbrechen-Aktion mit Risiko und Ertrag
+- [x] Verbrechen-Aktion mit Risiko und Ertrag (Nebenverdienst): eine Hausarbeit
+  ghostwriten oder einen Spickzettel verticken, `kind "crime"` im selben
+  Dispatch-Schalter wie `collect`/`job`, gemeinsamer Buchungspfad. Höherer
+  Stundenlohn als der Job (15 €/h statt 8 €/h), dafür 30 % Risiko `roll ≤
+  0.30` erwischt zu werden (Kohle fällt auf ein Viertel, Laune doppelt).
+  Skill-neutral im MVP — Taschendiebstahl/Stressresistenz sind aufgeschoben.
+  Reine Regeln in `internal/game/crime.go`, Start in `crime_store`→
+  `StartCrime`, Route `POST /actions/crime`. Zahlen sind Startwerte, mit dem
+  Sammeln-/Job-Balancing gemeinsam spielen und bewerten 🙋
 - [x] Tabellentests für jede Formel, Integrationstests für jede Aktion
 - [ ] 🙋 Balancing spielen und bewerten
 

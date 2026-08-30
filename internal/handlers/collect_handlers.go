@@ -122,6 +122,49 @@ func (d *Deps) Job(u *user, w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/actions", http.StatusSeeOther)
 }
 
+// Crime starts a "Nebenverdienst" shift: ghostwriting or selling a Spickzettel.
+// Same contract as Job, but the outcome carries risk and is rolled when the
+// shift resolves.
+func (d *Deps) Crime(u *user, w http.ResponseWriter, r *http.Request) {
+	char, err := AnyCharacterForUser(d.DB, u.ID)
+	if errors.Is(err, ErrCharacterNotFound) {
+		http.Redirect(w, r, "/character/new", http.StatusSeeOther)
+		return
+	}
+	if err != nil {
+		slog.Error("Failed to load character", "error", err, "userID", u.ID)
+		http.Error(w, "interner Fehler", http.StatusInternalServerError)
+		return
+	}
+
+	// A finished shift is settled first, so the player cannot stack two.
+	if _, char, err = d.settleDueAction(char); err != nil {
+		slog.Error("Failed to resolve action", "error", err, "characterID", char.ID)
+		http.Error(w, "interner Fehler", http.StatusInternalServerError)
+		return
+	}
+
+	seconds, _ := strconv.Atoi(r.FormValue("duration"))
+	duration := time.Duration(seconds) * time.Second
+
+	err = StartCrime(d.DB, char, duration, d.now())
+	switch {
+	case errors.Is(err, ErrInvalidShift):
+		d.renderActions(w, r, char, nil, "Diese Schichtlänge gibt es nicht.")
+		return
+	case errors.Is(err, ErrActionRunning):
+		d.renderActions(w, r, char, nil, "Du bist noch unterwegs.")
+		return
+	case err != nil:
+		slog.Error("Failed to start crime", "error", err, "characterID", char.ID)
+		http.Error(w, "interner Fehler", http.StatusInternalServerError)
+		return
+	}
+
+	slog.Info("Crime started", "characterID", char.ID, "seconds", seconds)
+	http.Redirect(w, r, "/actions", http.StatusSeeOther)
+}
+
 // settleDueAction resolves a finished shift and returns the refreshed character.
 // Passive BAföG income is settled alongside, so a return after downtime books
 // both without a second reload.

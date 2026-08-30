@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"studigame/internal/game"
+	"studigame/internal/web"
 )
 
 var (
@@ -39,15 +40,17 @@ func (a OpenAction) Remaining(now time.Time) time.Duration {
 }
 
 type collectPayload struct {
-	DurationSeconds int `json:"duration_seconds"`
-	ContainerLevel  int `json:"container_level"`
-	Mood            int `json:"mood"`
+	DurationSeconds int     `json:"duration_seconds"`
+	ContainerLevel  int     `json:"container_level"`
+	Mood            int     `json:"mood"`
+	SkillFactor     float64 `json:"skill_factor,omitempty"`
 }
 
 // jobPayload is the frozen input of a job shift.
 type jobPayload struct {
-	DurationSeconds int `json:"duration_seconds"`
-	Mood            int `json:"mood"`
+	DurationSeconds int     `json:"duration_seconds"`
+	Mood            int     `json:"mood"`
+	SkillFactor     float64 `json:"skill_factor,omitempty"`
 }
 
 // ActionSummary is the resolved outcome shown to the player once, for any kind
@@ -89,10 +92,16 @@ func StartCollect(db *sql.DB, char Character, d time.Duration, now time.Time) er
 		return ErrInvalidShift
 	}
 
+	skillFactor, _, err := SkillFactorFor(db, char.ID)
+	if err != nil {
+		return err
+	}
+
 	payload, err := json.Marshal(collectPayload{
 		DurationSeconds: int(d.Seconds()),
 		ContainerLevel:  char.ContainerLevel,
 		Mood:            char.Mood,
+		SkillFactor:     skillFactor,
 	})
 	if err != nil {
 		return err
@@ -117,9 +126,15 @@ func StartJob(db *sql.DB, char Character, d time.Duration, now time.Time) error 
 		return ErrInvalidShift
 	}
 
+	_, jobFactor, err := SkillFactorFor(db, char.ID)
+	if err != nil {
+		return err
+	}
+
 	payload, err := json.Marshal(jobPayload{
 		DurationSeconds: int(d.Seconds()),
 		Mood:            char.Mood,
+		SkillFactor:     jobFactor,
 	})
 	if err != nil {
 		return err
@@ -191,11 +206,12 @@ func resolveOutcome(kind, payloadJSON string, char Character, roll float64) (act
 			Duration:       time.Duration(p.DurationSeconds) * time.Second,
 			ContainerLevel: p.ContainerLevel,
 			Mood:           p.Mood,
+			SkillFactor:    p.SkillFactor,
 		}, roll)
 		return actionOutcome{
 			EarningsCents: out.EarningsCents,
 			MoodDelta:     out.MoodDelta,
-			Detail:        fmt.Sprintf("%d Flaschen, %s", out.Bottles, formatCents(out.EarningsCents)),
+			Detail:        fmt.Sprintf("%d Flaschen, %s", out.Bottles, web.FormatCents(out.EarningsCents)),
 		}, nil
 
 	case "job":
@@ -204,13 +220,14 @@ func resolveOutcome(kind, payloadJSON string, char Character, roll float64) (act
 			return actionOutcome{}, err
 		}
 		out := game.ResolveJob(game.JobParams{
-			Duration: time.Duration(p.DurationSeconds) * time.Second,
-			Mood:     p.Mood,
+			Duration:    time.Duration(p.DurationSeconds) * time.Second,
+			Mood:        p.Mood,
+			SkillFactor: p.SkillFactor,
 		})
 		return actionOutcome{
 			EarningsCents: out.EarningsCents,
 			MoodDelta:     out.MoodDelta,
-			Detail:        formatCents(out.EarningsCents) + " verdient",
+			Detail:        web.FormatCents(out.EarningsCents) + " verdient",
 		}, nil
 
 	default:
@@ -230,7 +247,7 @@ func bookOutcome(tx *sql.Tx, char Character, kind string, actionID int64, out ac
 	summary := ActionSummary{
 		Title:       actionTitle(kind),
 		Detail:      out.Detail,
-		Donated:     formatCents(donated),
+		Donated:     web.FormatCents(donated),
 		HasDonation: donated > 0,
 		MoodDelta:   out.MoodDelta,
 	}

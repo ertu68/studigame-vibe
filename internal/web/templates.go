@@ -25,6 +25,7 @@ var pages = []string{
 	"character_new.html",
 	"dashboard.html",
 	"actions.html",
+	"skills.html",
 }
 
 var pageTemplates = mustParsePages()
@@ -33,7 +34,8 @@ func mustParsePages() map[string]*template.Template {
 	out := make(map[string]*template.Template, len(pages))
 	for _, page := range pages {
 		tmpl := template.New("").Funcs(template.FuncMap{
-			"dict": dict,
+			"dict":  dict,
+			"cents": FormatCents,
 		})
 		out[page] = template.Must(tmpl.ParseFS(templateFS,
 			"templates/layout.html",
@@ -58,7 +60,8 @@ func Render(w http.ResponseWriter, page string, data any) {
 }
 
 var partialTemplates = template.Must(template.New("").Funcs(template.FuncMap{
-	"dict": dict,
+	"dict":  dict,
+	"cents": FormatCents,
 }).ParseFS(templateFS, "templates/partials/*.html", "components/*.html"))
 
 // RenderPartial renders a standalone partial (used for htmx fragment responses).
@@ -84,4 +87,10 @@ func dict(values ...any) (map[string]any, error) {
 		result[key] = values[i+1]
 	}
 	return result, nil
+}
+
+// FormatCents renders cents as German currency, e.g. 1234 -> "12,34 €".
+// It is the single formatter for money, used by Go handlers and templates.
+func FormatCents(cents int) string {
+	return fmt.Sprintf("%d,%02d \u20ac", cents/100, cents%100)
 }

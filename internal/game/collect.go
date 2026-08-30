@@ -29,8 +29,9 @@ func ValidCollectDuration(d time.Duration) bool {
 // CollectParams are the inputs to a collect shift.
 type CollectParams struct {
 	Duration       time.Duration
-	ContainerLevel int // 0-4, bigger container carries more
-	Mood           int // 0-100, tired characters collect less
+	ContainerLevel int     // 0-4, bigger container carries more
+	Mood           int     // 0-100, tired characters collect less
+	SkillFactor    float64 // Lerneffizienz bonus; 0 (unset) means 1.0
 }
 
 // CollectOutcome is what a finished shift produced.
@@ -62,7 +63,8 @@ func ResolveCollect(p CollectParams, roll float64) CollectOutcome {
 	// Luck swings the result by ±20 %.
 	luckFactor := 0.8 + 0.4*clamp01(roll)
 
-	bottles := int(baseBottlesPerHour * hours * moodFactor * containerFactor * luckFactor)
+	skillFactor := gearRatio(p.SkillFactor)
+	bottles := int(baseBottlesPerHour * hours * moodFactor * containerFactor * luckFactor * skillFactor)
 	if bottles < 0 {
 		bottles = 0
 	}
@@ -145,6 +147,15 @@ func SplitAtCapacity(balance, incoming, capacity int) (kept, overflow int) {
 		return incoming, 0
 	}
 	return room, incoming - room
+}
+
+// gearRatio turns a stored skill factor into a multiplier, treating 0 (field
+// not set) as 1.0 so older payloads still resolve at full yield.
+func gearRatio(f float64) float64 {
+	if f <= 0 {
+		return 1
+	}
+	return f
 }
 
 func clamp01(v float64) float64 {

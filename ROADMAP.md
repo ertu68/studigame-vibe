@@ -81,10 +81,15 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt“.
   Glück) neben dem Flaschensammeln. Auflösung per `kind`-Dispatch erweitert
   (ein `switch` über `collect`/`job`, gemeinsamer Buchungspfad für Geld/Laune/
   Ledger/Charity)
-- [ ] Klausur/Studium als dritte Aktion — sinnvoll erst mit dem Skillsystem
-  (ECTS-Produktion), daher bewusst später
-- [ ] Skillsystem mit Warteschlange (2 Slots, 80 % Erstattung bei Abbruch) —
-  auch die Differenzierung der Studienfächer
+- [ ] Klausur/Studium als dritte Aktion (ECTS-Produktion) — das Skillsystem
+  steht, danach schlüssig als Nächstes
+- [x] Skillsystem (reduzierter MVP): drei Skills (Lerneffizienz, Auftreten,
+  Konzentration), ein Weiterbildungs-Slot pro Charakter (bewusst statt zweien),
+  80 % Erstattung bei Abbruch, überlineare Kostenkurve; Studienfächer
+  differenzieren Kosten/Dauer (Geisteswissenschaften günstiger, Jura teurer und
+  langsamer, Informatik loyal bei Konzentration). Der Skill-Bonus wird beim
+  Start einer Aktion eingefroren, damit ein Level-Up mitten in der Schicht
+  nichts rückwirkend aufbläht
 - [ ] Breiter Shop (Ausrüstung, Instrumente, Wohnung) — erst nach weiteren
   Einkommensquellen, sonst kauft nichts zusammen
 - [ ] Verbrechen-Aktion mit Risiko und Ertrag
@@ -107,6 +112,8 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt“.
 - [ ] Unterstützer-Status: werbefrei, Badge, Kosmetik — kein Gameplay-Vorteil
 - [ ] Zahlungsanbieter mit idempotenten Webhooks
 - [ ] Spenden-Button und echte Charity-Kopplung
+- [ ] 🙋 Einfache Wiki-/Hilfeseite für Spieler anlegen (Mechaniken kurz erklärt:
+  Sammeln, Job, Behälter, Weiterbildung)
 - [ ] 🙋 Charity-Partner auswählen und anschreiben
 - [ ] 🙋 AGB, Widerruf, Steuerfragen klären
 - [ ] Closed Beta an die Warteliste

@@ -99,6 +99,10 @@ func main() {
 	mux.HandleFunc("POST /actions/job", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.Job))))
 	mux.HandleFunc("POST /actions/upgrade-container", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.ContainerUpgrade))))
 
+	mux.HandleFunc("GET /skills", deps.RequireAuth(deps.Skills))
+	mux.HandleFunc("POST /skills/train", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.TrainSkill))))
+	mux.HandleFunc("POST /skills/cancel", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.CancelSkill))))
+
 	// Create server with timeouts
 	addr := ":" + cfg.Port
 	server := &http.Server{

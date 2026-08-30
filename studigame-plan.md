@@ -290,7 +290,8 @@ ein minimaler, thematischer Geld-Sink, nicht der breite Shop.
 - Max-Stufe 4 (Bausparvertrag), danach nicht kaufbar ✔
 - Behälter-Stufen-Namen final: Portemonnaie → Jutebeutel → Rucksack →
   IKEA-FRAKTA-Tasche → Bausparvertrag ✔
-- Studienfach bleibt vorerst Identität ohne Effekt (kein Bonus bis Skills) ✔
+- Studienfach differenziert jetzt über den Skillbaum (Kosten-/Dauer-Boni),
+  siehe Skillbaum unten — nicht mehr reine Identität ✔
 
 **Bewusst NICHT jetzt** (nicht "für später", sondern weil es den MVP sprengen
 würde):
@@ -444,8 +445,10 @@ dazu. Die Reihenfolge unten ist verbindlich:
       Laune-Kosten 5 Punkte/h; Behälter-/Upgrade-Kosten liegen in §3b fest und
       werden beim ersten echten Spieldurchlauf nur noch getunt 🙋
 - [ ] **Hier anhalten und spielen.** Erst wenn der Kern sich langweilig anfühlt:
-- [ ] **Skillbaum** (reduzierte Variante der 9 Original-Skills) mit
-      Studienfach-Boni/Mali (3–4 Fächer) – auch Differenzierung der Fächer
+- [x] **Skillbaum** (reduzierte Variante der 9 Original-Skills): drei Skills
+      (Lerneffizienz, Auftreten, Konzentration), ein Slot pro Charakter (bewusst
+      statt zweien), Studienfach-Boni/Mali über Kosten und Dauer; Bonus wird
+      beim Aktion-Start eingefroren
 - [ ] **Klausur als dritte zeitbasierte Aktion** (ECTS-Produktion) – sinnvoll
       erst mit dem Skillsystem, daher bewusst später
 - [ ] **BAföG** (passives Grundeinkommen, Muster wie "Instrumente") + Stipendium

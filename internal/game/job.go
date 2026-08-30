@@ -10,8 +10,9 @@ const JobRatePerHourCents = 800 // 8,00 €/h
 
 // JobParams are the inputs to a finished job shift.
 type JobParams struct {
-	Duration time.Duration
-	Mood     int // 0-100, tired characters earn less
+	Duration    time.Duration
+	Mood        int     // 0-100, tired characters earn less
+	SkillFactor float64 // Auftreten bonus; 0 (unset) means 1.0
 }
 
 // JobOutcome is what a finished job shift produced. Worth noting: unlike
@@ -27,7 +28,8 @@ type JobOutcome struct {
 func ResolveJob(p JobParams) JobOutcome {
 	hours := p.Duration.Hours()
 	moodFactor := 0.6 + 0.4*clamp01(float64(p.Mood)/100)
-	earnings := int(JobRatePerHourCents * hours * moodFactor)
+	skillFactor := gearRatio(p.SkillFactor)
+	earnings := int(JobRatePerHourCents * hours * moodFactor * skillFactor)
 	return JobOutcome{
 		EarningsCents: earnings,
 		MoodDelta:     moodCost(p.Duration),

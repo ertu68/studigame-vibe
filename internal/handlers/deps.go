@@ -11,6 +11,7 @@ import (
 	"studigame/internal/auth"
 	"studigame/internal/config"
 	"studigame/internal/game"
+	"studigame/internal/web"
 )
 
 type Deps struct {
@@ -40,7 +41,7 @@ func (d *Deps) roll() float64 {
 
 // addCharacterStatus fills the values the status bar renders.
 func (d *Deps) addCharacterStatus(data map[string]any, char Character) {
-	data["Money"] = formatCents(char.MoneyCents)
+	data["Money"] = web.FormatCents(char.MoneyCents)
 	data["MoneyLevel"] = char.ContainerLevel
 	data["MoneyFillPercent"] = fillPercent(char.MoneyCents, game.ContainerCapacity(char.ContainerLevel))
 	data["Mood"] = char.Mood

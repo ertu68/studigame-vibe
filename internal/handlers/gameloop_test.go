@@ -51,6 +51,9 @@ func newGameLoopServer(t *testing.T) *gameLoopServer {
 	mux.HandleFunc("POST /actions/collect", RequireCSRF(gs.deps.RequireAuth(gs.deps.Collect)))
 	mux.HandleFunc("POST /actions/job", RequireCSRF(gs.deps.RequireAuth(gs.deps.Job)))
 	mux.HandleFunc("POST /actions/upgrade-container", RequireCSRF(gs.deps.RequireAuth(gs.deps.ContainerUpgrade)))
+	mux.HandleFunc("GET /skills", gs.deps.RequireAuth(gs.deps.Skills))
+	mux.HandleFunc("POST /skills/train", RequireCSRF(gs.deps.RequireAuth(gs.deps.TrainSkill)))
+	mux.HandleFunc("POST /skills/cancel", RequireCSRF(gs.deps.RequireAuth(gs.deps.CancelSkill)))
 
 	gs.server = httptest.NewServer(mux)
 	t.Cleanup(gs.server.Close)
@@ -225,6 +228,63 @@ func TestGameLoop(t *testing.T) {
 	_, body = gs.get("/dashboard")
 	if !strings.Contains(body, "20,00 €") {
 		t.Fatalf("dashboard missing new balance: %q", truncate(body))
+	}
+}
+
+// TestSkillLoop walks the skill tree end to end: the page renders, training
+// starts (spending the whole start capital), and completion bumps the level.
+func TestSkillLoop(t *testing.T) {
+	gs := newGameLoopServer(t)
+	gs.registerVerified("Leni", "leni@example.com")
+
+	gs.get("/login")
+	resp, _ := gs.post("/login", url.Values{
+		"email":    {"leni@example.com"},
+		"password": {"hunter22"},
+	})
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("login: status %d", resp.StatusCode)
+	}
+	gs.post("/character/new", url.Values{
+		"subject": {gs.subjectID("Informatik")},
+		"name":    {"Leni"},
+	})
+
+	// The skill tree renders with all three skills and their costs.
+	resp, body := gs.get("/skills")
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("GET /skills: status %d", resp.StatusCode)
+	}
+	for _, want := range []string{"Lerneffizienz", "Auftreten", "Konzentration", "10,00 €", "Weiterbildung"} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("skills page missing %q: %q", want, truncate(body))
+		}
+	}
+
+	// Training Lerneffizienz consumes the whole 10 € start capital and, being
+	// a POST, lands (after redirect) on the running-training view.
+	resp, body = gs.post("/skills/train", url.Values{"skill": {"geschicklichkeit"}})
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("train: status %d", resp.StatusCode)
+	}
+	if !strings.Contains(body, "Weiterbildung läuft") {
+		t.Fatalf("expected a running training: %q", truncate(body))
+	}
+	if !strings.Contains(body, `x-data="countdown(`) {
+		t.Fatalf("expected a live training countdown: %q", truncate(body))
+	}
+
+	// Two hours later the run completes on the next page view.
+	gs.now = gs.now.Add(2 * time.Hour)
+	resp, body = gs.get("/skills")
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("GET /skills after resolve: status %d", resp.StatusCode)
+	}
+	if strings.Contains(body, "Weiterbildung läuft") {
+		t.Fatalf("training still running after completion: %q", truncate(body))
+	}
+	if !strings.Contains(body, "1/20") {
+		t.Fatalf("expected Lerneffizienz level 1/20: %q", truncate(body))
 	}
 }
 

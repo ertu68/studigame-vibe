@@ -8,6 +8,7 @@ import (
 
 	"studigame/internal/auth"
 	"studigame/internal/db"
+	"studigame/internal/web"
 )
 
 func testDB(t *testing.T) *sql.DB {
@@ -191,8 +192,8 @@ func TestFormatCents(t *testing.T) {
 		{123456, "1234,56 €"},
 	}
 	for _, tt := range tests {
-		if got := formatCents(tt.cents); got != tt.want {
-			t.Errorf("formatCents(%d) = %q, want %q", tt.cents, got, tt.want)
+		if got := web.FormatCents(tt.cents); got != tt.want {
+			t.Errorf("FormatCents(%d) = %q, want %q", tt.cents, got, tt.want)
 		}
 	}
 }

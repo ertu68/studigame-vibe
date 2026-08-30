@@ -1,0 +1,73 @@
+{{define "content"}}
+<div class="max-w-xl mx-auto py-8">
+  <h1 class="text-2xl font-display text-pfandglas mb-6">Weiterbildung</h1>
+
+  <script src="/static/js/actions.js"></script>
+
+  {{if .Error}}
+  <div class="flash-error mb-4">
+    <p>{{.Error}}</p>
+  </div>
+  {{end}}
+
+  <p class="text-sm mb-4">
+    Studium {{.Subject}}. Wer dazulernt, steigt auf — jede Stufe kostet mehr als
+    die vorige. Läuft eine Weiterbildung, ist ein Skill gesperrt.
+  </p>
+
+  {{if .Training}}
+  <div class="card mb-6">
+    <h2 class="text-xl font-display text-asphalt mb-3">Weiterbildung läuft</h2>
+    <p class="mb-2">
+      Du lernst
+      <strong>{{.Training.Skill}} auf Stufe {{.Training.Level}}</strong>.
+    </p>
+    <div
+      x-data="countdown('{{.TrainingEndsAt}}')"
+      data-ends-at="{{.TrainingEndsAt}}"
+      class="mb-4"
+    >
+      <p x-show="!expired">
+        Noch <span class="font-display text-lg" x-text="display"></span>.
+      </p>
+      <p x-show="expired">Gleich fertig, lädt neu …</p>
+    </div>
+    <noscript><p class="mb-4">Noch {{.TrainingRemaining}}.</p></noscript>
+    <form method="post" action="/skills/cancel">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+      <input type="hidden" name="id" value="{{.Training.ID}}" />
+      {{template "button" dict "Type" "submit" "Text" "Abbruch (80 % zurück)"
+      "Kind" "ghost"}}
+    </form>
+  </div>
+  {{end}}
+
+  <div class="space-y-4">
+    {{range .Skills}}
+    <div class="card">
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-display text-asphalt">{{.Name}}</h2>
+          <p class="text-sm mt-1">{{.Description}}</p>
+        </div>
+        <span class="font-mono text-sm whitespace-nowrap"
+          >{{.Level}}/{{.MaxLevel}}</span
+        >
+      </div>
+      <div class="mt-4 flex items-center justify-between gap-4">
+        {{if .AtMax}}
+        <p class="text-sm">Ausgelernt.</p>
+        {{else}}
+        <p class="text-sm">Nächste Stufe: {{cents .CostCents}}.</p>
+        <form method="post" action="/skills/train">
+          <input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
+          <input type="hidden" name="skill" value="{{.Slug}}" />
+          {{template "button" dict "Type" "submit" "Text" "Lernen"}}
+        </form>
+        {{end}}
+      </div>
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}

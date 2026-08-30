@@ -9,6 +9,16 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ## [Unreleased]
 
+### Hinzugefügt
+
+- **Skillbaum (Weiterbildung)**: Drei Skills — Lerneffizienz (mehr Leergut),
+  Auftreten (bessere Job-Bezahlung), Konzentration (schnellere
+  Weiterbildungen). Ein Weiterbildungs-Slot pro Charakter, Kosten werden vorab
+  abgebucht, Abbruch erstattet 80 %. Die Kostenkurve ist überlinear
+  (`Basis × Stufe^1.8`), Studienfächer differenzieren Kosten und Dauer.
+  Der Skill-Bonus wird beim Start einer Aktion eingefroren. Erreichbar über
+  „Lernen“ in der Bottom-Navigation.
+
 ### Geändert
 
 - **Alpine.js und Live-Countdown für laufende Aktionen**: Die Restzeit einer

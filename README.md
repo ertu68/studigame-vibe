@@ -30,7 +30,10 @@ fiktive Uni-Stadt, Studienfach übernimmt die Rolle des Klassensystems.
   laufenden Schicht zählt im Browser live runter (Alpine.js), der Meta-Refresh bleibt als
   No-JS-Fallback. Der erste Geld-Sink steht: **Behälter-Upgrade** als sofortiger Kauf
   (überlineare Kostenkurve `2000 × Level^1.8` Cent, Max-Stufe 4), Knopf auf dem Dashboard,
-  Ledger-Debit in einer Transaktion.
+  Ledger-Debit in einer Transaktion. Dazu ein **Skillbaum (Weiterbildung)** mit drei
+  Skills (Lerneffizienz, Auftreten, Konzentration), einem Slot pro Charakter,
+  überlinearer Kostenkurve und Studienfach-Boni — erreichbar über „Lernen“ in der
+  Bottom-Navigation.
 
 Der Code ist auf dem Studigame-Stand: ein Go-Modul `studigame`, eine fiktive
 Uni-Stadt („Studistadt“) als Edition, Studienfach statt Bezirk als
@@ -41,10 +44,11 @@ Spielregeln leben infra-frei in `internal/game`, Aktionen in
 ist verworfen, „eine Datei pro Aktion“ hat sich in `handlers` niedergeschlagen.
 
 Aktueller Kern = **Sammeln + Werkstudenten-Job mit Geld-Behälter und
-Charity-Überlauf plus Behälter-Upgrade als erster Geld-Sink**. Die Restzeit
-laufender Aktionen zählt im Browser live runter (Alpine.js, neben htmx als
-einziges Frontend-JS, kein Build-Schritt). Charaktererstellung fragt das
-Studienfach (bisher rein Flavor, ohne Spieleffekt). Als Nächstes: das Balancing
+Charity-Überlauf plus Behälter-Upgrade und Skillbaum (Weiterbildung)**. Die
+Restzeit laufender Aktionen zählt im Browser live runter (Alpine.js, neben
+htmx als einziges Frontend-JS, kein Build-Schritt). Charaktererstellung fragt
+das Studienfach ab, das jetzt im Skillbaum mitredet (Kosten- und Dauer-Boni).
+Als Nächstes: Klausur/Studium als dritte Aktion (ECTS) und danach das Balancing
 spielen und bewerten (siehe `studigame-plan.md` §3b und ROADMAP).
 
 Name ist entschieden (Studigame), Domain ist noch offen — siehe `.env.example`.

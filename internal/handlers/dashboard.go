@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"studigame/internal/game"
 	"studigame/internal/web"
@@ -38,6 +39,7 @@ func (d *Deps) Dashboard(u *user, w http.ResponseWriter, r *http.Request) {
 	data["BafogEnabled"] = char.BafogNextAt != nil
 	data["BafogPayoutText"] = web.FormatCents(game.BafogPayoutCents)
 	data["BafogSummary"] = bafog
+	addCoffeeData(data, char, d.now())
 	web.Render(w, "dashboard.html", data)
 }
 
@@ -111,6 +113,13 @@ func addSkillOverview(data map[string]any, db *sql.DB, char Character) {
 		})
 	}
 	data["SkillOverview"] = items
+}
+
+// addCoffeeData fills the Campus-Kiosk card on the dashboard.
+func addCoffeeData(data map[string]any, char Character, now time.Time) {
+	data["CoffeeCost"] = web.FormatCents(game.CoffeeCostCents)
+	data["CoffeeActive"] = CoffeeBoostActive(char, now)
+	data["CoffeeAffordable"] = char.MoneyCents >= game.CoffeeCostCents
 }
 
 // fillPercent is the container fill level for the status bar, capped at 100.

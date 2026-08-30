@@ -74,7 +74,7 @@ sondern um dokumentierte Lücken und Balance-Fälle, die ein späterer Leser son
   (WG-Zimmer→Eigentumswohnung) und die Fach-Boni (`studigame-plan.md` §3)
   hängen genau an ihnen und sind sonst nicht baubar. Entscheidung im Plan
   festhalten, damit der nächste Agent nicht in die Lücke tappt
-- [ ] Kaffee-Boost (`0009_coffee.sql`, `shop.go`) zum Abschluss in CHANGELOG &
+- [x] Kaffee-Boost (`0009_coffee.sql`, `shop.go`) zum Abschluss in CHANGELOG &
   ROADMAP nachziehen — uncommitted WIP, nicht vergessen beim Commit
 
 ## Danach — Kernschleife
@@ -120,6 +120,11 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt".
   Nachzahlung für vernachlässigte Accounts; Überlauf geht in den Spendentopf.
   Abrechnung in `dashboard.go` und `collect_handlers.go`, reine Regeln in
   `internal/game/bafog.go`
+- [x] **Campus-Kiosk: Kaffee-Boost** (erster Teil des breiten Shops): ein Kaffee
+  (2 €) auf dem Dashboard halbiert für 2 h die Weiterbildungsdauer; Käufe
+  stapeln das Fenster. Mechanik „Kaffee statt Promille" aus dem Plan. Reine
+  Regeln in `internal/game/shop.go`, Kauf in `coffee_store.go`, Route
+  `POST /kiosk/coffee`
 - [ ] Breiter Shop (Ausrüstung, Instrumente, Wohnung) — erst nach weiteren
   Einkommensquellen, sonst kauft nichts zusammen
 - [ ] Verbrechen-Aktion mit Risiko und Ertrag

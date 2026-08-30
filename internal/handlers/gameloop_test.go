@@ -55,6 +55,7 @@ func newGameLoopServer(t *testing.T) *gameLoopServer {
 	mux.HandleFunc("POST /skills/train", RequireCSRF(gs.deps.RequireAuth(gs.deps.TrainSkill)))
 	mux.HandleFunc("POST /skills/cancel", RequireCSRF(gs.deps.RequireAuth(gs.deps.CancelSkill)))
 	mux.HandleFunc("POST /bafog/toggle", RequireCSRF(gs.deps.RequireAuth(gs.deps.Bafog)))
+	mux.HandleFunc("POST /kiosk/coffee", RequireCSRF(gs.deps.RequireAuth(gs.deps.Coffee)))
 
 	gs.server = httptest.NewServer(mux)
 	t.Cleanup(gs.server.Close)
@@ -435,6 +436,39 @@ func TestBafogLoop(t *testing.T) {
 	_, body = gs.get("/dashboard")
 	if strings.Contains(body, "BAföG eingegangen") {
 		t.Fatalf("payout shown twice: %q", truncate(body))
+	}
+}
+
+func TestCoffeeLoop(t *testing.T) {
+	gs := newGameLoopServer(t)
+	gs.registerVerified("Nora", "nora@example.com")
+	gs.get("/login")
+	gs.post("/login", url.Values{"email": {"nora@example.com"}, "password": {"hunter22"}})
+	gs.post("/character/new", url.Values{"subject": {gs.subjectID("Informatik")}, "name": {"Nora"}})
+
+	// Fresh character: the kiosk offers a coffee (1000 ct start covers it).
+	_, body := gs.get("/dashboard")
+	if !strings.Contains(body, "Campus-Kiosk") {
+		t.Fatalf("dashboard missing kiosk: %q", truncate(body))
+	}
+
+	// Buy: the boost turns active.
+	resp, body := gs.post("/kiosk/coffee", url.Values{})
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("buy: status %d", resp.StatusCode)
+	}
+	if !strings.Contains(body, "Der Kaffee wirkt noch") {
+		t.Fatalf("expected active boost after buying: %q", truncate(body))
+	}
+
+	// After the window the boost has run out and the offer is back.
+	gs.now = gs.now.Add(3 * time.Hour)
+	_, body = gs.get("/dashboard")
+	if strings.Contains(body, "Der Kaffee wirkt noch") {
+		t.Fatalf("boost should have expired: %q", truncate(body))
+	}
+	if !strings.Contains(body, "halbiert die Dauer") {
+		t.Fatalf("expected the coffee offer after expiry: %q", truncate(body))
 	}
 }
 

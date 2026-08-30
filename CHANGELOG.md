@@ -25,6 +25,12 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
   Account eine Wochen-Auszahlung anspart; die Auszahlungs-Phase bleibt an der
   ursprünglichen Kadenz verankert (Booking, Ledger und Pointer in einer
   Transaktion, sodass ein Neuladen nicht doppelt zahlt).
+- **Campus-Kiosk: Kaffee-Boost**: Ein Kaffee (2,00 €) auf dem Dashboard
+  halbiert für zwei Stunden die Dauer einer Weiterbildung (temporärer
+  Konzentrations-Boost, Mechanik nach dem Plan „Kaffee statt Promille").
+  Mehrere Käufe stapeln das Fenster; Ledger-Buchung und Boost-Pointer liegen in
+  einer Transaktion. Verbrauchter Boost ist die erste Verwendung des
+  `caffeine_until`-Felds.
 
 ### Geändert
 

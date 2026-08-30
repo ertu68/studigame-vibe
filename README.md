@@ -34,9 +34,11 @@ fiktive Uni-Stadt, Studienfach übernimmt die Rolle des Klassensystems.
   Skills (Lerneffizienz, Auftreten, Konzentration), einem Slot pro Charakter,
   überlinearer Kostenkurve und Studienfach-Boni — erreichbar über „Lernen“ in der
   Bottom-Navigation. Das Dashboard zeigt die Skill-Stufen im Kartenblock
-  „Dein Stand“. Dazu passives **BAföG** als Grundeinkommen: nach dem
+  „Dein Stand". Dazu passives **BAföG** als Grundeinkommen: nach dem
   Beantragen (Knopf auf dem Dashboard) trifft alle 6 Stunden ein fester Betrag
-  ein, ohne Schicht und ohne Laune-Kosten.
+  ein, ohne Schicht und ohne Laune-Kosten. Und ein erster Teil des Shops: der
+  **Campus-Kiosk** verkauft einen Kaffee-Boost (2 €), der für 2 Stunden die
+  Weiterbildungsdauer halbiert.
 
 Der Code ist auf dem Studigame-Stand: ein Go-Modul `studigame`, eine fiktive
 Uni-Stadt („Studistadt“) als Edition, Studienfach statt Bezirk als
@@ -47,8 +49,9 @@ Spielregeln leben infra-frei in `internal/game`, Aktionen in
 ist verworfen, „eine Datei pro Aktion“ hat sich in `handlers` niedergeschlagen.
 
 Aktueller Kern = **Sammeln + Werkstudenten-Job mit Geld-Behälter und
-Charity-Überlauf plus Behälter-Upgrade, Skillbaum (Weiterbildung) und passivem
-BAföG (Grundeinkommen alle 6 Stunden)**. Die
+Charity-Überlauf plus Behälter-Upgrade, Skillbaum (Weiterbildung), passivem
+BAföG (Grundeinkommen alle 6 Stunden) und einem Kaffee-Boost aus dem
+Campus-Kiosk** (2 €, halbiert 2 h lang die Weiterbildungsdauer). Die
 Restzeit laufender Aktionen zählt im Browser live runter (Alpine.js, neben
 htmx als einziges Frontend-JS, kein Build-Schritt). Charaktererstellung fragt
 das Studienfach ab, das jetzt im Skillbaum mitredet (Kosten- und Dauer-Boni).

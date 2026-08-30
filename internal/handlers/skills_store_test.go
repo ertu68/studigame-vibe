@@ -71,6 +71,38 @@ func TestStartSkillTrainingHappyPath(t *testing.T) {
 	}
 }
 
+func TestSkillTrainingHalvedByCoffeeBoost(t *testing.T) {
+	conn := testDB(t)
+	char := newCharacter(t, conn, "Tim", "tim@example.com")
+	start := time.Date(2026, 8, 26, 8, 0, 0, 0, time.UTC)
+
+	// Enough money for coffee (200 ct) plus a training run (1000 ct).
+	if _, err := conn.Exec(`UPDATE characters SET money_cents = 5000 WHERE id = ?`, char.ID); err != nil {
+		t.Fatalf("top up: %v", err)
+	}
+	char.MoneyCents = 5000
+
+	boosted, err := BuyCoffee(conn, char, start)
+	if err != nil {
+		t.Fatalf("buy coffee: %v", err)
+	}
+	durBoosted, err := StartSkillTraining(conn, boosted, "geschicklichkeit", start)
+	if err != nil {
+		t.Fatalf("start boosted training: %v", err)
+	}
+
+	// Baseline: same skill, no coffee.
+	baseChar := newCharacter(t, conn, "Ole", "ole@example.com")
+	durBase, err := StartSkillTraining(conn, baseChar, "geschicklichkeit", start)
+	if err != nil {
+		t.Fatalf("start base training: %v", err)
+	}
+
+	if durBoosted*2 != durBase {
+		t.Fatalf("boost must halve training: boosted=%d base=%d", durBoosted, durBase)
+	}
+}
+
 func TestStartSkillTrainingNotEnoughMoney(t *testing.T) {
 	conn := testDB(t)
 	char := newCharacter(t, conn, "Ada", "ada@example.com")

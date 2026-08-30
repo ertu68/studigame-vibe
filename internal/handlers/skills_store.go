@@ -96,7 +96,8 @@ func StartSkillTraining(db *sql.DB, char Character, slug string, now time.Time) 
 
 	base := game.SkillCostCents(*skill, level)
 	konz := levels["konzentration"]
-	duration := game.SkillTrainingDuration(slug, konz, char.SubjectName)
+	boost := CoffeeBoostActive(char, now)
+	duration := game.BoostedSkillTrainingDuration(slug, konz, char.SubjectName, boost)
 	cost := int(float64(base) * game.SubjectSkillCostFactor(char.SubjectName, slug))
 	if char.MoneyCents < cost {
 		return 0, ErrNotEnoughMoney

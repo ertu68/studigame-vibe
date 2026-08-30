@@ -95,5 +95,29 @@
     </form>
     {{end}}
   </div>
+
+  <div class="card mt-6">
+    <h2 class="text-xl font-display text-asphalt mb-3">Campus-Kiosk</h2>
+    {{if .CoffeeActive}}
+    <p class="mb-3">Der Kaffee wirkt noch — deine Weiterbildungen laufen doppelt so schnell.</p>
+    {{else}}
+    <p class="text-sm mb-4">
+      Ein Kaffee für {{.CoffeeCost}} halbiert die Dauer deiner nächsten
+      Weiterbildung für zwei Stunden. Der Stress, aber die Profs sind schneller
+      zufrieden.
+    </p>
+    {{end}}
+    <form method="post" action="/kiosk/coffee">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+      {{if .CoffeeAffordable}}
+      <button type="submit" class="btn-primary">Kaffee für {{.CoffeeCost}}</button>
+      {{else}}
+      <button type="submit" class="btn-primary" disabled>
+        Kaffee für {{.CoffeeCost}}
+      </button>
+      <p class="text-sm mt-2">Dafür reicht das Kleingeld nicht.</p>
+      {{end}}
+    </form>
+  </div>
 </div>
 {{end}}

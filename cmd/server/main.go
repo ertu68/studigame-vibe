@@ -96,6 +96,7 @@ func main() {
 	actionLimiter := httpx.NewIPRateLimiter(30, time.Minute)
 	mux.HandleFunc("GET /actions", deps.RequireAuth(deps.Actions))
 	mux.HandleFunc("POST /actions/collect", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.Collect))))
+	mux.HandleFunc("POST /actions/upgrade-container", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.ContainerUpgrade))))
 
 	// Create server with timeouts
 	addr := ":" + cfg.Port

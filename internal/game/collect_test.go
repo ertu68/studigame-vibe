@@ -148,6 +148,69 @@ func TestStartingCapitalFitsInFirstContainer(t *testing.T) {
 	}
 }
 
+func TestUpgradeCostCents(t *testing.T) {
+	const base = 2000 // Mirrors the production base value.
+	tests := []struct {
+		level, want int
+	}{
+		{0, 2000},  // 20 €
+		{1, 6964},  // ~70 €
+		{2, 14449}, // ~144 €
+		{3, 24251}, // ~243 €
+		{4, 0},     // max: not buyable
+		{5, 0},     // beyond max: not buyable
+		{-1, 0},    // invalid: not buyable
+	}
+	for _, tt := range tests {
+		if got := UpgradeCostCents(tt.level, base); got != tt.want {
+			t.Errorf("UpgradeCostCents(%d, %d) = %d, want %d", tt.level, base, got, tt.want)
+		}
+	}
+}
+
+func TestUpgradeCostDefaults(t *testing.T) {
+	if ContainerUpgradeBaseCents != 2000 {
+		t.Errorf("ContainerUpgradeBaseCents = %d, want 2000", ContainerUpgradeBaseCents)
+	}
+	// The production cost for the first rung must match the plan's 20 €.
+	if got := UpgradeCostCents(0, ContainerUpgradeBaseCents); got != 2000 {
+		t.Errorf("first upgrade = %d, want 2000", got)
+	}
+}
+
+// The exponent > 1 must make every rung strictly pricier than the one before.
+func TestUpgradeCostStrictlyIncreasing(t *testing.T) {
+	const base = 2000
+	saw := 0
+	for level := 0; level < MaxContainerLevel; level++ {
+		cost := UpgradeCostCents(level, base)
+		if level > 0 && cost <= saw {
+			t.Fatalf("level %d costs %d, not above previous %d", level, cost, saw)
+		}
+		saw = cost
+	}
+}
+
+func TestContainerLevelName(t *testing.T) {
+	tests := []struct {
+		level int
+		want  string
+	}{
+		{0, "Portemonnaie"},
+		{1, "Jutebeutel"},
+		{2, "Rucksack"},
+		{3, "IKEA-FRAKTA-Tasche"},
+		{4, "Bausparvertrag"},
+		{5, ""},
+		{-1, ""},
+	}
+	for _, tt := range tests {
+		if got := ContainerLevelName(tt.level); got != tt.want {
+			t.Errorf("ContainerLevelName(%d) = %q, want %q", tt.level, got, tt.want)
+		}
+	}
+}
+
 func TestSplitAtCapacity(t *testing.T) {
 	tests := []struct {
 		name                        string

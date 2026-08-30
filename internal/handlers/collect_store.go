@@ -10,9 +10,11 @@ import (
 )
 
 var (
-	ErrActionRunning = errors.New("character is already busy")
-	ErrInvalidShift  = errors.New("unknown shift length")
-	ErrNoOpenAction  = errors.New("no open action")
+	ErrActionRunning  = errors.New("character is already busy")
+	ErrInvalidShift   = errors.New("unknown shift length")
+	ErrNoOpenAction   = errors.New("no open action")
+	ErrNotEnoughMoney = errors.New("not enough money for the upgrade")
+	ErrContainerMax   = errors.New("container already at max level")
 )
 
 // OpenAction is an action that has been started and not resolved yet.
@@ -206,4 +208,50 @@ func CharityPool(db *sql.DB, editionID int64) (int, error) {
 		return 0, nil
 	}
 	return cents, err
+}
+
+// UpgradeContainer buys the next container tier. It checks the price and the
+// hard max level, debits the ledger and bumps container_level — one transaction,
+// so money and level can never disagree. Returns the refreshed character.
+func UpgradeContainer(db *sql.DB, char Character) (Character, error) {
+	if char.ContainerLevel >= game.MaxContainerLevel {
+		return char, ErrContainerMax
+	}
+
+	cost := game.UpgradeCostCents(char.ContainerLevel, game.ContainerUpgradeBaseCents)
+	if char.MoneyCents < cost {
+		return char, ErrNotEnoughMoney
+	}
+
+	nextLevel := char.ContainerLevel + 1
+	balance := char.MoneyCents - cost
+
+	tx, err := db.Begin()
+	if err != nil {
+		return char, err
+	}
+	defer tx.Rollback()
+
+	if _, err := tx.Exec(
+		`UPDATE characters SET container_level = ?, money_cents = ? WHERE id = ?`,
+		nextLevel, balance, char.ID,
+	); err != nil {
+		return char, err
+	}
+
+	if _, err := tx.Exec(
+		`INSERT INTO ledger (character_id, delta_cents, balance_after, reason)
+		 VALUES (?, ?, ?, 'container_upgrade')`,
+		char.ID, -cost, balance,
+	); err != nil {
+		return char, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return char, err
+	}
+
+	char.ContainerLevel = nextLevel
+	char.MoneyCents = balance
+	return char, nil
 }

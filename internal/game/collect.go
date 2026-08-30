@@ -2,7 +2,10 @@
 // Time and randomness are handed in, never fetched here.
 package game
 
-import "time"
+import (
+	"math"
+	"time"
+)
 
 // CollectDurations are the shift lengths a player can pick.
 // Longer shifts pay more in total but lock the character up.
@@ -85,16 +88,50 @@ func ApplyMood(mood, delta int) int {
 	return clampInt(mood+delta, 0, 100)
 }
 
-// ContainerCapacity is how many cents a character can carry at each level:
-// Becher, Tüte, Beutel, Einkaufswagen, Container. Level 0 has to hold more than
-// the 10 € starting capital, otherwise a new character is full before the first
-// shift and everything earned would go straight to charity.
+// MaxContainerLevel is the highest buyable container tier (Bausparvertrag).
+// It is a hard ceiling — the upgrade function reports "not buyable" beyond it
+// and the UI hides the button. After that the skill system takes over.
+const MaxContainerLevel = 4
+
+// ContainerUpgradeBaseCents is the single tuning knob for upgrade prices.
+const ContainerUpgradeBaseCents = 2000
+
+// ContainerCapacity is how many cents a character can carry at each level.
+// Level 0 has to hold more than the 10 € starting capital, otherwise a new
+// character is full before the first shift and everything earned would go
+// straight to charity.
 func ContainerCapacity(level int) int {
 	capacities := []int{2000, 5000, 20000, 100000, 500000}
 	if level < 0 || level >= len(capacities) {
 		return 0
 	}
 	return capacities[level]
+}
+
+// ContainerLevelName is the flavour name of a container tier, for display.
+func ContainerLevelName(level int) string {
+	names := []string{
+		"Portemonnaie",
+		"Jutebeutel",
+		"Rucksack",
+		"IKEA-FRAKTA-Tasche",
+		"Bausparvertrag",
+	}
+	if level < 0 || level >= len(names) {
+		return ""
+	}
+	return names[level]
+}
+
+// UpgradeCostCents is what a container upgrade from level to level+1 costs:
+// base × (level+1)^1.8. The exponent > 1 makes later rungs overproportionally
+// expensive (anti-snowball). It reports 0 at the max level, meaning "not
+// buyable". With the standard base of 2000: 20 €, ~70 €, ~144 €, ~243 €.
+func UpgradeCostCents(level, base int) int {
+	if level < 0 || level >= MaxContainerLevel {
+		return 0
+	}
+	return int(float64(base) * math.Pow(float64(level+1), 1.8))
 }
 
 // SplitAtCapacity divides an incoming amount into the part that still fits in

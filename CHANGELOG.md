@@ -11,6 +11,11 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ### Geändert
 
+- **Behälter-Upgrade als erster Geld-Sink**: Der Behälter lässt sich auf dem
+  Dashboard sofort aufrüsten (ein Tap, eine Transaktion; Ledger-Debit mit
+  `reason='container_upgrade'`). Überlineare Kostenkurve `2000 × Level^1.8` Cent,
+  Max-Stufe 4 (Bausparvertrag), danach blendet die UI den Knopf aus. Ohne diese
+  Ausgabe-Möglichkeit war der Charity-Überlauf spannungslos.
 - **Rebrand Pennergame → Studigame**: Go-Modul, alle Imports und der
   DB-Dateiname heißen jetzt `studigame`; Backup-Skript, docker-compose und
   IDE-Dateien nachgezogen

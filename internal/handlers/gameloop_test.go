@@ -49,6 +49,7 @@ func newGameLoopServer(t *testing.T) *gameLoopServer {
 	mux.HandleFunc("GET /dashboard", gs.deps.RequireAuth(gs.deps.Dashboard))
 	mux.HandleFunc("GET /actions", gs.deps.RequireAuth(gs.deps.Actions))
 	mux.HandleFunc("POST /actions/collect", RequireCSRF(gs.deps.RequireAuth(gs.deps.Collect)))
+	mux.HandleFunc("POST /actions/upgrade-container", RequireCSRF(gs.deps.RequireAuth(gs.deps.ContainerUpgrade)))
 
 	gs.server = httptest.NewServer(mux)
 	t.Cleanup(gs.server.Close)
@@ -232,6 +233,47 @@ func TestGameLoopRequiresLogin(t *testing.T) {
 		if loc := resp.Header.Get("Location"); loc != "/login" {
 			t.Errorf("GET %s: redirected to %q, want /login", path, loc)
 		}
+	}
+}
+
+// TestGameLoopUpgrade walks buying a container upgrade through the HTTP layer.
+func TestGameLoopUpgrade(t *testing.T) {
+	gs := newGameLoopServer(t)
+	gs.registerVerified("Uwe", "uwe@example.com")
+	gs.get("/login")
+	gs.post("/login", url.Values{"email": {"uwe@example.com"}, "password": {"hunter22"}})
+	gs.post("/character/new", url.Values{"subject": {gs.subjectID("Informatik")}, "name": {"Uwe"}})
+
+	// Fresh character has 10 €, the first upgrade costs 20 €: button disabled.
+	_, body := gs.get("/dashboard")
+	if !strings.Contains(body, "Aufrüsten für 20,00 €") {
+		t.Fatalf("dashboard missing upgrade price: %q", truncate(body))
+	}
+	if !strings.Contains(body, "disabled") {
+		t.Fatalf("unaffordable upgrade should be disabled: %q", truncate(body))
+	}
+
+	// Give the character the 20 €, reload, then buy.
+	if _, err := gs.deps.DB.Exec(`UPDATE characters SET money_cents = 2000 WHERE id = (SELECT id FROM characters WHERE user_id = (SELECT id FROM users WHERE email = 'uwe@example.com'))`); err != nil {
+		t.Fatalf("fund character: %v", err)
+	}
+	_, body = gs.get("/dashboard")
+	if strings.Contains(body, "disabled") {
+		t.Fatalf("affordable upgrade should be enabled: %q", truncate(body))
+	}
+
+	resp, _ := gs.post("/actions/upgrade-container", url.Values{})
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("upgrade: status %d", resp.StatusCode)
+	}
+
+	// One tier up, money spent, ledger booked.
+	_, body = gs.get("/dashboard")
+	if !strings.Contains(body, "Jutebeutel") {
+		t.Fatalf("dashboard missing new tier: %q", truncate(body))
+	}
+	if !strings.Contains(body, "0,00 €") {
+		t.Fatalf("dashboard missing spent balance: %q", truncate(body))
 	}
 }
 

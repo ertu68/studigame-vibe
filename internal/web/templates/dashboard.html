@@ -34,5 +34,35 @@
       </div>
     </div>
   </div>
+
+  <div class="card mt-6">
+    <h2 class="text-xl font-display text-asphalt mb-3">Behälter aufrüsten</h2>
+    {{if .UpgradeAtMax}}
+    <p>
+      Du trägst schon einen <strong>{{.UpgradeCurrent}}</strong>. Mehr passt
+      nicht mehr rein.
+    </p>
+    {{else}}
+    <p class="mb-2">
+      Du trägst {{.UpgradeCurrent}}. Als nächste Stufe: {{.UpgradeNext}}.
+    </p>
+    <p class="text-sm mb-4">
+      Der Behälter fasst dann mehr, bevor der Rest gespendet wird.
+    </p>
+    <form method="post" action="/actions/upgrade-container">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+      {{if .UpgradeAffordable}}
+      <button type="submit" class="btn-primary">
+        Aufrüsten für {{.UpgradeCost}}
+      </button>
+      {{else}}
+      <button type="submit" class="btn-primary" disabled>
+        Aufrüsten für {{.UpgradeCost}}
+      </button>
+      <p class="text-sm mt-2">Noch nicht genug Kleingeld.</p>
+      {{end}}
+    </form>
+    {{end}}
+  </div>
 </div>
 {{end}}

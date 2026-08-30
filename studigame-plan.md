@@ -284,6 +284,7 @@ ein minimaler, thematischer Geld-Sink, nicht der breite Shop.
   vorher abgenommen (Test auf einem Tuner-Account).
 
 **Entscheidungen zu diesem Block (keine offenen Punkte mehr):**
+
 - Kostenkurve `Basiswert × Level^1.8`, Basiswert 2000 Cent ✔
 - Kauf sofort + ein Tap + Ledger-Debit, kein `actions`-Eintrag ✔
 - Max-Stufe 4 (Bausparvertrag), danach nicht kaufbar ✔
@@ -383,7 +384,7 @@ Form wechselt.
 | 0 | Landingpage/Warteliste | **erledigt** |
 | 1 | Grundgerüst: Auth, DB, Deploy | **erledigt** |
 | 2 | Design-System | **erledigt** |
-| 3 | Kernschleife (Wirtschaft) | **läuft** (Sammeln + Behälter stehen, Geld-Sink fehlt) |
+| 3 | Kernschleife (Wirtschaft) | **läuft** (Sammeln + Behälter + Upgrade stehen, Balancing offen) |
 | 4 | Sozial & PvP | offen |
 | 5 | Mobile/PWA-Polish | offen |
 | 6 | Monetarisierung | offen |
@@ -434,7 +435,7 @@ dazu. Die Reihenfolge unten ist verbindlich:
       Bausparvertrag)
 - [x] **Tabellentests** für die Spielregeln in `internal/game` (Sammelertrag,
       Behältergrößen, Charity-Split, Grenzfälle)
-- [ ] **Behälter-Upgrade als Geld-Sink** (siehe §3b): Kauf, Ledger-Debit,
+- [x] **Behälter-Upgrade als Geld-Sink** (siehe §3b): Kauf, Ledger-Debit,
       überlineare Kostenkurve in `internal/game`, tabellengetestet
 - [ ] **Balancing abnehmen:** Grundertrag 40 Flaschen/h, 25 ct je Flasche,
       Laune-Kosten 5 Punkte/h; Behälter-/Upgrade-Kosten liegen in §3b fest und

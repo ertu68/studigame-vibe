@@ -64,7 +64,7 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt“.
 - [x] Charaktererstellung: Studienfach wählen, Name setzen, Startkapital über das Ledger
 - [x] Sammeln-Aktion mit Dauerwahl und Lazy-Tick-Auflösung
 - [x] Geld-Behälter mit Kappung, Überlauf fließt in den Charity-Pool
-- [ ] **Behälter-Upgrade als erster Geld-Sink** (kein weiterer Bar-Punkt!): Kauf
+- [x] **Behälter-Upgrade als erster Geld-Sink** (kein weiterer Bar-Punkt!): Kauf
   "Behälter aufrüsten", `container_level` +1, Ledger-Debit, überlineare Kosten-
   kurve (`Basiswert × Level^1.8`) in `internal/game`, tabellengetestet.
   Begründung: ohne Ausgabe-Möglichkeit ist der Charity-Überlauf spannungslos,

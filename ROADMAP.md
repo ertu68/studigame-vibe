@@ -32,6 +32,7 @@ Kleine Fixes und das Fundament, das später teuer nachzurüsten wäre.
   `go.sum` (Transitiv-Dependency von `modernc.org/sqlite`), aber unbenutzt;
   müsste von `// indirect` zu direkter Dependency werden
 - [x] Tailwind vs. handgeschriebenes CSS entschieden: Tailwind bleibt
+- [ ] DaisyUI installieren und benutzen und Dokumentation anpassen, dass DaisyUI Komponenten benutzt werden sollen
 
 ## Als Nächstes
 

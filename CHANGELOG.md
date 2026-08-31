@@ -127,6 +127,12 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ### Behoben
 
+- **Geldbetrag in der Statusleiste doppelt formatiert**: Die Sticky-Statusleiste
+  zeigte im Kopf `€%!f(string=43)` statt des Betrags. Ursache: das Geld kommt
+  bereits als formatierter String ins Template (`12,34 €`), die Komponente
+  hat es aber noch einmal mit `%.2f` formatiert und dabei `%f` auf einen
+  String angewendet. Jetzt wird der fertige Betrag unverändert angezeigt.
+
 - **Live-Countdown brach unter CSP**: Die Content-Security-Policy
   (`script-src 'self'`) blockierte Alpine.js – es wertet `x-data`/`x-show`
   zur Laufzeit aus und braucht `'unsafe-eval'`; der Registrierungs-Code lag

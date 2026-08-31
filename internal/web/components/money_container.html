@@ -76,8 +76,8 @@
   </div>
   {{end}}
 
-  <!-- Money amount display -->
-  <span class="font-mono text-muenzgold">€{{printf "%.2f" .Amount}}</span>
+  <!-- Money amount display (already formatted as German currency, e.g. 12,34 €) -->
+  <span class="font-mono text-muenzgold">{{.Amount}}</span>
 
   <!-- Overflow warning -->
   {{if gt .FillPercent 80}}

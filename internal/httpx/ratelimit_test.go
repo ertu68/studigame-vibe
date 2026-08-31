@@ -1,6 +1,7 @@
 package httpx
 
 import (
+	"net/http/httptest"
 	"testing"
 	"time"
 )
@@ -33,5 +34,19 @@ func TestIPRateLimiterWindowExpires(t *testing.T) {
 	time.Sleep(30 * time.Millisecond)
 	if !l.Allow("1.2.3.4") {
 		t.Fatalf("request after window expiry should be allowed")
+	}
+}
+
+func TestClientIPReadsForwardedFor(t *testing.T) {
+	r := httptest.NewRequest("GET", "/", nil)
+	r.RemoteAddr = "10.0.0.5:1234"
+	r.Header.Set("X-Forwarded-For", "203.0.113.9, 10.0.0.5")
+	if got := ClientIP(r); got != "203.0.113.9" {
+		t.Fatalf("X-Forwarded-For: got %q, want 203.0.113.9", got)
+	}
+
+	r.Header.Del("X-Forwarded-For")
+	if got := ClientIP(r); got != "10.0.0.5" {
+		t.Fatalf("no XFF: got %q, want 10.0.0.5", got)
 	}
 }

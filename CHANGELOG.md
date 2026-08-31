@@ -134,6 +134,10 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 - **Weiterbildung starten bei DB-Fehler**: `StartSkillTraining` ignorierte den
   Fehler beim Nachholen fälliger Weiterbildungen; er wird jetzt weitergereicht,
   statt still einen fälligen Abschluss zu verschlucken.
+- **Rate-Limit hinter Reverse-Proxy**: `ClientIP` liest jetzt `X-Forwarded-For`
+  von Caddy. Vorher sahen alle Requests wie die Proxy-IP aus, wodurch das
+  IP-Rate-Limit faktisch ein globales Limit für alle Spieler war statt eins pro
+  IP.
 
 - **Geldbetrag in der Statusleiste doppelt formatiert**: Die Sticky-Statusleiste
   zeigte im Kopf `€%!f(string=43)` statt des Betrags. Ursache: das Geld kommt

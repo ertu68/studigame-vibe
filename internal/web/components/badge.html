@@ -1,0 +1,5 @@
+{{define "badge"}}
+<span class="badge {{.Class}}">
+  {{if .Icon}}{{icon .Icon "h-3.5 w-3.5"}}{{end}}{{.Text}}
+</span>
+{{end}}

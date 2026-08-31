@@ -7,25 +7,13 @@
     name="{{.Name}}"
     id="{{.Name}}"
     class="form-input"
-    {{if
-    .Required}}required{{end}}
-    {{if
-    .Placeholder}}placeholder="{{.Placeholder}}"
-    {{end}}
-    {{if
-    .Rows}}rows="{{.Rows}}"
-    {{else}}rows="3"
-    {{end}}
-  >
-{{.Value}}</textarea>
+    {{if .Required}}required{{end}}
+    {{if .Placeholder}}placeholder="{{.Placeholder}}" {{end}}
+    {{if .Rows}}rows="{{.Rows}}" {{else}}rows="3" {{end}}
+  >{{.Value}}</textarea>
   {{else if eq .Type "select"}}
-  <select
-    name="{{.Name}}"
-    id="{{.Name}}"
-    class="form-input"
-    {{if
-    .Required}}required{{end}}
-  >
+  <select name="{{.Name}}" id="{{.Name}}" class="form-input"
+    {{if .Required}}required{{end}}>
     {{range .Options}}
     <option value="{{.Value}}" {{if eq $.Value .Value}}selected{{end}}>
       {{.Label}}
@@ -38,23 +26,14 @@
     name="{{.Name}}"
     id="{{.Name}}"
     class="form-input"
-    {{if
-    .Required}}required{{end}}
-    {{if
-    .Placeholder}}placeholder="{{.Placeholder}}"
-    {{end}}
-    {{if
-    .Value}}value="{{.Value}}"
-    {{end}}
-    {{if
-    .Min}}min="{{.Min}}"
-    {{end}}
-    {{if
-    .Max}}max="{{.Max}}"
-    {{end}}
+    {{if .Required}}required{{end}}
+    {{if .Placeholder}}placeholder="{{.Placeholder}}" {{end}}
+    {{if .Value}}value="{{.Value}}" {{end}}
+    {{if .Min}}min="{{.Min}}" {{end}}
+    {{if .Max}}max="{{.Max}}" {{end}}
   />
   {{end}} {{if .Help}}
-  <p class="text-sm text-gray-600 mt-1">{{.Help}}</p>
+  <p class="text-sm text-soft mt-1">{{.Help}}</p>
   {{end}}
 </div>
 {{end}}

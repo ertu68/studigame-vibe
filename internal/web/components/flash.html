@@ -1,7 +1,7 @@
 {{define "flash"}} {{if .Success}}
-<div class="flash-success">{{.Success}}</div>
+<div class="flash-success" role="status">{{.Success}}</div>
 {{end}} {{if .Error}}
-<div class="flash-error">{{.Error}}</div>
+<div class="flash-error" role="alert">{{.Error}}</div>
 {{end}} {{if .Info}}
-<div class="flash-info">{{.Info}}</div>
+<div class="flash-info" role="status">{{.Info}}</div>
 {{end}} {{end}}

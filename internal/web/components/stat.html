@@ -1,0 +1,8 @@
+{{define "stat"}}
+<div class="stat {{.Class}}">
+  {{if .Icon}}<span class="text-soft mb-0.5">{{icon .Icon "h-5 w-5"}}</span>{{end}}
+  <span class="stat-label">{{.Label}}</span>
+  <span class="stat-value">{{.Value}}</span>
+  {{if .Hint}}<span class="text-xs text-soft mt-0.5">{{.Hint}}</span>{{end}}
+</div>
+{{end}}

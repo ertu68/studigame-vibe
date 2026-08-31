@@ -1,11 +1,7 @@
 {{define "progress_bar"}}
-<div class="progress-bar {{.Class}}" {{if .ID}}id="{{.ID}}" {{end}}>
-  <div class="progress-fill" style="width: {{.Percent}}%;">
-    {{if .ShowLabel}}
-    <span class="text-xs text-white font-medium pl-2">{{.Percent}}%</span>
-    {{end}}
-  </div>
+<div class="progress-bar {{.Class}}" {{if .ID}}id="{{.ID}}" {{end}} role="progressbar" aria-valuenow="{{.Percent}}" aria-valuemin="0" aria-valuemax="100">
+  <div class="progress-fill" style="width: {{.Percent}}%;"></div>
 </div>
 {{if .Label}}
-<p class="text-sm text-pappe mt-1">{{.Label}}</p>
+<p class="text-sm text-soft mt-1">{{.Label}}</p>
 {{end}} {{end}}

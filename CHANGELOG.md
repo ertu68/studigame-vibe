@@ -137,7 +137,8 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 - **Rate-Limit hinter Reverse-Proxy**: `ClientIP` liest jetzt `X-Forwarded-For`
   von Caddy. Vorher sahen alle Requests wie die Proxy-IP aus, wodurch das
   IP-Rate-Limit faktisch ein globales Limit für alle Spieler war statt eins pro
-  IP.
+  IP. Zudem räumt der Limiter jetzt inaktive IP-Einträge auf (vorher wuchs
+  seine Karte ohne Grenze).
 
 - **Geldbetrag in der Statusleiste doppelt formatiert**: Die Sticky-Statusleiste
   zeigte im Kopf `€%!f(string=43)` statt des Betrags. Ursache: das Geld kommt

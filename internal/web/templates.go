@@ -36,6 +36,7 @@ func mustParsePages() map[string]*template.Template {
 		tmpl := template.New("").Funcs(template.FuncMap{
 			"dict":  dict,
 			"cents": FormatCents,
+			"icon":  icon,
 		})
 		out[page] = template.Must(tmpl.ParseFS(templateFS,
 			"templates/layout.html",
@@ -62,6 +63,7 @@ func Render(w http.ResponseWriter, page string, data any) {
 var partialTemplates = template.Must(template.New("").Funcs(template.FuncMap{
 	"dict":  dict,
 	"cents": FormatCents,
+	"icon":  icon,
 }).ParseFS(templateFS, "templates/partials/*.html", "components/*.html"))
 
 // RenderPartial renders a standalone partial (used for htmx fragment responses).

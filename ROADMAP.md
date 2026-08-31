@@ -36,6 +36,50 @@ Kleine Fixes und das Fundament, das später teuer nachzurüsten wäre.
   müsste von `// indirect` zu direkter Dependency werden
 - [x] Tailwind vs. handgeschriebenes CSS entschieden: Tailwind bleibt
 
+## UI-Redesign: Studigame-Look
+
+Abstand zum Original-Pennergame-Look (asphalt/pfandglas/verkehrsorange/muenzgold),
+modern-minimal, mobile-first. UI-Probleme nur hier, kein neuer Spielinhalt.
+Ein Bastel-Kosmetik-Reset, den ich mir mit dem Nutzer vorher als Richtung abgesteckt
+habe (nach Abstimmung in der Session).
+
+### Entscheidungen (festgehalten, damit der nächste Agent nicht nachbaut)
+
+- [x] **daisyUI nicht verwenden** — neu bestätigt: Phase-2-Komponenten sind bereits
+  handgebaute Tailwind-Partials in `internal/web/components/`; eigene Seite im
+  Ideen-Halde sagt dasselbe. Neue Dependency nur um funktionierenden Code zu
+  ersetzen wäre Rückschritt (CLAUDE.md-Regeln). Light/Dark reichen als Themes,
+  daisyUI würde dafür einen kompletten Framework-Umzug brauchen.
+- [x] **Light/Dark-Thema nativ** über CSS-Variablen + `data-theme`-Attribut
+  (dasselbe Prinzip wie daisyUI-Themes, nur ohne deren Framework). Default: Light.
+  Toggle-Button in der Statusleiste, Auswahl im `localStorage`.
+- [x] **Icons ohne JS und ohne Font**: Lucide-SVGs inline als Go-Template-Helper
+  `icon "name"` (vendored, gleiches Muster wie htmx/alpine). Kein Icon-Font,
+  kein npm, kein `<img>`-Netzwerkzug.
+- [x] Palette-Richtung: frisches Uni-Vokabular (Indigo-Primär + Lime/Lime-Akzent),
+  neutrale Slate-Neutrals statt brauner Pennergame-Töne. Zustandsfarben
+  success/danger/warning bleiben.
+
+### Aufgaben (Reihenfolge)
+
+- [ ] Neues Farb-/Token-System in `tailwind.config.js` und `static/css/input.css`
+  (semantische Tokens statt `asphalt`/`pappe`/`pfandglas`/`muenzgold`/`backstein`)
+- [ ] Light/Dark-Variablen in `:root` + `[data-theme="dark"]`, `theme.js`-Toggle
+  (vanilla, `localStorage`)
+- [ ] `icon`-Helper in Go (`internal/web/templates.go`) + SVG-Partials für die
+  benötigten Icons (Haus, Geldbörse, Buch, Kaffee, Abschluss, Blitz, …)
+- [ ] Basiskomponenten auf neues Design: Button, Card, Badge, Formularfelder,
+  Flashes, Stat/Stat-Wert, Progress-Bar, Skeleton, Loading
+- [ ] Statusleiste: Geld-Behälter als sichtbarer **Progress-Bar + Stat** im Header
+  (Füllstand %, nächste Stufe, pot), Thema-Toggle, Icons statt Text
+- [ ] Bottom-Navigation: Icons + Label, aktiver Zustand, (Logout bleibt)
+- [ ] Richtung/Abstimmung ansehen, dann Seiten einzeln umstellen:
+  Dashboard (Stats + Progress), Aktionen (Shift-Cards), Weiterbildung,
+  Landing/Warteliste, Login/Register
+- [ ] `static/css/app.css` aufräumen: weggeworfene Pennergame-Klassen löschen,
+  Rest auf Tokens umziehen
+- [ ] CSS bauen, `go test ./...` grün, README/CHANGELOG nachziehen
+
 ## Als Nächstes
 
 - [x] Uni-Stadt bei der Registrierung erfassen (feste Liste, reine Anzeige,

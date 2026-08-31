@@ -1,66 +1,205 @@
 @import "tailwindcss";
 @config "../../tailwind.config.js";
 
+/* ------------------------------------------------------------------ */
+/*  Semantic tokens (Studigame look, no pennergame brown/gold/green).  */
+/*  Colours are defined once as CSS custom properties and flipped by   */
+/*  the [data-theme="dark"] attribute on <html> (see theme.js).        */
+/* ------------------------------------------------------------------ */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-display: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-card-2: var(--card-2);
+  --color-ink: var(--ink);
+  --color-soft: var(--soft);
+  --color-edge: var(--edge);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-on-primary: var(--on-primary);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+
+  --color-success: var(--success);
+  --color-danger: var(--danger);
+  --color-warning: var(--warning);
+
+  /* Legacy pennergame tokens. Migration seam only: templates still reference
+     bg-asphalt/text-pappe/… until the page rewrite task. Removed in the
+     final cleanup task. */
+  --color-asphalt: #1c1b1a;
+  --color-pfandglas: #7a9b57;
+  --color-verkehrsorange: #d9711f;
+  --color-muenzgold: #c9a24b;
+  --color-pappe: #e8e1d3;
+  --color-backstein: #a83e32;
+}
+
+/* Light (default) */
+:root {
+  --bg: #f5f6f8;
+  --card: #ffffff;
+  --card-2: #eef1f5;
+  --ink: #171c26;
+  --soft: #5d6673;
+  --edge: #e1e6ec;
+
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --on-primary: #ffffff;
+  --accent: #65a30d;
+  --on-accent: #1a2e05;
+
+  --success: #15803d;
+  --danger: #dc2626;
+  --warning: #b45309;
+}
+
+/* Dark */
+[data-theme="dark"] {
+  --bg: #0e141c;
+  --card: #19212e;
+  --card-2: #212c3d;
+  --ink: #e8edf3;
+  --soft: #93a1b2;
+  --edge: #2b394c;
+
+  --primary: #6366f1;
+  --primary-hover: #818cf8;
+  --on-primary: #ffffff;
+  --accent: #84cc16;
+  --on-accent: #1a2e05;
+
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+  }
+  [data-theme="dark"] {
+    color-scheme: dark;
+  }
+  body {
+    background-color: var(--bg);
+    color: var(--ink);
+  }
+}
+
 @layer components {
+  /* ---- Card ---- */
   .card {
-    @apply bg-pappe text-asphalt rounded-sm p-4 shadow-md;
+    @apply bg-card rounded-xl border border-edge p-5 shadow-sm;
   }
 
+  /* ---- Buttons ---- */
+  .btn,
   .btn-primary,
   .btn-secondary,
+  .btn-ghost,
   .btn-danger {
-    @apply inline-block rounded-sm px-4 py-2 font-medium text-center transition;
+    @apply inline-block rounded-lg px-4 py-2 text-center font-medium
+      transition disabled:opacity-50 disabled:cursor-not-allowed
+      focus-visible:outline-2 focus-visible:outline-offset-2
+      focus-visible:outline-primary;
   }
   .btn-primary {
-    @apply bg-pfandglas text-asphalt hover:opacity-90;
+    @apply bg-primary text-on-primary hover:bg-primary-hover;
   }
   .btn-secondary {
-    @apply bg-pappe text-asphalt hover:opacity-90;
+    @apply bg-card-2 text-ink hover:bg-edge;
+  }
+  .btn-ghost {
+    @apply bg-transparent text-soft hover:bg-card-2 hover:text-ink;
   }
   .btn-danger {
-    @apply bg-backstein text-pappe hover:opacity-90;
+    @apply bg-danger text-white hover:opacity-90;
   }
 
+  /* ---- Forms ---- */
   .form-field {
     @apply mb-4;
   }
   .form-label {
-    @apply block text-sm font-medium text-pappe mb-1;
+    @apply block text-sm font-medium text-ink mb-1;
   }
   .form-input {
-    @apply w-full rounded-sm border-2 border-asphalt bg-pappe text-asphalt px-3 py-2;
+    @apply w-full rounded-lg border border-edge bg-card text-ink px-3 py-2
+      focus:outline-2 focus:outline-primary focus:border-primary;
   }
 
+  /* ---- Flashes ---- */
   .flash-success,
   .flash-error,
   .flash-info {
-    @apply rounded-sm px-4 py-2 mb-4 text-sm font-medium;
+    @apply rounded-lg px-4 py-2 mb-4 text-sm font-medium;
   }
   .flash-success {
-    @apply bg-pfandglas text-asphalt;
+    @apply bg-success/15 text-success border border-success/30;
   }
   .flash-error {
-    @apply bg-backstein text-pappe;
+    @apply bg-danger/15 text-danger border border-danger/30;
   }
   .flash-info {
-    @apply bg-muenzgold text-asphalt;
+    @apply bg-warning/15 text-warning border border-warning/30;
   }
 
+  /* ---- Progress bar ---- */
   .progress-bar {
-    @apply w-full h-3 rounded-sm bg-asphalt border-2 border-pappe overflow-hidden;
+    @apply w-full h-2.5 rounded-full bg-card-2 overflow-hidden;
   }
   .progress-fill {
-    @apply h-full bg-muenzgold transition-all;
+    @apply h-full rounded-full bg-accent transition-all;
   }
 
+  /* ---- Stat (money pot etc.) ---- */
+  .stat {
+    @apply flex flex-col;
+  }
+  .stat-label {
+    @apply text-xs uppercase tracking-wide text-soft;
+  }
+  .stat-value {
+    @apply text-lg font-semibold text-ink;
+  }
+
+  /* ---- Badge ---- */
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-0.5
+      text-xs font-medium bg-card-2 text-soft;
+  }
+
+  /* ---- Status bar ---- */
   .statusbar {
-    @apply sticky top-0 z-10 flex items-center justify-between bg-asphalt text-pappe px-4 py-2 border-b-2 border-muenzgold;
+    @apply sticky top-0 z-10 flex items-center justify-between gap-3
+      bg-card border-b border-edge px-4 py-2;
   }
 
+  /* ---- Bottom nav ---- */
   .bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 z-10 flex justify-around bg-asphalt border-t-2 border-muenzgold;
+    @apply fixed bottom-0 left-0 right-0 z-10 flex justify-around
+      bg-card border-t border-edge;
   }
   .nav-item {
-    @apply flex flex-col items-center justify-center flex-grow py-3 text-xs text-pappe bg-transparent border-0 cursor-pointer;
+    @apply flex flex-col items-center justify-center gap-0.5 flex-grow
+      py-2.5 text-[11px] text-soft bg-transparent border-0 cursor-pointer
+      hover:text-primary;
+  }
+  .nav-item-active {
+    @apply text-primary;
+  }
+
+  /* ---- Skeleton / Loading ---- */
+  .skeleton {
+    @apply animate-pulse rounded-lg bg-card-2;
+  }
+  .loading {
+    @apply inline-block h-4 w-4 animate-spin rounded-full
+      border-2 border-soft border-t-transparent;
   }
 }

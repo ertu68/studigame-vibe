@@ -1,24 +1,10 @@
 /** @type {import('tailwindcss').Config} */
+// Tailwind v4: content paths live here, colors/fonts are defined as @theme
+// tokens in static/css/input.css (backed by runtime CSS variables so the
+// light/dark theme can flip them).
 export default {
 	content: [
 		"./internal/web/templates/**/*.html",
 		"./internal/web/components/**/*.html",
 	],
-	theme: {
-		extend: {
-			colors: {
-				asphalt: "#1C1B1A",
-				pfandglas: "#7A9B57",
-				verkehrsorange: "#D9711F",
-				muenzgold: "#C9A24B",
-				pappe: "#E8E1D3",
-				backstein: "#A83E32",
-			},
-			fontFamily: {
-				display: ["ui-sans-serif", "system-ui", "Segoe UI", "Roboto", "sans-serif"],
-				body: ["ui-sans-serif", "system-ui", "Segoe UI", "Roboto", "sans-serif"],
-			},
-		},
-	},
-	plugins: [],
 };

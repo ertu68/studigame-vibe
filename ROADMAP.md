@@ -62,17 +62,17 @@ habe (nach Abstimmung in der Session).
 
 ### Aufgaben (Reihenfolge)
 
-- [ ] Neues Farb-/Token-System in `tailwind.config.js` und `static/css/input.css`
+- [x] Neues Farb-/Token-System in `tailwind.config.js` und `static/css/input.css`
   (semantische Tokens statt `asphalt`/`pappe`/`pfandglas`/`muenzgold`/`backstein`)
-- [ ] Light/Dark-Variablen in `:root` + `[data-theme="dark"]`, `theme.js`-Toggle
+- [x] Light/Dark-Variablen in `:root` + `[data-theme="dark"]`, `theme.js`-Toggle
   (vanilla, `localStorage`)
-- [ ] `icon`-Helper in Go (`internal/web/templates.go`) + SVG-Partials für die
+- [x] `icon`-Helper in Go (`internal/web/templates.go`) + SVG-Partials für die
   benötigten Icons (Haus, Geldbörse, Buch, Kaffee, Abschluss, Blitz, …)
-- [ ] Basiskomponenten auf neues Design: Button, Card, Badge, Formularfelder,
+- [x] Basiskomponenten auf neues Design: Button, Card, Badge, Formularfelder,
   Flashes, Stat/Stat-Wert, Progress-Bar, Skeleton, Loading
-- [ ] Statusleiste: Geld-Behälter als sichtbarer **Progress-Bar + Stat** im Header
+- [x] Statusleiste: Geld-Behälter als sichtbarer **Progress-Bar + Stat** im Header
   (Füllstand %, nächste Stufe, pot), Thema-Toggle, Icons statt Text
-- [ ] Bottom-Navigation: Icons + Label, aktiver Zustand, (Logout bleibt)
+- [x] Bottom-Navigation: Icons + Label, aktiver Zustand, (Logout bleibt)
 - [ ] Richtung/Abstimmung ansehen, dann Seiten einzeln umstellen:
   Dashboard (Stats + Progress), Aktionen (Shift-Cards), Weiterbildung,
   Landing/Warteliste, Login/Register

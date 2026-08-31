@@ -1,36 +1,49 @@
 {{define "statusbar"}}
 <div class="statusbar">
-  <div class="flex items-center space-x-4">
-    <!-- Money Container (Signature Element) -->
-    {{if .Money}} {{template "money_container" dict "Amount" .Money "Level"
-    .MoneyLevel "FillPercent" .MoneyFillPercent}} {{end}} {{if .Mood}}
-    <div class="flex items-center">
-      <span class="text-xs uppercase tracking-wide opacity-70">Laune</span>
-      <span class="ml-1">{{.Mood}}%</span>
-    </div>
-    {{end}} {{if .Cleanliness}}
-    <div class="flex items-center">
-      <span class="text-xs uppercase tracking-wide opacity-70">Sauber</span>
-      <span class="ml-1">{{.Cleanliness}}%</span>
+  <div class="flex items-center gap-4 min-w-0">
+    <!-- Money pot: stat + progress toward next container level. -->
+    <!-- Guarded on .Money: it is only set once a character exists. -->
+    {{if .Money}}
+    <div class="flex items-center gap-2 min-w-0">
+      <span class="text-primary shrink-0">{{icon "wallet" "h-5 w-5"}}</span>
+      <div class="min-w-0">
+        <div class="flex items-baseline gap-2">
+          <span class="stat-value text-base">{{.Money}}</span>
+          {{if .MoneyLevel}}
+          <span class="badge" title="Behälter-Stufe">{{icon "package"}}L{{.MoneyLevel}}</span>
+          {{end}}
+        </div>
+        <div class="progress-bar w-24 h-1.5 mt-1" role="presentation">
+          <div class="progress-fill" style="width: {{.MoneyFillPercent}}%;"></div>
+        </div>
+      </div>
     </div>
     {{end}}
 
-    <!-- Cooldown indicator -->
-    {{if .Cooldown}}
-    <div class="flex items-center text-verkehrsorange">
-      <span class="text-xs uppercase tracking-wide">Rest</span>
-      <span class="ml-1 text-xs">{{.Cooldown}}</span>
+    <!-- Mood -->
+    {{if .Mood}}
+    <div class="hidden sm:flex items-center gap-1.5 text-soft">
+      <span>{{icon "gauge" "h-4 w-4"}}</span>
+      <span class="text-sm">{{.Mood}}%</span>
     </div>
     {{end}}
   </div>
 
-  {{if .User}}
-  <div>
-    <span class="text-pfandglas">{{.User.Name}}</span>
-    {{if .User.City}}
-    <span class="text-xs opacity-70">· {{.User.City}}</span>
+  <div class="flex items-center gap-3">
+    {{if .User}}
+    <span class="text-sm text-ink hidden md:inline">{{.User.Name}}</span>
     {{end}}
+    <!-- Theme toggle -->
+    <button
+      type="button"
+      data-theme-toggle
+      aria-pressed="false"
+      aria-label="Farbschema wechseln"
+      class="btn-ghost !px-2 !py-1"
+    >
+      <span class="dark:hidden">{{icon "moon" "h-5 w-5"}}</span>
+      <span class="hidden dark:inline">{{icon "sun" "h-5 w-5"}}</span>
+    </button>
   </div>
-  {{end}}
 </div>
 {{end}}

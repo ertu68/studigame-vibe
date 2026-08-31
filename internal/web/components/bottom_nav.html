@@ -1,11 +1,20 @@
 {{define "bottom_nav"}}
-<div class="bottom-nav">
-  <a href="/dashboard" class="nav-item">Übersicht</a>
-  <a href="/actions" class="nav-item">Sammeln</a>
-  <a href="/skills" class="nav-item">Lernen</a>
+<nav class="bottom-nav">
+  <a href="/dashboard" class="nav-item {{if eq .ActivePath "/dashboard"}}nav-item-active{{end}}">
+    {{icon "house" "h-5 w-5"}}
+    Übersicht
+  </a>
+  <a href="/actions" class="nav-item {{if eq .ActivePath "/actions"}}nav-item-active{{end}}">
+    {{icon "recycle" "h-5 w-5"}}
+    Sammeln
+  </a>
+  <a href="/skills" class="nav-item {{if eq .ActivePath "/skills"}}nav-item-active{{end}}">
+    {{icon "brain" "h-5 w-5"}}
+    Lernen
+  </a>
   <form method="post" action="/logout" class="nav-item">
     <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
-    <button type="submit" class="nav-item">Logout</button>
+    <button type="submit" class="nav-item !py-2.5">{{icon "log-out" "h-5 w-5"}}Logout</button>
   </form>
-</div>
+</nav>
 {{end}}

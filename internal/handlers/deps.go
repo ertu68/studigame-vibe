@@ -77,9 +77,10 @@ func (d *Deps) currentUser(r *http.Request) *user {
 // baseData seeds template data every page needs: site name, current user, CSRF token.
 func (d *Deps) baseData(w http.ResponseWriter, r *http.Request) map[string]any {
 	return map[string]any{
-		"SiteName":  d.Config.SiteName,
-		"User":      d.currentUser(r),
-		"CSRFToken": auth.EnsureCSRFToken(w, r, d.Config.Production),
+		"SiteName":   d.Config.SiteName,
+		"User":       d.currentUser(r),
+		"CSRFToken":  auth.EnsureCSRFToken(w, r, d.Config.Production),
+		"ActivePath": r.URL.Path,
 	}
 }
 

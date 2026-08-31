@@ -9,13 +9,13 @@
     <meta http-equiv="refresh" content="{{.MetaRefresh}}" />
     {{end}}
     <title>{{.SiteName}}{{if .Title}} — {{.Title}}{{end}}</title>
+    <!-- Blocks paint until the theme is applied to avoid a flash. -->
+    <script src="/static/js/theme.js"></script>
     <script src="/static/js/htmx.min.js"></script>
     <script defer src="/static/js/alpine.min.js"></script>
     <link rel="stylesheet" href="/static/css/app.css" />
   </head>
-  <body
-    class="min-h-screen flex flex-col bg-asphalt text-pappe font-body pb-16"
-  >
+  <body class="min-h-screen flex flex-col bg-bg text-ink font-body pb-16">
     <!-- Status bar -->
     {{if .User}} {{template "statusbar" .}} {{end}}
 

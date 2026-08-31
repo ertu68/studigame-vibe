@@ -131,6 +131,9 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
   demselben Zahlungszeiger konnten ein fälliges Intervall doppelt auszahlen.
   Die Auszahlung ist jetzt eine bedingte `UPDATE ... WHERE bafog_next_at = ?`
   — nur ein Request gewinnt, der zweite bucht nichts (mit Test belegt).
+- **Weiterbildung starten bei DB-Fehler**: `StartSkillTraining` ignorierte den
+  Fehler beim Nachholen fälliger Weiterbildungen; er wird jetzt weitergereicht,
+  statt still einen fälligen Abschluss zu verschlucken.
 
 - **Geldbetrag in der Statusleiste doppelt formatiert**: Die Sticky-Statusleiste
   zeigte im Kopf `€%!f(string=43)` statt des Betrags. Ursache: das Geld kommt

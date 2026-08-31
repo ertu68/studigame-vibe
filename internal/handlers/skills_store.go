@@ -92,7 +92,9 @@ func StartSkillTraining(db *sql.DB, char Character, slug string, now time.Time) 
 	}
 
 	// A due training is settled first, so the player cannot stack two runs.
-	ResolveSkillTrainings(db, char.ID, now)
+	if err := ResolveSkillTrainings(db, char.ID, now); err != nil {
+		return 0, err
+	}
 
 	base := game.SkillCostCents(*skill, level)
 	konz := levels["konzentration"]

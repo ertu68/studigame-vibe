@@ -67,7 +67,7 @@ Name ist entschieden (Studigame), Domain ist noch offen — siehe `.env.example`
 
 ```
 cp .env.example .env
-make run          # startet auf :8080, SQLite-Datei landet lokal
+make run          # startet lokal auf :8410, SQLite-Datei landet lokal
 make test
 make css          # baut CSS mit Tailwind
 make watch        # beobachtet CSS-Änderungen

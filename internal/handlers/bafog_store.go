@@ -48,11 +48,26 @@ func CollectBafog(db *sql.DB, char Character, now time.Time) (*ActionSummary, er
 	kept, donated := game.SplitAtCapacity(char.MoneyCents, payout, capacity)
 	balance := char.MoneyCents + kept
 
-	if _, err := tx.Exec(
-		`UPDATE characters SET money_cents = ?, bafog_next_at = ? WHERE id = ?`,
-		balance, nextAt.UTC().Format(time.RFC3339Nano), char.ID,
-	); err != nil {
+	// Guard against double-payout: only settle if the payout pointer is still
+	// where the caller read it. A concurrent request that already settled will
+	// update zero rows (bafog_next_at has moved), so the rollback below returns
+	// nil and no money is booked twice. The unconditional UPDATE would otherwise
+	// let two overlapping requests both pay one due period.
+	res, err := tx.Exec(
+		`UPDATE characters SET money_cents = ?, bafog_next_at = ? WHERE id = ? AND bafog_next_at = ?`,
+		balance, nextAt.UTC().Format(time.RFC3339Nano), char.ID, char.BafogNextAt.UTC().Format(time.RFC3339Nano),
+	)
+	if err != nil {
 		return nil, err
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+	if affected == 0 {
+		// Someone else settled the due periods first (or BAföG was cancelled
+		// mid-flight); nothing to book here.
+		return nil, nil
 	}
 
 	if kept > 0 {

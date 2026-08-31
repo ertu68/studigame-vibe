@@ -127,6 +127,11 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ### Behoben
 
+- **BAföG-Doppelauszahlung unter Last**: Zwei überlappende Requests mit
+  demselben Zahlungszeiger konnten ein fälliges Intervall doppelt auszahlen.
+  Die Auszahlung ist jetzt eine bedingte `UPDATE ... WHERE bafog_next_at = ?`
+  — nur ein Request gewinnt, der zweite bucht nichts (mit Test belegt).
+
 - **Geldbetrag in der Statusleiste doppelt formatiert**: Die Sticky-Statusleiste
   zeigte im Kopf `€%!f(string=43)` statt des Betrags. Ursache: das Geld kommt
   bereits als formatierter String ins Template (`12,34 €`), die Komponente

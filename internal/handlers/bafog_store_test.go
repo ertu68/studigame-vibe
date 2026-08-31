@@ -235,3 +235,52 @@ func TestCollectBafogWritesLedgerRow(t *testing.T) {
 		t.Fatalf("ledger delta: got %d, want %d", delta, game.BafogPayoutCents)
 	}
 }
+
+// TestCollectBafogDoesNotDoublePay guards the conditional-update fix: two
+// overlapping requests holding the same stale payout pointer must not both
+// book the same due period. The second call's UPDATE matches zero rows and
+// settles nothing, so the character is paid exactly once.
+func TestCollectBafogDoesNotDoublePay(t *testing.T) {
+	conn := testDB(t)
+	char := newCharacter(t, conn, "Mel", "mel@example.com")
+	now := time.Date(2026, 8, 26, 8, 0, 0, 0, time.UTC)
+
+	// Jutebeutel (5000) so two payouts would fit — overflow is not the guard.
+	if _, err := conn.Exec(`UPDATE characters SET container_level = 1 WHERE id = ?`, char.ID); err != nil {
+		t.Fatalf("set container level: %v", err)
+	}
+	char.ContainerLevel = 1
+
+	on, err := SetBafog(conn, char, true, now)
+	if err != nil {
+		t.Fatalf("enable: %v", err)
+	}
+	due := now.Add(game.BafogPeriod)
+
+	// First request settles the due period.
+	first, err := CollectBafog(conn, on, due)
+	if err != nil {
+		t.Fatalf("first collect: %v", err)
+	}
+	if first == nil {
+		t.Fatal("first collect should settle")
+	}
+
+	// Second request reuses the same stale char (same BafogNextAt): it must
+	// not book again.
+	second, err := CollectBafog(conn, on, due)
+	if err != nil {
+		t.Fatalf("second collect: %v", err)
+	}
+	if second != nil {
+		t.Fatalf("second collect double-paid: %+v", second)
+	}
+
+	reloaded, err := CharacterForUser(conn, char.UserID, char.EditionID)
+	if err != nil {
+		t.Fatalf("reload: %v", err)
+	}
+	if got, want := reloaded.MoneyCents, 1000+game.BafogPayoutCents; got != want {
+		t.Fatalf("money after double-settle: got %d, want %d (paid once)", got, want)
+	}
+}

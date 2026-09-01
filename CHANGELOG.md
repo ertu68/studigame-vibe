@@ -40,6 +40,13 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ### Geändert
 
+- **Komplettes UI auf neues Studigame-Design („Studigame-Look")**: Modern-
+  minimal statt Pennergame-Braun/Gold/Grün, Indigo+Lime-Akzente, neutrales
+  Slate. Neues Light/Dark-Thema mit Toggle in der Statusleiste (`localStorage`),
+  Icons als inline Lucide-SVGs (Haus, Geldbörse, Kaffee, …), Statusleiste zeigt
+  den Geld-Behälter als Stat mit Fortschrittsbalken zur nächsten Stufe,
+  Bottom-Navigation mit Icons und aktivem Zustand. Dashboard mit Stat-Karten,
+  Skills/Aktionen mit Icons und umgebauten Karten.
 - **Registrierungsfeld „Uni-Stadt" → „Heimatstadt"**: Das Feld, in dem
   Spieler ihre echte Herkunftsstadt angeben (reine Anzeige, keine
   Spielfunktion), heißt jetzt „Heimatstadt". Der alte Name kollidierte mit

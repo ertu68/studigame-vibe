@@ -13,7 +13,9 @@
     <h2 class="text-xl font-display text-ink mb-3">{{.Title}}</h2>
     <p>{{.Detail}} in der Kasse.</p>
     {{if .HasDonation}}
-    <p class="mt-2">Dein Behälter war voll. {{.Donated}} sind in den Spendentopf gegangen.</p>
+    <p class="mt-2">
+      Dein Behälter war voll. {{.Donated}} sind in den Spendentopf gegangen.
+    </p>
     {{end}}
     <p class="mt-2">Laune {{.MoodDelta}}.</p>
   </div>
@@ -21,11 +23,18 @@
   <div class="card">
     <h2 class="text-xl font-display text-ink mb-3">Unterwegs</h2>
     {{if eq .Open.Kind "job"}}
-    <p class="mb-2 flex items-center gap-2">{{icon "briefcase" "h-4 w-4 text-soft"}}Du jobbst als Werkstudent.</p>
+    <p class="mb-2 flex items-center gap-2">
+      {{icon "briefcase" "h-4 w-4 text-soft"}}Du jobbst als Werkstudent.
+    </p>
     {{else if eq .Open.Kind "crime"}}
-    <p class="mb-2 flex items-center gap-2">{{icon "zap" "h-4 w-4 text-soft"}}Du schreibst nebenbei eine Hausarbeit.</p>
+    <p class="mb-2 flex items-center gap-2">
+      {{icon "zap" "h-4 w-4 text-soft"}}Du schreibst nebenbei eine Hausarbeit.
+    </p>
     {{else}}
-    <p class="mb-2 flex items-center gap-2">{{icon "recycle" "h-4 w-4 text-soft"}}Du sammelst Leergut nach der WG-Party ein.</p>
+    <p class="mb-2 flex items-center gap-2">
+      {{icon "recycle" "h-4 w-4 text-soft"}}Du sammelst Leergut nach der
+      WG-Party ein.
+    </p>
     {{end}}
     <div
       x-data="countdown('{{.EndsAtIso}}')"
@@ -33,25 +42,42 @@
       class="mb-4"
     >
       <p x-show="!expired">
-        Noch <span class="font-display text-lg text-primary" x-text="display"></span>.
+        Noch
+        <span class="font-display text-lg text-primary" x-text="display"></span
+        >.
       </p>
       <p x-show="expired">Gleich fertig, lädt neu …</p>
     </div>
     <noscript>
-      <p class="mb-4 text-sm text-soft">Noch {{.Remaining}} — zurück gegen {{.ReturnsAt}}.</p>
+      <p class="mb-4 text-sm text-soft">
+        Noch {{.Remaining}} — zurück gegen {{.ReturnsAt}}.
+      </p>
     </noscript>
-    <p class="text-sm text-soft">Die Ausbeute steht erst fest, wenn du zurück bist. Die Seite lädt sich dann von selbst neu.</p>
+    <p class="text-sm text-soft">
+      Die Ausbeute steht erst fest, wenn du zurück bist. Die Seite lädt sich
+      dann von selbst neu.
+    </p>
   </div>
   {{else}}
   <div class="space-y-8">
     <div class="card">
-      <h2 class="text-xl font-display text-ink mb-1 flex items-center gap-2">{{icon "recycle" "h-5 w-5 text-accent"}}Leergut sammeln</h2>
-      <p class="text-sm text-soft mb-4">Nach der WG-Party Flaschen einsammeln. Ertrag hängt von Glück und Behälter ab.</p>
+      <h2 class="text-xl font-display text-ink mb-1 flex items-center gap-2">
+        {{icon "recycle" "h-5 w-5 text-accent"}}Leergut sammeln
+      </h2>
+      <p class="text-sm text-soft mb-4">
+        Nach der WG-Party Flaschen einsammeln. Ertrag hängt von Glück und
+        Behälter ab.
+      </p>
       <form method="post" action="/actions/collect">
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
         <div class="form-field">
           <label class="form-label" for="collect-duration">Schichtlänge</label>
-          <select class="form-input" id="collect-duration" name="duration" required>
+          <select
+            class="form-input"
+            id="collect-duration"
+            name="duration"
+            required
+          >
             {{range .Shifts}}
             <option value="{{.Seconds}}">{{.Label}}</option>
             {{end}}
@@ -62,8 +88,12 @@
     </div>
 
     <div class="card">
-      <h2 class="text-xl font-display text-ink mb-1 flex items-center gap-2">{{icon "briefcase" "h-5 w-5 text-accent"}}Werkstudenten-Job</h2>
-      <p class="text-sm text-soft mb-4">Fester Lohn je Stunde, kein Glück. Plackerei, aber verlässlich.</p>
+      <h2 class="text-xl font-display text-ink mb-1 flex items-center gap-2">
+        {{icon "briefcase" "h-5 w-5 text-accent"}}Werkstudenten-Job
+      </h2>
+      <p class="text-sm text-soft mb-4">
+        Fester Lohn je Stunde, kein Glück. Plackerei, aber verlässlich.
+      </p>
       <form method="post" action="/actions/job">
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
         <div class="form-field">
@@ -79,13 +109,25 @@
     </div>
 
     <div class="card">
-      <h2 class="text-xl font-display text-ink mb-1 flex items-center gap-2">{{icon "zap" "h-5 w-5 text-accent"}}Nebenverdienst</h2>
-      <p class="text-sm text-soft mb-4">Eine Hausarbeit ghostwriten oder einen Spickzettel verticken. Mehr Geld als der Job, aber wenn es auffliegt, bleibt wenig übrig und die Laune leidet doppelt. Keine Frage, ob das erlaubt ist — die Frage ist, ob du erwischt wirst.</p>
+      <h2 class="text-xl font-display text-ink mb-1 flex items-center gap-2">
+        {{icon "zap" "h-5 w-5 text-accent"}}Nebenverdienst
+      </h2>
+      <p class="text-sm text-soft mb-4">
+        Eine Hausarbeit ghostwriten oder einen Spickzettel verticken. Mehr Geld
+        als der Job, aber wenn es auffliegt, bleibt wenig übrig und die Laune
+        leidet doppelt. Keine Frage, ob das erlaubt ist — die Frage ist, ob du
+        erwischt wirst.
+      </p>
       <form method="post" action="/actions/crime">
         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
         <div class="form-field">
           <label class="form-label" for="crime-duration">Schichtlänge</label>
-          <select class="form-input" id="crime-duration" name="duration" required>
+          <select
+            class="form-input"
+            id="crime-duration"
+            name="duration"
+            required
+          >
             {{range .Shifts}}
             <option value="{{.Seconds}}">{{.Label}}</option>
             {{end}}

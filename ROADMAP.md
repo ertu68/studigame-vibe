@@ -73,12 +73,12 @@ habe (nach Abstimmung in der Session).
 - [x] Statusleiste: Geld-Behälter als sichtbarer **Progress-Bar + Stat** im Header
   (Füllstand %, nächste Stufe, pot), Thema-Toggle, Icons statt Text
 - [x] Bottom-Navigation: Icons + Label, aktiver Zustand, (Logout bleibt)
-- [ ] Richtung/Abstimmung ansehen, dann Seiten einzeln umstellen:
+- [x] Richtung/Abstimmung ansehen, dann Seiten einzeln umstellen:
   Dashboard (Stats + Progress), Aktionen (Shift-Cards), Weiterbildung,
   Landing/Warteliste, Login/Register
-- [ ] `static/css/app.css` aufräumen: weggeworfene Pennergame-Klassen löschen,
-  Rest auf Tokens umziehen
-- [ ] CSS bauen, `go test ./...` grün, README/CHANGELOG nachziehen
+- [x] `static/css/app.css` aufräumen: weggeworfene Pennergame-Klassen gelöscht,
+  Rest auf Tokens umgezogen
+- [x] CSS gebaut, `go test ./...` grün, README/CHANGELOG nachgezogen
 
 ## Als Nächstes
 

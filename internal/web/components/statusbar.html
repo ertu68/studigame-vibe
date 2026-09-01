@@ -10,11 +10,16 @@
         <div class="flex items-baseline gap-2">
           <span class="stat-value text-base">{{.Money}}</span>
           {{if .MoneyLevel}}
-          <span class="badge" title="Behälter-Stufe">{{icon "package"}}L{{.MoneyLevel}}</span>
+          <span class="badge" title="Behälter-Stufe"
+            >{{icon "package"}}L{{.MoneyLevel}}</span
+          >
           {{end}}
         </div>
         <div class="progress-bar w-24 h-1.5 mt-1" role="presentation">
-          <div class="progress-fill" style="width: {{.MoneyFillPercent}}%;"></div>
+          <div
+            class="progress-fill"
+            style="width: {{.MoneyFillPercent}}%;"
+          ></div>
         </div>
       </div>
     </div>

@@ -17,10 +17,16 @@ fiktive Uni-Stadt, Studienfach übernimmt die Rolle des Klassensystems.
 - **Phase 1** (Grundgerüst): SQLite-Schema, Registrierung/Login/Logout, Passwort-Reset
   (SMTP vorkonfigurierbar, fallback auf Konsolenlogging), Double-Opt-In mit E-Mail-Verifikation,
   Session-Cookies, CSRF (double-submit cookie), Rate-Limiting auf Login/Register/Reset, Basis-Layout.
-- **Phase 2** (Design-System): Tailwind CSS mit benutzerdefinierten Farben, responsive
-  mobile-first Layouts, wiederverwendbare Komponentenbibliothek, Statusleiste, Bottom-Navigation.
-  Komponenten sind handgebaute Tailwind-Partials, bewusst ohne DaisyUI (neue Dependency für
-  funktionierenden Code wäre Rückschritt).
+- **Phase 2** (Design-System): Tailwind CSS mit semantischen Farb-Tokens,
+  responsive mobile-first Layouts, wiederverwendbare Komponentenbibliothek, Statusleiste,
+  Bottom-Navigation. Komponenten sind handgebaute Tailwind-Partials, bewusst ohne DaisyUI
+  (neue Dependency für funktionierenden Code wäre Rückschritt). Das Design ist das
+  „Studigame-Look": Indigo+Lime auf neutralem Slate, statt Pennergame-Braun/Gold/Grün.
+  Ein **Light/Dark-Umschalter** in der Statusleiste (CSS-Variablen + `data-theme`,
+  Auswahl in `localStorage`), Icons als **inline Lucide-SVGs** über den Go-Helper
+  `icon "name"` (kein Icon-Font, kein npm). Die Statusleiste zeigt den Geld-Behälter
+  als Stat mit Fortschrittsbalken zur nächsten Stufe und Level-Badge; die
+  Bottom-Navigation nutzt Icons mit aktivem Zustand.
 - **Phase 3** (Kernschleife): Editionen, Studienfächer, Charaktere, Kassenbuch und
   Aktionen im Schema; Charaktererstellung, Dashboard und die Aktionen stehen.
   Schichten von 15 Minuten bis 8 Stunden, Ergebnis wird beim Zurückkommen ausgewürfelt,
@@ -100,7 +106,7 @@ internal/web/         html/template-Rendering (embed)
 internal/web/components/  Wiederverwendbare UI-Komponenten
 internal/web/templates/  Server-gerenderte Seiten
 static/css/           Tailwind CSS und kompilierte Stylesheets
-static/js/            htmx Bibliothek
+static/js/            htmx, Alpine, theme.js (Theme-Umschalter)
 static/fonts/         Platz für selbst gehostete Schriften (aktuell System-Fonts)
 deploy/               Caddyfile
 ```

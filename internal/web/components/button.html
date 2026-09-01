@@ -2,7 +2,12 @@
 <button
   type="{{if .Type}}{{.Type}}{{else}}button{{end}}"
   class="{{if .Primary}}btn-primary{{else if .Secondary}}btn-secondary{{else if .Danger}}btn-danger{{else if .Ghost}}btn-ghost{{else}}btn-primary{{end}} {{if .Small}}py-1 px-2 text-sm{{else if .Large}}py-3 px-6 text-lg{{end}} {{.Class}}"
-  {{if .Disabled}}disabled{{end}} {{if .ID}}id="{{.ID}}" {{end}}>
+  {{if
+  .Disabled}}disabled{{end}}
+  {{if
+  .ID}}id="{{.ID}}"
+  {{end}}
+>
   {{if .Icon}}{{" "}}{{icon .Icon "inline-block h-4 w-4 align-[-2px] mr-1.5"}}{{end}}{{.Text}}
 </button>
 {{end}}

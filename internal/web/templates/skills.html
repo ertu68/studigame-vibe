@@ -1,6 +1,8 @@
 {{define "content"}}
 <div class="max-w-xl mx-auto py-8">
-  <h1 class="text-2xl font-display text-ink mb-6 flex items-center gap-2">{{icon "brain" "h-6 w-6 text-primary"}}Weiterbildung</h1>
+  <h1 class="text-2xl font-display text-ink mb-6 flex items-center gap-2">
+    {{icon "brain" "h-6 w-6 text-primary"}}Weiterbildung
+  </h1>
 
   <script src="/static/js/actions.js"></script>
 
@@ -19,7 +21,8 @@
   <div class="card mb-6">
     <h2 class="text-xl font-display text-ink mb-3">Weiterbildung läuft</h2>
     <p class="mb-2">
-      Du lernst <strong>{{.Training.Skill}} auf Stufe {{.Training.Level}}</strong>.
+      Du lernst
+      <strong>{{.Training.Skill}} auf Stufe {{.Training.Level}}</strong>.
     </p>
     <div
       x-data="countdown('{{.TrainingEndsAt}}')"
@@ -27,15 +30,22 @@
       class="mb-4"
     >
       <p x-show="!expired">
-        Noch <span class="font-display text-lg text-primary" x-text="display"></span>.
+        Noch
+        <span class="font-display text-lg text-primary" x-text="display"></span
+        >.
       </p>
       <p x-show="expired">Gleich fertig, lädt neu …</p>
     </div>
-    <noscript><p class="mb-4 text-sm text-soft">Noch {{.TrainingRemaining}}.</p></noscript>
+    <noscript
+      ><p class="mb-4 text-sm text-soft">
+        Noch {{.TrainingRemaining}}.
+      </p></noscript
+    >
     <form method="post" action="/skills/cancel">
       <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
       <input type="hidden" name="id" value="{{.Training.ID}}" />
-      {{template "button" dict "Type" "submit" "Text" "Abbruch (80 % zurück)" "Ghost" true}}
+      {{template "button" dict "Type" "submit" "Text" "Abbruch (80 % zurück)"
+      "Ghost" true}}
     </form>
   </div>
   {{end}}
@@ -54,7 +64,9 @@
         {{if .AtMax}}
         <p class="text-sm text-soft">Ausgelernt.</p>
         {{else}}
-        <p class="text-sm">Nächste Stufe: <strong>{{cents .CostCents}}</strong>.</p>
+        <p class="text-sm">
+          Nächste Stufe: <strong>{{cents .CostCents}}</strong>.
+        </p>
         <form method="post" action="/skills/train">
           <input type="hidden" name="csrf_token" value="{{$.CSRFToken}}" />
           <input type="hidden" name="skill" value="{{.Slug}}" />

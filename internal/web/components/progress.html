@@ -1,5 +1,14 @@
 {{define "progress_bar"}}
-<div class="progress-bar {{.Class}}" {{if .ID}}id="{{.ID}}" {{end}} role="progressbar" aria-valuenow="{{.Percent}}" aria-valuemin="0" aria-valuemax="100">
+<div
+  class="progress-bar {{.Class}}"
+  {{if
+  .ID}}id="{{.ID}}"
+  {{end}}
+  role="progressbar"
+  aria-valuenow="{{.Percent}}"
+  aria-valuemin="0"
+  aria-valuemax="100"
+>
   <div class="progress-fill" style="width: {{.Percent}}%;"></div>
 </div>
 {{if .Label}}

@@ -2,36 +2,53 @@
 <div class="py-8">
   <div class="mb-8">
     <h1 class="text-3xl font-display text-ink mb-1">{{.Character.Name}}</h1>
-    <p class="text-soft">{{.Character.SubjectName}} · {{.Character.EditionSlug}}</p>
+    <p class="text-soft">
+      {{.Character.SubjectName}} · {{.Character.EditionSlug}}
+    </p>
   </div>
 
   <!-- Stat row -->
   <div class="grid grid-cols-3 gap-3 mb-6">
     {{template "stat" dict "Icon" "wallet" "Label" "Kasse" "Value" .Money}}
-    {{template "stat" dict "Icon" "gauge" "Label" "Laune" "Value" (printf "%d%%" .Mood)}}
-    {{template "stat" dict "Icon" "book-open" "Label" "Fach" "Value" .Character.SubjectName}}
+    {{template "stat" dict "Icon" "gauge" "Label" "Laune" "Value" (printf "%d%%"
+    .Mood)}} {{template "stat" dict "Icon" "book-open" "Label" "Fach" "Value"
+    .Character.SubjectName}}
   </div>
 
   <!-- Money pot progress -->
   <div class="card mb-6">
     <div class="flex items-center justify-between mb-2">
       <h2 class="text-xl font-display text-ink">Geld-Behälter</h2>
-      {{if .MoneyLevel}}{{template "badge" dict "Icon" "package" "Text" (printf "Stufe %d" .MoneyLevel)}}{{end}}
+      {{if .MoneyLevel}}{{template "badge" dict "Icon" "package" "Text" (printf
+      "Stufe %d" .MoneyLevel)}}{{end}}
     </div>
     {{template "progress_bar" dict "Percent" .MoneyFillPercent}}
-    <p class="text-sm text-soft mt-2">Behälter zu {{.MoneyFillPercent}} % gefüllt.</p>
+    <p class="text-sm text-soft mt-2">
+      Behälter zu {{.MoneyFillPercent}} % gefüllt.
+    </p>
   </div>
 
   <!-- Nächste Schritte -->
   <div class="card mb-6">
     <h2 class="text-xl font-display text-ink mb-4">Nächste Schritte</h2>
     <ul class="space-y-2">
-      <li class="flex items-center gap-2"><span class="text-accent">{{icon "recycle" "h-4 w-4"}}</span>Flaschen nach der WG-Party sammeln</li>
-      <li class="flex items-center gap-2"><span class="text-accent">{{icon "package" "h-4 w-4"}}</span>Behälter aufrüsten</li>
-      <li class="flex items-center gap-2"><span class="text-accent">{{icon "brain" "h-4 w-4"}}</span>Fachwissen ausbauen</li>
+      <li class="flex items-center gap-2">
+        <span class="text-accent">{{icon "recycle" "h-4 w-4"}}</span>Flaschen
+        nach der WG-Party sammeln
+      </li>
+      <li class="flex items-center gap-2">
+        <span class="text-accent">{{icon "package" "h-4 w-4"}}</span>Behälter
+        aufrüsten
+      </li>
+      <li class="flex items-center gap-2">
+        <span class="text-accent">{{icon "brain" "h-4 w-4"}}</span>Fachwissen
+        ausbauen
+      </li>
     </ul>
     <div class="mt-4">
-      <a href="/actions" class="btn-primary">{{icon "arrow-right" "inline-block h-4 w-4 align-[-2px] mr-1.5"}}Losziehen</a>
+      <a href="/actions" class="btn-primary"
+        >{{icon "arrow-right" "inline-block h-4 w-4 align-[-2px] mr-1.5"}}Losziehen</a
+      >
     </div>
   </div>
 
@@ -54,16 +71,32 @@
   <div class="card mb-6">
     <h2 class="text-xl font-display text-ink mb-3">Behälter aufrüsten</h2>
     {{if .UpgradeAtMax}}
-    <p>Du trägst schon einen <strong>{{.UpgradeCurrent}}</strong>. Mehr passt nicht mehr rein.</p>
+    <p>
+      Du trägst schon einen <strong>{{.UpgradeCurrent}}</strong>. Mehr passt
+      nicht mehr rein.
+    </p>
     {{else}}
-    <p class="mb-2">Du trägst {{.UpgradeCurrent}}. Als nächste Stufe: <strong>{{.UpgradeNext}}</strong>.</p>
-    <p class="text-sm text-soft mb-4">Der Behälter fasst dann mehr, bevor der Rest gespendet wird.</p>
+    <p class="mb-2">
+      Du trägst {{.UpgradeCurrent}}. Als nächste Stufe:
+      <strong>{{.UpgradeNext}}</strong>.
+    </p>
+    <p class="text-sm text-soft mb-4">
+      Der Behälter fasst dann mehr, bevor der Rest gespendet wird.
+    </p>
     <form method="post" action="/actions/upgrade-container">
       <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
-      <button type="submit" class="btn-primary" {{if not .UpgradeAffordable}}disabled{{end}}>
+      <button
+        type="submit"
+        class="btn-primary"
+        {{if
+        not
+        .UpgradeAffordable}}disabled{{end}}
+      >
         Aufrüsten für {{.UpgradeCost}}
       </button>
-      {{if not .UpgradeAffordable}}<p class="text-sm text-soft mt-2">Noch nicht genug Kleingeld.</p>{{end}}
+      {{if not .UpgradeAffordable}}
+      <p class="text-sm text-soft mt-2">Noch nicht genug Kleingeld.</p>
+      {{end}}
     </form>
     {{end}}
   </div>
@@ -78,11 +111,16 @@
       <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
       {{if .BafogEnabled}}
       <input type="hidden" name="enabled" value="0" />
-      <p class="text-sm text-soft mb-3">Dein Bescheid läuft. Alle 6 Stunden kommen {{.BafogPayoutText}} rein.</p>
+      <p class="text-sm text-soft mb-3">
+        Dein Bescheid läuft. Alle 6 Stunden kommen {{.BafogPayoutText}} rein.
+      </p>
       <button type="submit" class="btn-secondary">Förderung abbestellen</button>
       {{else}}
       <input type="hidden" name="enabled" value="1" />
-      <p class="text-sm text-soft mb-3">Passives Grundeinkommen: {{.BafogPayoutText}} alle 6 Stunden, ohne zu arbeiten. Das Amt überweist in deinen Behälter.</p>
+      <p class="text-sm text-soft mb-3">
+        Passives Grundeinkommen: {{.BafogPayoutText}} alle 6 Stunden, ohne zu
+        arbeiten. Das Amt überweist in deinen Behälter.
+      </p>
       <button type="submit" class="btn-primary">Beantragen</button>
       {{end}}
     </form>
@@ -91,13 +129,27 @@
   <!-- Campus-Kiosk -->
   <div class="card mb-6">
     <h2 class="text-xl font-display text-ink mb-3">Campus-Kiosk</h2>
-    <p class="text-sm text-soft mb-4">{{if .CoffeeActive}}Der Kaffee wirkt noch — deine Weiterbildungen laufen doppelt so schnell.{{else}}Ein Kaffee für {{.CoffeeCost}} halbiert die Dauer deiner nächsten Weiterbildung für zwei Stunden. Der Stress, aber die Profs sind schneller zufrieden.{{end}}</p>
+    <p class="text-sm text-soft mb-4">
+      {{if .CoffeeActive}}Der Kaffee wirkt noch — deine Weiterbildungen laufen
+      doppelt so schnell.{{else}}Ein Kaffee für {{.CoffeeCost}} halbiert die Dauer
+      deiner nächsten Weiterbildung für zwei Stunden. Der Stress, aber die
+      Profs sind schneller zufrieden.{{end}}
+    </p>
     <form method="post" action="/kiosk/coffee">
       <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
-      <button type="submit" class="btn-primary" {{if not .CoffeeAffordable}}disabled{{end}}>
-        {{icon "coffee" "inline-block h-4 w-4 align-[-2px] mr-1.5"}}Kaffee für {{.CoffeeCost}}
+      <button
+        type="submit"
+        class="btn-primary"
+        {{if
+        not
+        .CoffeeAffordable}}disabled{{end}}
+      >
+        {{icon "coffee" "inline-block h-4 w-4 align-[-2px] mr-1.5"}}Kaffee für
+        {{.CoffeeCost}}
       </button>
-      {{if not .CoffeeAffordable}}<p class="text-sm text-soft mt-2">Dafür reicht das Kleingeld nicht.</p>{{end}}
+      {{if not .CoffeeAffordable}}
+      <p class="text-sm text-soft mt-2">Dafür reicht das Kleingeld nicht.</p>
+      {{end}}
     </form>
   </div>
 </div>

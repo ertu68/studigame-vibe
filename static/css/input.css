@@ -26,16 +26,6 @@
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-warning: var(--warning);
-
-  /* Legacy pennergame tokens. Migration seam only: templates still reference
-     bg-asphalt/text-pappe/… until the page rewrite task. Removed in the
-     final cleanup task. */
-  --color-asphalt: #1c1b1a;
-  --color-pfandglas: #7a9b57;
-  --color-verkehrsorange: #d9711f;
-  --color-muenzgold: #c9a24b;
-  --color-pappe: #e8e1d3;
-  --color-backstein: #a83e32;
 }
 
 /* Light (default) */

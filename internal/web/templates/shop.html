@@ -1,0 +1,128 @@
+{{ define "title" }}Campus-Shop{{ end }} {{ define "content" }}
+<div class="container mx-auto px-4 py-6">
+  <h1 class="text-2xl font-bold mb-6">Campus-Shop</h1>
+
+  {{ if .Error }}
+  <div class="flash-error mb-6">
+    {{ .Error }}
+  </div>
+  {{ end }}
+
+  <!-- Character Stats Summary -->
+  <div class="card mb-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <h3 class="font-semibold text-soft mb-1">Geld</h3>
+        <p class="text-xl font-display text-ink">{{ .Money }}</p>
+      </div>
+      <div>
+        <h3 class="font-semibold text-soft mb-1">Passives Einkommen</h3>
+        <p class="text-xl font-display text-ink">{{ .PassiveIncome }}/Std</p>
+      </div>
+      <div>
+        <h3 class="font-semibold text-soft mb-1">Behälterkapazität</h3>
+        <p class="text-xl font-display text-ink">{{ .ContainerBonus }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shop Categories -->
+  <div class="space-y-8">
+    <!-- Equipment -->
+    {{ if .EquipmentItems }}
+    <section>
+      <h2 class="text-xl font-display text-ink mb-4">Ausrüstung</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {{ range .EquipmentItems }}
+        <div class="card">
+          <div class="p-4">
+            <h3 class="font-bold text-lg mb-2">{{ .Name }}</h3>
+            <p class="text-soft mb-3">{{ .Description }}</p>
+            <div class="flex justify-between items-center">
+              <span class="font-semibold">{{ .PriceCents | cents }}</span>
+              {{ $owned := index $.OwnedItems .ID }} 
+              {{ if and $owned (gt $owned.Quantity 0) }}
+              <span class="badge">
+                Gekauft ({{ $owned.Quantity }}/{{ .MaxQuantity }})
+              </span>
+              {{ else }}
+              <form method="POST" action="/shop/purchase">
+                <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}" />
+                <input type="hidden" name="item_id" value="{{ .ID }}" />
+                <button type="submit" class="btn-primary text-sm">Kaufen</button>
+              </form>
+              {{ end }}
+            </div>
+          </div>
+        </div>
+        {{ end }}
+      </div>
+    </section>
+    {{ end }}
+
+    <!-- Instruments -->
+    {{ if .InstrumentItems }}
+    <section>
+      <h2 class="text-xl font-display text-ink mb-4">Instrumente</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {{ range .InstrumentItems }}
+        <div class="card">
+          <div class="p-4">
+            <h3 class="font-bold text-lg mb-2">{{ .Name }}</h3>
+            <p class="text-soft mb-3">{{ .Description }}</p>
+            <div class="flex justify-between items-center">
+              <span class="font-semibold">{{ .PriceCents | cents }}</span>
+              {{ $owned := index $.OwnedItems .ID }} 
+              {{ if and $owned (gt $owned.Quantity 0) }}
+              <span class="badge">
+                Gekauft ({{ $owned.Quantity }}/{{ .MaxQuantity }})
+              </span>
+              {{ else }}
+              <form method="POST" action="/shop/purchase">
+                <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}" />
+                <input type="hidden" name="item_id" value="{{ .ID }}" />
+                <button type="submit" class="btn-primary text-sm">Kaufen</button>
+              </form>
+              {{ end }}
+            </div>
+          </div>
+        </div>
+        {{ end }}
+      </div>
+    </section>
+    {{ end }}
+
+    <!-- Housing -->
+    {{ if .HousingItems }}
+    <section>
+      <h2 class="text-xl font-display text-ink mb-4">Wohnung</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {{ range .HousingItems }}
+        <div class="card">
+          <div class="p-4">
+            <h3 class="font-bold text-lg mb-2">{{ .Name }}</h3>
+            <p class="text-soft mb-3">{{ .Description }}</p>
+            <div class="flex justify-between items-center">
+              <span class="font-semibold">{{ .PriceCents | cents }}</span>
+              {{ $owned := index $.OwnedItems .ID }} 
+              {{ if and $owned (gt $owned.Quantity 0) }}
+              <span class="badge">
+                Gekauft ({{ $owned.Quantity }}/{{ .MaxQuantity }})
+              </span>
+              {{ else }}
+              <form method="POST" action="/shop/purchase">
+                <input type="hidden" name="csrf_token" value="{{ $.CSRFToken }}" />
+                <input type="hidden" name="item_id" value="{{ .ID }}" />
+                <button type="submit" class="btn-primary text-sm">Kaufen</button>
+              </form>
+              {{ end }}
+            </div>
+          </div>
+        </div>
+        {{ end }}
+      </div>
+    </section>
+    {{ end }}
+  </div>
+</div>
+{{ end }}

@@ -9,7 +9,21 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ## [Unreleased]
 
+### Behoben
+
+- **Shop-Tests korrigiert**: Konflikte mit bestehenden Datenbankmigrationen behoben, um UNIQUE-Constraint-Verletzungen zu vermeiden
+- **Migrationsskripte angepasst**: Goose-spezifische Kommentare entfernt, um Kompatibilität mit dem bestehenden Migrationssystem sicherzustellen
+
 ### Hinzugefügt
+
+- **Campus-Shop**: Breiter Shop mit Ausrüstung, Instrumenten und Wohnung.
+  Spieler können Geld ausgeben, um passive Einkommensquellen zu erhalten oder
+  ihren Behälter zu erweitern. Der Shop enthält drei Kategorien:
+  - Ausrüstung: Items wie Studentenausweis, Notebook, Fahrrad
+  - Instrumente: Musikinstrumente für passives Einkommen (Straßengeschäfte)
+  - Wohnung: Fortschreitende Unterkünfte mit steigender Kapazität
+  Items werden in der Datenbank gespeichert und können einmalig gekauft werden.
+  Effekte werden automatisch berechnet und auf das Gameplay angewendet.
 
 - **Vierte Aktion: Klausurvorbereitung (ECTS-Production)**: Nach dem
   Skillsystem kann der Charakter ECTS-Punkte durch Klausurvorbereitung sammeln.

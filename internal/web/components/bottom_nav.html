@@ -16,6 +16,10 @@
     {{icon "brain" "h-5 w-5"}}
     Lernen
   </a>
+  <a href="/shop" class="nav-item {{if eq .ActivePath "/shop"}}nav-item-active{{end}}">
+    {{icon "shopping-cart" "h-5 w-5"}}
+    Shop
+  </a>
   <form method="post" action="/logout" class="nav-item">
     <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
     <button type="submit" class="nav-item !py-2.5">{{icon "log-out" "h-5 w-5"}}Logout</button>

@@ -58,9 +58,12 @@ ist verworfen, „eine Datei pro Aktion“ hat sich in `handlers` niedergeschlag
 
 Aktueller Kern = **Sammeln + Werkstudenten-Job + Nebenverdienst (Risiko) mit
 Geld-Behälter und Charity-Überlauf plus Behälter-Upgrade, Skillbaum
-(Weiterbildung), passivem BAföG (Grundeinkommen alle 6 Stunden) und einem
-Kaffee-Boost aus dem Campus-Kiosk** (2 €, halbiert 2 h lang die
-Weiterbildungsdauer). Die
+(Weiterbildung), passivem BAföG (Grundeinkommen alle 6 Stunden), Campus-Kiosk
+(Kaffee-Boost) und Campus-Shop**. Der Campus-Shop bietet Ausrüstung, Instrumente
+und Wohnungsoptionen zum Kauf an. Spieler können Geld ausgeben, um passive
+Einkommensquellen zu erhalten oder ihren Behälter weiter zu erweitern.
+
+Die
 Restzeit laufender Aktionen zählt im Browser live runter (Alpine.js, neben
 htmx als einziges Frontend-JS, kein Build-Schritt). Charaktererstellung fragt
 das Studienfach ab, das jetzt im Skillbaum mitredet (Kosten- und Dauer-Boni).

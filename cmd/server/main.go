@@ -108,6 +108,10 @@ func main() {
 	mux.HandleFunc("POST /bafog/toggle", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.Bafog))))
 	mux.HandleFunc("POST /kiosk/coffee", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.Coffee))))
 
+	// Shop routes
+	mux.HandleFunc("GET /shop", deps.RequireAuth(deps.Shop))
+	mux.HandleFunc("POST /shop/purchase", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.Purchase))))
+
 	// Create server with timeouts
 	addr := ":" + cfg.Port
 	server := &http.Server{

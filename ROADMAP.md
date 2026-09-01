@@ -176,7 +176,7 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt".
   stapeln das Fenster. Mechanik „Kaffee statt Promille" aus dem Plan. Reine
   Regeln in `internal/game/shop.go`, Kauf in `coffee_store.go`, Route
   `POST /kiosk/coffee`
-- [ ] Breiter Shop (Ausrüstung, Instrumente, Wohnung) — erst nach weiteren
+- [x] Breiter Shop (Ausrüstung, Instrumente, Wohnung) — erst nach weiteren
   Einkommensquellen, sonst kauft nichts zusammen
 - [x] Verbrechen-Aktion mit Risiko und Ertrag (Nebenverdienst): eine Hausarbeit
   ghostwriten oder einen Spickzettel verticken, `kind "crime"` im selben

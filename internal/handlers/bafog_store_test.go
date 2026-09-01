@@ -51,7 +51,7 @@ func TestCollectBafogPaysOutWhenDue(t *testing.T) {
 	char := newCharacter(t, conn, "Timo", "timo@example.com")
 	now := time.Date(2026, 8, 26, 8, 0, 0, 0, time.UTC)
 
-	// Jutebeutel (5000) so the 30 € payout fits without overflowing.
+	// Jutebeutel (8000) so the 30 € payout fits without overflowing.
 	if _, err := conn.Exec(`UPDATE characters SET container_level = 1 WHERE id = ?`, char.ID); err != nil {
 		t.Fatalf("set container level: %v", err)
 	}
@@ -210,7 +210,7 @@ func TestCollectBafogWritesLedgerRow(t *testing.T) {
 	char := newCharacter(t, conn, "Emre", "emre@example.com")
 	now := time.Date(2026, 8, 26, 8, 0, 0, 0, time.UTC)
 
-	// Jutebeutel (5000) so the 30 € payout fits without overflowing.
+	// Jutebeutel (8000) so the 30 € payout fits without overflowing.
 	if _, err := conn.Exec(`UPDATE characters SET container_level = 1 WHERE id = ?`, char.ID); err != nil {
 		t.Fatalf("set container level: %v", err)
 	}
@@ -245,7 +245,7 @@ func TestCollectBafogDoesNotDoublePay(t *testing.T) {
 	char := newCharacter(t, conn, "Mel", "mel@example.com")
 	now := time.Date(2026, 8, 26, 8, 0, 0, 0, time.UTC)
 
-	// Jutebeutel (5000) so two payouts would fit — overflow is not the guard.
+	// Jutebeutel (8000) so two payouts would fit — overflow is not the guard.
 	if _, err := conn.Exec(`UPDATE characters SET container_level = 1 WHERE id = ?`, char.ID); err != nil {
 		t.Fatalf("set container level: %v", err)
 	}

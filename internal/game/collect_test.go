@@ -125,7 +125,7 @@ func TestContainerCapacity(t *testing.T) {
 		level, want int
 	}{
 		{0, 2000},
-		{1, 5000},
+		{1, 8000},
 		{2, 20000},
 		{3, 100000},
 		{4, 500000},
@@ -135,6 +135,20 @@ func TestContainerCapacity(t *testing.T) {
 	for _, tt := range tests {
 		if got := ContainerCapacity(tt.level); got != tt.want {
 			t.Errorf("ContainerCapacity(%d) = %d, want %d", tt.level, got, tt.want)
+		}
+	}
+}
+
+// A player must always be able to afford the next upgrade once their
+// container is full, otherwise a rung is a permanent softlock (regression:
+// level 1 held 50 € but the level 1→2 upgrade cost ~70 €).
+func TestContainerCapacityAffordsNextUpgrade(t *testing.T) {
+	for level := 0; level < MaxContainerLevel; level++ {
+		cap := ContainerCapacity(level)
+		cost := UpgradeCostCents(level, ContainerUpgradeBaseCents)
+		if cap < cost {
+			t.Errorf("level %d holds %d cents, cannot afford upgrade costing %d cents",
+				level, cap, cost)
 		}
 	}
 }
@@ -154,9 +168,9 @@ func TestUpgradeCostCents(t *testing.T) {
 		level, want int
 	}{
 		{0, 2000},  // 20 €
-		{1, 6964},  // ~70 €
-		{2, 14449}, // ~144 €
-		{3, 24251}, // ~243 €
+		{1, 7000},  // 70 €
+		{2, 14400}, // 144 €
+		{3, 24300}, // 243 €
 		{4, 0},     // max: not buyable
 		{5, 0},     // beyond max: not buyable
 		{-1, 0},    // invalid: not buyable

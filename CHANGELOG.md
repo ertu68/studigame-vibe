@@ -9,7 +9,25 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ## [Unreleased]
 
+### Behoben
+
+- **Behälter-Upgrade konnte softlocken**: Stufe 1 (Jutebeutel) fasste nur
+  50,00 €, das Upgrade auf Stufe 2 (Rucksack) kostete aber 69,64 € — ohne
+  externes Einkommen (BAföG) unerreichbar. Jutebeutel fasst jetzt 80,00 €.
+  Alle Upgrade-Preise runden zudem auf volle Euro (`70,00 €` statt `69,64 €`).
+- **`SITE_NAME` aus `.env` griff lokal nicht**: `make run` und `go run` lasen
+  `.env` nie ein (nur `docker-compose` tat das über `env_file`), lokale
+  Entwicklung zeigte deshalb immer den Platzhalter „TODO-Name". `make run`
+  lädt `.env` jetzt selbst.
+- **Behälter-Stufen-Badge unklar**: Das „L1"-Badge in der Statusleiste zeigte
+  ein Box-Icon ohne erkennbaren Bezug. Zeigt jetzt „Stufe 1" mit
+  Rucksack-Icon und vollem Stufennamen im Tooltip.
+
 ### Hinzugefügt
+
+- **Laufende Aktivität in der Statusleiste**: Eine offene Schicht
+  (Sammeln/Job/Nebenverdienst) oder laufende Weiterbildung erscheint jetzt
+  als Badge in der Statusleiste, nicht mehr nur auf der jeweiligen Unterseite.
 
 - **Skillbaum (Weiterbildung)**: Drei Skills — Lerneffizienz (mehr Leergut),
   Auftreten (bessere Job-Bezahlung), Konzentration (schnellere
@@ -55,7 +73,8 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 - **Karten-Abstand und Skill-Werte auf dem Dashboard**: Die Karten auf
   `/actions` und `/skills` haben mehr Luft (einheitlicher `space-y-8`-Abstand),
   und das Dashboard zeigt im Kartenblock „Dein Stand“ die aktuellen
-  Skill-Stufen (z. B. `Lerneffizienz: 1/20`).
+  Skill-Stufen als Fortschrittsbalken statt reiner `1/20`-Zahl (Skillbaum-Seite
+  ebenso).
 - **Alpine.js und Live-Countdown für laufende Aktionen**: Die Restzeit einer
   offenen Schicht zählt auf `/actions` im Browser sekündlich runter (Alpine.js,
   vendored, kein Build-Schritt) und lädt beim Ablauf automatisch neu, damit der

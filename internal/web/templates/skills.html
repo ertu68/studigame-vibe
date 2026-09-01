@@ -58,8 +58,12 @@
           <h2 class="text-xl font-display text-ink">{{.Name}}</h2>
           <p class="text-sm text-soft mt-1">{{.Description}}</p>
         </div>
-        <span class="badge whitespace-nowrap">{{.Level}}/{{.MaxLevel}}</span>
+        <span class="badge whitespace-nowrap"
+          >Stufe {{.Level}}/{{.MaxLevel}}</span
+        >
       </div>
+      {{template "progress_bar" dict "Percent" (percent .Level .MaxLevel)
+      "Class" "mt-3"}}
       <div class="mt-4 flex items-center justify-between gap-4">
         {{if .AtMax}}
         <p class="text-sm text-soft">Ausgelernt.</p>

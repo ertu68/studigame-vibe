@@ -34,9 +34,10 @@ func mustParsePages() map[string]*template.Template {
 	out := make(map[string]*template.Template, len(pages))
 	for _, page := range pages {
 		tmpl := template.New("").Funcs(template.FuncMap{
-			"dict":  dict,
-			"cents": FormatCents,
-			"icon":  icon,
+			"dict":    dict,
+			"cents":   FormatCents,
+			"icon":    icon,
+			"percent": percentOf,
 		})
 		out[page] = template.Must(tmpl.ParseFS(templateFS,
 			"templates/layout.html",
@@ -95,4 +96,13 @@ func dict(values ...any) (map[string]any, error) {
 // It is the single formatter for money, used by Go handlers and templates.
 func FormatCents(cents int) string {
 	return fmt.Sprintf("%d,%02d \u20ac", cents/100, cents%100)
+}
+
+// percentOf is part/whole as a percentage for progress bars, e.g. skill level
+// 3 of 20 -> 15. Guards against a zero whole so a template never divides by 0.
+func percentOf(part, whole int) int {
+	if whole <= 0 {
+		return 0
+	}
+	return part * 100 / whole
 }

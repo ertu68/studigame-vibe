@@ -357,6 +357,21 @@ func actionTitle(kind string) string {
 	}
 }
 
+// actionInProgressLabel is the present-tense counterpart to actionTitle, for
+// the status bar's "gerade beschäftigt mit" badge while a shift still runs.
+func actionInProgressLabel(kind string) string {
+	switch kind {
+	case "collect":
+		return "Leergut sammeln"
+	case "job":
+		return "Werkstudenten-Job"
+	case "crime":
+		return "Nebenverdienst"
+	default:
+		return "Aktion läuft"
+	}
+}
+
 // CharityPool is the donated total of an edition, for display.
 func CharityPool(db *sql.DB, editionID int64) (int, error) {
 	var cents int

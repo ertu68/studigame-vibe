@@ -136,8 +136,12 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt".
   kurve (`Basiswert × Level^1.8`) in `internal/game`, tabellengetestet.
   Begründung: ohne Ausgabe-Möglichkeit ist der Charity-Überlauf spannungslos,
   man grindet ins Leere. (Details: `studigame-plan.md` §3b.)
+- [x] Softlock behoben: Jutebeutel (Stufe 1) fasste 50 €, Upgrade auf Rucksack
+  kostete aber 69,64 € — unerreichbar ohne BAföG. Jutebeutel fasst jetzt 80 €,
+  Upgrade-Preise runden auf volle Euro. Neuer Test
+  `TestContainerCapacityAffordsNextUpgrade` verhindert die Wiederkehr.
 - [ ] 🙋 Balancing der Sammeln-Aktion abnehmen: 40 Flaschen/h, 25 ct je Flasche,
-  Behälterstufen 20/50/200/1000/5000 €, Upgrade-Kosten, Laune 5 Punkte/h
+  Behälterstufen 20/80/200/1000/5000 €, Upgrade-Kosten, Laune 5 Punkte/h
 - [x] Alpine.js einbinden und die laufende Aktion live runterzählen: auf
   `/actions` der offenen Schicht einen echten Countdown im Browser statt des
   Meta-Refresh (Meta-Refresh als Fallback behalten). Dafür ist Alpine.js als

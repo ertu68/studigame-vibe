@@ -101,9 +101,12 @@ const ContainerUpgradeBaseCents = 2000
 // ContainerCapacity is how many cents a character can carry at each level.
 // Level 0 has to hold more than the 10 € starting capital, otherwise a new
 // character is full before the first shift and everything earned would go
-// straight to charity.
+// straight to charity. Every level must also hold enough to afford the next
+// upgrade (checked in TestContainerCapacityAffordsNextUpgrade) — level 1 was
+// bumped from 20 € to 80 € because the old 50 € cap could never reach the
+// ~70 € cost of the level 1→2 upgrade, a permanent softlock.
 func ContainerCapacity(level int) int {
-	capacities := []int{2000, 5000, 20000, 100000, 500000}
+	capacities := []int{2000, 8000, 20000, 100000, 500000}
 	if level < 0 || level >= len(capacities) {
 		return 0
 	}
@@ -126,14 +129,17 @@ func ContainerLevelName(level int) string {
 }
 
 // UpgradeCostCents is what a container upgrade from level to level+1 costs:
-// base × (level+1)^1.8. The exponent > 1 makes later rungs overproportionally
-// expensive (anti-snowball). It reports 0 at the max level, meaning "not
-// buyable". With the standard base of 2000: 20 €, ~70 €, ~144 €, ~243 €.
+// base × (level+1)^1.8, rounded to the nearest euro so the price never shows
+// an odd amount like 69,64 €. The exponent > 1 makes later rungs
+// overproportionally expensive (anti-snowball). It reports 0 at the max
+// level, meaning "not buyable". With the standard base of 2000: 20 €, 70 €,
+// 144 €, 243 €.
 func UpgradeCostCents(level, base int) int {
 	if level < 0 || level >= MaxContainerLevel {
 		return 0
 	}
-	return int(float64(base) * math.Pow(float64(level+1), 1.8))
+	raw := float64(base) * math.Pow(float64(level+1), 1.8)
+	return int(math.Round(raw/100)) * 100
 }
 
 // SplitAtCapacity divides an incoming amount into the part that still fits in

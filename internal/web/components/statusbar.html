@@ -10,8 +10,8 @@
         <div class="flex items-baseline gap-2">
           <span class="stat-value text-base">{{.Money}}</span>
           {{if .MoneyLevel}}
-          <span class="badge" title="Behälter-Stufe"
-            >{{icon "package"}}L{{.MoneyLevel}}</span
+          <span class="badge" title="Behälter-Stufe: {{.MoneyLevelName}}"
+            >{{icon "backpack" "h-3.5 w-3.5"}}Stufe {{.MoneyLevel}}</span
           >
           {{end}}
         </div>
@@ -30,6 +30,17 @@
     <div class="hidden sm:flex items-center gap-1.5 text-soft">
       <span>{{icon "gauge" "h-4 w-4"}}</span>
       <span class="text-sm">{{.Mood}}%</span>
+    </div>
+    {{end}}
+
+    <!-- Running shift or Weiterbildung, if any. -->
+    {{if .BusyWith}}
+    <div
+      class="hidden sm:flex items-center gap-1.5 text-soft"
+      title="{{.BusyWith}} läuft"
+    >
+      <span class="text-accent">{{icon "clock" "h-4 w-4"}}</span>
+      <span class="text-sm truncate max-w-[10rem]">{{.BusyWith}}</span>
     </div>
     {{end}}
   </div>

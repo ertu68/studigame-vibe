@@ -43,8 +43,21 @@ func (d *Deps) roll() float64 {
 func (d *Deps) addCharacterStatus(data map[string]any, char Character) {
 	data["Money"] = web.FormatCents(char.MoneyCents)
 	data["MoneyLevel"] = char.ContainerLevel
+	data["MoneyLevelName"] = game.ContainerLevelName(char.ContainerLevel)
 	data["MoneyFillPercent"] = fillPercent(char.MoneyCents, game.ContainerCapacity(char.ContainerLevel))
 	data["Mood"] = char.Mood
+
+	// Running activity badge: an open shift takes priority over a skill
+	// training, since only a shift blocks the character entirely.
+	if action, err := FindOpenAction(d.DB, char.ID); err == nil {
+		data["BusyWith"] = actionInProgressLabel(action.Kind)
+	} else if training, err := FindSkillTraining(d.DB, char.ID); err == nil {
+		skillName := training.Skill
+		if s := game.SkillBySlug(training.Skill); s != nil {
+			skillName = s.Name
+		}
+		data["BusyWith"] = "Weiterbildung: " + skillName
+	}
 }
 
 type user struct {

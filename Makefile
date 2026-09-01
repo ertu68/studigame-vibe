@@ -5,7 +5,7 @@ TAILWIND_OS := $(shell uname -s | tr '[:upper:]' '[:lower:]' | sed 's/darwin/mac
 TAILWIND_ARCH := $(shell uname -m | sed 's/x86_64/x64/;s/aarch64/arm64/')
 
 run:
-	go run ./cmd/server
+	set -a; [ -f .env ] && . ./.env; set +a; go run ./cmd/server
 
 build:
 	go build -o bin/server ./cmd/server

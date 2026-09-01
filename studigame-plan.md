@@ -278,20 +278,23 @@ ein minimaler, thematischer Geld-Sink, nicht der breite Shop.
 - **Max-Stufe 4 (Bausparvertrag)** ist eine harte Obergrenze. Die
   Upgrade-Kostenfunktion liefert bei Stufe 4 "nicht kaufbar", die UI blendet
   den Knopf aus. Danach kommt ohnehin das Skillsystem.
-- **Kostenkurve** `Kosten(L→L+1) = Basiswert × (L+1)^1.8` mit
-  **Basiswert = 2000 Cent**, überlinear (anti-Schneeball, siehe §1.3).
-  Konkret (Probe gegen Sammel-Einkommen 10 €/h bei Level 0):
+- **Kostenkurve** `Kosten(L→L+1) = Basiswert × (L+1)^1.8`, auf volle Euro
+  gerundet, mit **Basiswert = 2000 Cent**, überlinear (anti-Schneeball, siehe
+  §1.3). Konkret (Probe gegen Sammel-Einkommen 10 €/h bei Level 0):
 
-  | Upgrade | Stufenname neu | Formel | Kosten |
-  | --- | --- | --- | --- |
-  | L0→L1 | Jutebeutel | 2000 × 1^1.8 | 20 € |
-  | L1→L2 | Rucksack | 2000 × 2^1.8 | ~70 € |
-  | L2→L3 | IKEA-FRAKTA-Tasche | 2000 × 3^1.8 | ~144 € |
-  | L3→L4 | Bausparvertrag | 2000 × 4^1.8 | ~243 € |
+  | Upgrade | Stufenname neu | Formel | Kosten | Kapazität neue Stufe |
+  | --- | --- | --- | --- | --- |
+  | L0→L1 | Jutebeutel | 2000 × 1^1.8 | 20 € | 80 € |
+  | L1→L2 | Rucksack | 2000 × 2^1.8 | 70 € | 200 € |
+  | L2→L3 | IKEA-FRAKTA-Tasche | 2000 × 3^1.8 | 144 € | 1000 € |
+  | L3→L4 | Bausparvertrag | 2000 × 4^1.8 | 243 € | 5000 € |
 
   `Basiswert` ist der eine Tun-Knopf. Formal rein in `internal/game` als
   `UpgradeCostCents(level, base)` — tabellengetestet, gleiches Muster wie
-  `ContainerCapacity`.
+  `ContainerCapacity`. Die Kapazität jeder Stufe muss die Kosten der
+  nächsten Stufe decken, sonst ist der Behälter ein Softlock — Jutebeutel
+  wurde deshalb von 50 € auf 80 € angehoben (`TestContainerCapacityAffordsNextUpgrade`
+  prüft das für jede Stufe).
 - **Danach scharfes Spielen**: erst wenn der Core (Sammeln + Behälter +
   Upgrade) sich langweilig anfühlt, kommt der nächste Block. Balancing wird
   vorher abgenommen (Test auf einem Tuner-Account).

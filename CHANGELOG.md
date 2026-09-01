@@ -9,6 +9,17 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ## [Unreleased]
 
+### Hinzugefügt
+
+- **Vierte Aktion: Klausurvorbereitung (ECTS-Production)**: Nach dem
+  Skillsystem kann der Charakter ECTS-Punkte durch Klausurvorbereitung sammeln.
+  Die Auszahlung ist zeitbasiert (0.25 ECTS/h bei voller Konzentration),
+  skaliert mit Laune und wird durch den Konzentration-Skill verstärkt.
+  Das System ist analog zu den anderen Aktionen gebaut: eine offene Schicht
+  blockiert den Charakter, die Auszahlung erfolgt am Ende, ein Skill-Bonus
+  wird beim Start eingefroren. Die ECTS-Punkte werden in der Datenbank als
+  Integer-Cents gespeichert (123 = 1.23 ECTS) für exakte Arithmetik.
+
 ### Behoben
 
 - **Behälter-Upgrade konnte softlocken**: Stufe 1 (Jutebeutel) fasste nur

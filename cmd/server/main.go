@@ -98,6 +98,8 @@ func main() {
 	mux.HandleFunc("POST /actions/collect", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.Collect))))
 	mux.HandleFunc("POST /actions/job", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.Job))))
 	mux.HandleFunc("POST /actions/crime", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.Crime))))
+	mux.HandleFunc("GET /klausur", deps.RequireAuth(deps.Klausur))
+	mux.HandleFunc("POST /klausur/start", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.StartKlausur))))
 	mux.HandleFunc("POST /actions/upgrade-container", actionLimiter.Middleware(handlers.RequireCSRF(deps.RequireAuth(deps.ContainerUpgrade))))
 
 	mux.HandleFunc("GET /skills", deps.RequireAuth(deps.Skills))

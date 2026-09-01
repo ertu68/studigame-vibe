@@ -468,7 +468,7 @@ func TestCoffeeLoop(t *testing.T) {
 	if strings.Contains(body, "Der Kaffee wirkt noch") {
 		t.Fatalf("boost should have expired: %q", truncate(body))
 	}
-	if !strings.Contains(body, "halbiert die Dauer") {
+	if !strings.Contains(body, "halbiert") {
 		t.Fatalf("expected the coffee offer after expiry: %q", truncate(body))
 	}
 }

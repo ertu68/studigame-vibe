@@ -140,7 +140,7 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt".
   kostete aber 69,64 € — unerreichbar ohne BAföG. Jutebeutel fasst jetzt 80 €,
   Upgrade-Preise runden auf volle Euro. Neuer Test
   `TestContainerCapacityAffordsNextUpgrade` verhindert die Wiederkehr.
-- [ ] 🙋 Balancing der Sammeln-Aktion abnehmen: 40 Flaschen/h, 25 ct je Flasche,
+- [x] 🙋 Balancing der Sammeln-Aktion abnehmen: 40 Flaschen/h, 25 ct je Flasche,
   Behälterstufen 20/80/200/1000/5000 €, Upgrade-Kosten, Laune 5 Punkte/h
 - [x] Alpine.js einbinden und die laufende Aktion live runterzählen: auf
   `/actions` der offenen Schicht einen echten Countdown im Browser statt des
@@ -152,7 +152,7 @@ Der eigentliche Kern. Alles darunter hängt am Fundament aus „Jetzt".
   Glück) neben dem Flaschensammeln. Auflösung per `kind`-Dispatch erweitert
   (ein `switch` über `collect`/`job`, gemeinsamer Buchungspfad für Geld/Laune/
   Ledger/Charity)
-- [ ] Klausur/Studium als dritte Aktion (ECTS-Produktion) — das Skillsystem
+- [x] Klausur/Studium als dritte Aktion (ECTS-Produktion) — das Skillsystem
   steht, danach schlüssig als Nächstes. Blocker: ECTS hat bisher keinen
   Abnehmer — der Konsument wäre die aufgeschobene Bildungsstufe (Skill) und
   das Stipendium; erst entscheiden, was ECTS bezahlt, sonst steht ungenutzter

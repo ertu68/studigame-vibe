@@ -50,13 +50,14 @@ func SkillLevels(db *sql.DB, characterID int64) (map[string]int, error) {
 
 // SkillFactorFor returns the current skill multipliers of a character, for
 // freezing into a new action's payload at start.
-func SkillFactorFor(db *sql.DB, characterID int64) (collect, job float64, err error) {
+func SkillFactorFor(db *sql.DB, characterID int64) (collect, job, konzentr float64, err error) {
 	levels, err := SkillLevels(db, characterID)
 	if err != nil {
-		return 0, 0, err
+		return 0, 0, 0, err
 	}
 	return game.CollectSkillFactor(levels["geschicklichkeit"]),
-		game.JobSkillFactor(levels["auftreten"]), nil
+		game.JobSkillFactor(levels["auftreten"]),
+		KonzentrSkillFactor(levels["konzentration"]), nil
 }
 
 // FindSkillTraining returns the character's active training, if any.
@@ -70,6 +71,11 @@ func FindSkillTraining(db *sql.DB, characterID int64) (SkillTraining, error) {
 		return SkillTraining{}, ErrNoSkillTraining
 	}
 	return t, err
+}
+
+// KonzentrSkillFactor is a wrapper around game.KlausurSkillFactor
+func KonzentrSkillFactor(konzentrationLevel int) float64 {
+	return game.KlausurSkillFactor(konzentrationLevel)
 }
 
 // StartSkillTraining pays for and books one level-up of a skill, debiting the

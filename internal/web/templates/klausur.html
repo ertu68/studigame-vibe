@@ -1,0 +1,82 @@
+{{define "content"}}
+<div class="max-w-xl mx-auto py-8">
+  <h1 class="text-2xl font-display text-ink mb-6">Klausurvorbereitung</h1>
+
+  <script src="/static/js/actions.js"></script>
+
+  {{if .Error}}
+  <div class="flash-error mb-4">
+    <p>{{.Error}}</p>
+  </div>
+  {{end}} {{with .Summary}}
+  <div class="card mb-6">
+    <h2 class="text-xl font-display text-ink mb-3">{{.Title}}</h2>
+    <p>{{.Detail}} erreicht.</p>
+    {{if .HasDonation}}
+    <p class="mt-2">
+      Dein Behälter war voll. {{.Donated}} sind in den Spendentopf gegangen.
+    </p>
+    {{end}}
+    <p class="mt-2">Laune {{.MoodDelta}}.</p>
+  </div>
+  {{end}} {{if .Open}}
+  <div class="card">
+    <h2 class="text-xl font-display text-ink mb-3">Unterwegs</h2>
+    <p class="mb-2 flex items-center gap-2">
+      {{icon "book-open" "h-4 w-4 text-soft"}}Du bereitest dich auf deine
+      Klausur vor.
+    </p>
+    <div
+      x-data="countdown('{{.EndsAtIso}}')"
+      data-ends-at="{{.EndsAtIso}}"
+      class="mb-4"
+    >
+      <p x-show="!expired">
+        Noch
+        <span class="font-display text-lg text-primary" x-text="display"></span
+        >.
+      </p>
+      <p x-show="expired">Gleich fertig, lädt neu …</p>
+    </div>
+    <noscript>
+      <p class="mb-4 text-sm text-soft">
+        Noch {{.Remaining}} — zurück gegen {{.ReturnsAt}}.
+      </p>
+    </noscript>
+    <p class="text-sm text-soft">
+      Wie viele ECTS-Punkte du am Ende erreichst, steht erst fest, wenn du
+      zurück bist. Die Seite lädt sich dann von selbst neu.
+    </p>
+  </div>
+  {{else}}
+  <div class="card">
+    <h2 class="text-xl font-display text-ink mb-1 flex items-center gap-2">
+      {{icon "book-open" "h-5 w-5 text-accent"}}Klausur vorbereiten
+    </h2>
+    <p class="text-sm text-soft mb-4">
+      Stunden vor deinen Büchern sitzen und Klausurinhalte lernen. Je länger du
+      büffelst, desto mehr ECTS-Punkte kannst du erreichen.
+    </p>
+    <form method="post" action="/klausur/start">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+      <div class="form-field">
+        <label class="form-label" for="klausur-duration"
+          >Vorbereitungszeit</label
+        >
+        <select
+          class="form-input"
+          id="klausur-duration"
+          name="duration"
+          required
+        >
+          {{range .Shifts}}
+          <option value="{{.Seconds}}">{{.Label}}</option>
+          {{end}}
+        </select>
+      </div>
+      {{template "button" dict "Type" "submit" "Text" "Büffeln"}}
+    </form>
+  </div>
+  {{end}}
+</div>
+{{end}}

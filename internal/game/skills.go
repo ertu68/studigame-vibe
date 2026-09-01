@@ -108,3 +108,8 @@ func CollectSkillFactor(goodGrasLevel int) float64 {
 func JobSkillFactor(auftretenLevel int) float64 {
 	return 1 + 0.05*float64(auftretenLevel)
 }
+
+// KlausurSkillFactor is how much Konzentration raises ECTS yield: +5 % per level.
+func KlausurSkillFactor(konzentrationLevel int) float64 {
+	return 1 + 0.05*float64(konzentrationLevel)
+}

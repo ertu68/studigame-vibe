@@ -98,7 +98,7 @@ func StartCollect(db *sql.DB, char Character, d time.Duration, now time.Time) er
 		return ErrInvalidShift
 	}
 
-	skillFactor, _, err := SkillFactorFor(db, char.ID)
+	skillFactor, _, _, err := SkillFactorFor(db, char.ID)
 	if err != nil {
 		return err
 	}
@@ -132,7 +132,7 @@ func StartJob(db *sql.DB, char Character, d time.Duration, now time.Time) error 
 		return ErrInvalidShift
 	}
 
-	_, jobFactor, err := SkillFactorFor(db, char.ID)
+	_, jobFactor, _, err := SkillFactorFor(db, char.ID)
 	if err != nil {
 		return err
 	}
@@ -285,6 +285,22 @@ func resolveOutcome(kind, payloadJSON string, char Character, roll float64) (act
 			Detail:        "Abgeliefert, " + web.FormatCents(out.EarningsCents) + " verdient",
 		}, nil
 
+	case "klausur":
+		var p klausurPayload
+		if err := json.Unmarshal([]byte(payloadJSON), &p); err != nil {
+			return actionOutcome{}, err
+		}
+		out := game.ResolveKlausur(game.ECTSParams{
+			Duration:    time.Duration(p.DurationSeconds) * time.Second,
+			Mood:        p.Mood,
+			SkillFactor: p.SkillFactor,
+		})
+		return actionOutcome{
+			EarningsCents: 0, // No money earned
+			MoodDelta:     out.MoodDelta,
+			Detail:        fmt.Sprintf("%.2f ECTS-Punkte erreicht", out.ECTSPoints),
+		}, nil
+
 	default:
 		return actionOutcome{}, fmt.Errorf("unknown action kind %q", kind)
 	}
@@ -298,6 +314,15 @@ func bookOutcome(tx *sql.Tx, char Character, kind string, actionID int64, out ac
 	kept, donated := game.SplitAtCapacity(char.MoneyCents, out.EarningsCents, capacity)
 	balance := char.MoneyCents + kept
 	mood := game.ApplyMood(char.Mood, out.MoodDelta)
+
+	// For klausur actions, parse ECTS points from detail text
+	ectsPoints := 0.0
+	ectsCents := 0
+	if kind == "klausur" {
+		// Parse "%.2f ECTS-Punkte erreicht" format
+		fmt.Sscanf(out.Detail, "%f ECTS-Punkte erreicht", &ectsPoints)
+		ectsCents = int(ectsPoints * 100)
+	}
 
 	summary := ActionSummary{
 		Title:       actionTitle(kind),
@@ -314,18 +339,43 @@ func bookOutcome(tx *sql.Tx, char Character, kind string, actionID int64, out ac
 		return ActionSummary{}, err
 	}
 
-	if _, err := tx.Exec(
-		`UPDATE characters SET money_cents = ?, mood = ? WHERE id = ?`,
-		balance, mood, char.ID,
-	); err != nil {
-		return ActionSummary{}, err
+	if kind == "klausur" {
+		// For klausur, update ECTS points and mood
+		if _, err := tx.Exec(
+			`UPDATE characters SET mood = ?, ects_cents = ects_cents + ? WHERE id = ?`,
+			mood, ectsCents, char.ID,
+		); err != nil {
+			return ActionSummary{}, err
+		}
+	} else {
+		// For other actions, update money and mood
+		if _, err := tx.Exec(
+			`UPDATE characters SET money_cents = ?, mood = ? WHERE id = ?`,
+			balance, mood, char.ID,
+		); err != nil {
+			return ActionSummary{}, err
+		}
 	}
 
-	if kept > 0 {
+	// Book ledger entry for monetary gains or ECTS points
+	if kept > 0 || ectsCents > 0 {
+		reason := kind
+		if ectsCents > 0 {
+			reason = "klausur" // More specific reason for ECTS
+		}
+		balanceAfter := balance
+		if kind == "klausur" {
+			// For klausur, we don't track balance, so just use 0
+			balanceAfter = 0
+		}
+		deltaCents := kept
+		if ectsCents > 0 {
+			deltaCents = ectsCents // Use ECTS cents for klausur
+		}
 		if _, err := tx.Exec(
 			`INSERT INTO ledger (character_id, delta_cents, balance_after, reason, ref_id)
 			 VALUES (?, ?, ?, ?, ?)`,
-			char.ID, kept, balance, kind, actionID,
+			char.ID, deltaCents, balanceAfter, reason, actionID,
 		); err != nil {
 			return ActionSummary{}, err
 		}
@@ -352,6 +402,8 @@ func actionTitle(kind string) string {
 		return "Werkstudenten-Job erledigt"
 	case "crime":
 		return "Nebenverdienst bezahlt"
+	case "klausur":
+		return "Klausur geschrieben"
 	default:
 		return "Aktion vorbei"
 	}
@@ -367,6 +419,8 @@ func actionInProgressLabel(kind string) string {
 		return "Werkstudenten-Job"
 	case "crime":
 		return "Nebenverdienst"
+	case "klausur":
+		return "Klausurvorbereitung"
 	default:
 		return "Aktion läuft"
 	}

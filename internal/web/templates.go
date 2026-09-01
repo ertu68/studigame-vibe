@@ -26,6 +26,7 @@ var pages = []string{
 	"dashboard.html",
 	"actions.html",
 	"skills.html",
+	"klausur.html",
 }
 
 var pageTemplates = mustParsePages()

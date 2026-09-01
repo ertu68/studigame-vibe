@@ -1,7 +1,7 @@
 {{define "content"}}
 <div class="max-w-2xl mx-auto py-12">
   <div class="text-center mb-12">
-    <h1 class="text-4xl font-display text-pfandglas mb-6">{{.SiteName}}</h1>
+    <h1 class="text-4xl font-display text-primary mb-6">{{.SiteName}}</h1>
     <p class="text-xl mb-8">
       Bald verfügbar: {{.SiteName}} — ein Browsergame über das Studentenleben.
       Kasse knapp, Prüfungsstress, WG-Alltag. Los geht's, sobald der Campus
@@ -10,7 +10,7 @@
   </div>
 
   <div class="card max-w-md mx-auto">
-    <h2 class="text-2xl font-display text-asphalt mb-4">Auf die Warteliste</h2>
+    <h2 class="text-2xl font-display text-ink mb-4">Auf die Warteliste</h2>
 
     <div id="waitlist-form">
       <form hx-post="/waitlist" hx-target="#waitlist-form" hx-swap="outerHTML">
@@ -21,7 +21,7 @@
     </div>
   </div>
 
-  <div class="text-center mt-8 text-sm text-gray-400">
+  <div class="text-center mt-8 text-sm text-soft">
     <p>Version 0.1.0</p>
   </div>
 </div>

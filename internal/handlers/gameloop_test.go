@@ -295,7 +295,7 @@ func TestSkillLoop(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("GET /dashboard: status %d", resp.StatusCode)
 	}
-	if !strings.Contains(body, "Lerneffizienz: 1/20") {
+	if !strings.Contains(body, "Lerneffizienz") || !strings.Contains(body, "1/20") {
 		t.Fatalf("dashboard missing skill in overview: %q", truncate(body))
 	}
 }

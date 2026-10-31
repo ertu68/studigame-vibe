@@ -79,7 +79,7 @@ beworben" passiert hier.
 
 Der Code liegt schon in Git, aber noch ohne Prozess. Richte ein:
 
-- [ ] **Branch-Schutz auf `main`** (GitHub → Settings → Rules → Rulesets):
+- [x] **Branch-Schutz auf `main`** (GitHub → Settings → Rules → Rulesets):
   PR erzwingen, CI-Check als „required", linear history, kein force-push.
 - [ ] **Trunk-based Workflow** üben: kurze Branches `feat/…`, `ci/…`, `docs/…`,
   → PR → squash-merge. `main` ist immer deploybar. (ADR-1 im Guide.)

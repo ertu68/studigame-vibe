@@ -21,11 +21,14 @@ Ja — bei dir lohnt es sich sofort. Für reines Code-Lernen bräuchtest du ihn 
 **DevOps lernen**, und „auf echtem Blech betreiben" ist eine eigene Fähigkeit:
 Linux härten, DNS, TLS, SSH, systemd, einen laufenden Dienst beobachten — das
 übst du lokal gar nicht. Bei 5 €/Monat als Lern-Budget schlägt der Übungswert
-die Kosten klar. **Empfehlung:** Hetzner CAX11 (ARM, ~4 €/Monat, dein Image baut
-ohnehin multi-arch), monatlich kündbar. Miete ihn **in Phase A**, parallel zum
-Agent. Wichtig: Server mieten und aufsetzen ist erlaubt, **bevor** das Recht
-steht — nur das öffentliche Schalten des E-Mail-Formulars wartet auf Impressum +
-Datenschutz (Phase B).
+die Kosten klar. **Empfehlung:** Hetzner CX23 mit Ubuntu 26.04 LTS, monatlich
+kündbar. Ubuntu ist gut dokumentiert und die aktuelle LTS-Version; der CX23
+nutzt die verbreitete x86-64-Architektur, was bei Docker-Images und Anleitungen
+die wenigsten Überraschungen bringt. Der CAX11 mit ARM wäre für dieses Projekt
+ebenfalls geeignet, ist aber kein notwendiges Leistungsupgrade. Miete ihn
+**in Phase A**, parallel zum Agent. Wichtig: Server mieten und aufsetzen ist
+erlaubt, **bevor** das Recht steht — nur das öffentliche Schalten des
+E-Mail-Formulars wartet auf Impressum + Datenschutz (Phase B).
 
 **„Kann ich mit CI/CD schon anfangen, obwohl nichts live ist?"**
 Ja — genau richtig. CI ist in der Entwicklung am wertvollsten, nicht erst beim
@@ -148,7 +151,7 @@ Jetzt automatisieren:
 Dein zentrales Lern-Objekt. Der Server läuft, die App ist erreichbar — aber nur
 für dich, nicht öffentlich beworben.
 
-- [ ] **Hetzner CAX11** (ARM, ~4 €/Monat) bestellen. SSH-Key **beim Anlegen**
+- [ ] **Hetzner CX23 mit Ubuntu 26.04 LTS** bestellen. SSH-Key **beim Anlegen**
   hinterlegen, Passwort-Login nie aktivieren.
 - [ ] Härten: `ufw` nur 22/80/443, root-SSH aus, unprivilegierter User,
   `fail2ban`, `unattended-upgrades`. Das ist der Linux/Networking-Working-Depth

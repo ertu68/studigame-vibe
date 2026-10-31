@@ -61,14 +61,18 @@ Geld-Behälter und Charity-Überlauf plus Behälter-Upgrade, Skillbaum
 (Weiterbildung), passivem BAföG (Grundeinkommen alle 6 Stunden), Campus-Kiosk
 (Kaffee-Boost) und Campus-Shop**. Der Campus-Shop bietet Ausrüstung, Instrumente
 und Wohnungsoptionen zum Kauf an. Spieler können Geld ausgeben, um passive
-Einkommensquellen zu erhalten oder ihren Behälter weiter zu erweitern.
+Einkommensquellen zu erhalten oder ihren Behälter weiter zu erweitern. Die
+Effekte wirken: Wohnung/Fahrrad vergrößern den Behälter, Instrumente und
+Studentenausweis zahlen stündlich (max. 24 h am Stück), das Notebook mildert
+Laune-Verluste. Ohne Schicht erholt sich die Laune (+5 pro Stunde). Beides
+wird beim Seitenaufruf nachgerechnet, es läuft kein Hintergrundjob.
+Klausuren bringen ECTS-Punkte, die getrennt vom Geld am Charakter stehen.
 
 Die
 Restzeit laufender Aktionen zählt im Browser live runter (Alpine.js, neben
 htmx als einziges Frontend-JS, kein Build-Schritt). Charaktererstellung fragt
 das Studienfach ab, das jetzt im Skillbaum mitredet (Kosten- und Dauer-Boni).
-Als Nächstes: Klausur/Studium als dritte Aktion (ECTS) und danach das Balancing
-spielen und bewerten (siehe `studigame-plan.md` §3b und ROADMAP).
+Als Nächstes: Balancing spielen und bewerten (siehe `studigame-plan.md` §3b und ROADMAP).
 
 Name ist entschieden (Studigame), Domain ist noch offen — siehe `.env.example`.
 

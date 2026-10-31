@@ -6,25 +6,27 @@ import "time"
 // container every BafogPeriod. It costs no mood and needs no shift — it just
 // arrives, unlike collecting or the job. The amount is the single tuning knob.
 const (
-	BafogPayoutCents = 3000 // 30,00 € per period
+	BafogPayoutCents = 2000 // 20,00 € per period (≈3,33 €/h, below the 8 €/h job)
 	MaxBafogPeriods  = 4    // clamp so an abandoned account cannot bank a windfall
 )
 
 // BafogPeriod is how often the Förderung is paid out.
 var BafogPeriod = 6 * time.Hour
 
-// BafogPeriodsElapsed is how many full payouts are due between the last
-// scheduled payout and now. It clamps at MaxBafogPeriods, so returning after
-// weeks pays out a bounded amount instead of a jackpot.
-func BafogPeriodsElapsed(nextAt, now time.Time) int {
+// BafogFullPeriods is how many whole periods lie between the payout pointer
+// and now, unclamped. The pointer advances by this many, so skipped periods are
+// forfeited rather than caught up on the next reload.
+func BafogFullPeriods(nextAt, now time.Time) int {
 	if !now.After(nextAt) {
 		return 0
 	}
-	periods := int(now.Sub(nextAt) / BafogPeriod)
-	if periods > MaxBafogPeriods {
-		periods = MaxBafogPeriods
-	}
-	return periods
+	return int(now.Sub(nextAt) / BafogPeriod)
+}
+
+// BafogPeriodsElapsed is how many payouts are due: the full periods, clamped at
+// MaxBafogPeriods, so returning after weeks pays a bounded amount, not a jackpot.
+func BafogPeriodsElapsed(nextAt, now time.Time) int {
+	return min(BafogFullPeriods(nextAt, now), MaxBafogPeriods)
 }
 
 // BafogNextAfter advances the payout pointer by the given number of settled

@@ -251,3 +251,53 @@ func TestSkillFactorFreezesIntoCollectShift(t *testing.T) {
 		t.Fatalf("skilled yield must exceed plain: plain=%q skilled=%q", plainSum.Detail, skilledSum.Detail)
 	}
 }
+
+func TestCancelSkillTrainingRefundsOnlyOnce(t *testing.T) {
+	conn := testDB(t)
+	char := newCharacter(t, conn, "Paula", "paula@example.com")
+	start := time.Date(2026, 8, 26, 8, 0, 0, 0, time.UTC)
+	if _, err := StartSkillTraining(conn, char, "geschicklichkeit", start); err != nil {
+		t.Fatal(err)
+	}
+	training, err := FindSkillTraining(conn, char.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := CancelSkillTraining(conn, char, training.ID); err != nil {
+		t.Fatalf("first cancel: %v", err)
+	}
+	if _, err := CancelSkillTraining(conn, char, training.ID); !errors.Is(err, ErrNoSkillTraining) {
+		t.Fatalf("second cancel: got %v, want ErrNoSkillTraining", err)
+	}
+	var money int
+	conn.QueryRow(`SELECT money_cents FROM characters WHERE id = ?`, char.ID).Scan(&money)
+	if money != 800 {
+		t.Fatalf("money = %d, want 800 (one refund of 80%% of 1000)", money)
+	}
+}
+
+// A training that finished while the page was open must count as its level:
+// the next run costs level+1 and the player does not pay twice for the same one.
+func TestStartSkillTrainingSettlesDueRunFirst(t *testing.T) {
+	conn := testDB(t)
+	char := newCharacter(t, conn, "Ruth", "ruth@example.com")
+	start := time.Date(2026, 8, 26, 8, 0, 0, 0, time.UTC)
+	if _, err := conn.Exec(`UPDATE characters SET money_cents = 50000 WHERE id = ?`, char.ID); err != nil {
+		t.Fatal(err)
+	}
+	char.MoneyCents = 50000
+	if _, err := StartSkillTraining(conn, char, "geschicklichkeit", start); err != nil {
+		t.Fatal(err)
+	}
+	later := start.Add(24 * time.Hour)
+	if _, err := StartSkillTraining(conn, char, "geschicklichkeit", later); err != nil {
+		t.Fatalf("second run: %v", err)
+	}
+	tr, err := FindSkillTraining(conn, char.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if tr.Level != 2 {
+		t.Fatalf("second run targets level %d, want 2", tr.Level)
+	}
+}

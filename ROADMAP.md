@@ -30,11 +30,51 @@ Kleine Fixes und das Fundament, das später teuer nachzurüsten wäre.
 - [ ] 🙋 Mailversand-Anbieter wählen, SPF/DKIM setzen
 - [ ] 🙋 Impressum + Datenschutzerklärung
 - [ ] 🙋 Backup-Restore einmal testen
-- [ ] uuid für öffentliche IDs (z. B. Charaktere) statt fortlaufender Integer
-  erwägen — verhindert Enumeration. `github.com/google/uuid` ist bereits im
+- [x] uuid für öffentliche IDs: entfällt, keine Route trägt eine Charakter-ID
+  (alle Routen laufen über die Session). Erst bei öffentlichen Profilen relevant.
+  Vorher erwog: verhindert Enumeration. `github.com/google/uuid` ist bereits im
   `go.sum` (Transitiv-Dependency von `modernc.org/sqlite`), aber unbenutzt;
   müsste von `// indirect` zu direkter Dependency werden
 - [x] Tailwind vs. handgeschriebenes CSS entschieden: Tailwind bleibt
+
+## Code-Review-Funde (vor Beta abarbeiten)
+
+Aus dem Review des Codestands nach dem Shop-Commit. Reihenfolge = Abarbeitung.
+
+**1. Geld-Races und BAföG**
+- [x] Lost Update bei Geld: Abbuchungen relativ (`money_cents - ? WHERE money_cents >= ?`) statt stale Absolutwert — Shop, Container-Upgrade, Kaffee, Skills, Schichtabrechnung
+- [x] `UpgradeContainer`: Level atomar hochzählen (Doppelklick kauft sonst zwei Stufen zum Preis von einer)
+- [x] `PurchaseItem`: Mengenprüfung innerhalb der Transaktion
+- [x] `CancelSkillTraining`: Doppel-Abbruch zahlt zweimal zurück
+- [x] `StartSkillTraining`: Level vor dem Auflösen fälliger Trainings gelesen — Spieler zahlt für ein Level, das er schon hat
+- [x] BAföG-Clamp: Zeiger bei Kappung bis `now` vorziehen, sonst holt jeder Reload 4 weitere Perioden nach
+
+**2. Stimmung und Shop-Wirkung**
+- [x] Stimmung regeneriert (+5 pro Stunde ohne Schicht, Startwert, 🙋 Balancing — `game.MoodRegenPerHour`)
+- [x] Shop-Effekte wirken: `container_bonus` erhöht Kapazität, `passive_income` zahlt stündlich, `mood_bonus` senkt Erschöpfung in Prozent (Startwerte, 🙋 Balancing)
+- [x] `subject_required` im Shop prüfen oder Spalte streichen (Spalte gestrichen, Migration 0013)
+
+**3. Auth und Logs**
+- [x] Login: gleiche Antwort und bcrypt-Zeit für unbekannt / unbestätigt / falsches Passwort
+- [x] „Bestätigungsmail erneut senden“ (Token läuft nach 1 h ab, Account sonst tot)
+- [x] Rohe Reset-Tokens und E-Mail-Adressen nicht ins Log
+- [x] `ResetPassword` / `VerifyEmail` atomar (Transaktion, Einmal-Token)
+- [x] Passwort-Obergrenze (72 Byte, bcrypt) mit sauberer Meldung, `MaxBytesReader` auf Formularen
+- [x] Zeitzone: DB-Zeiten immer UTC, unabhängig von `TZ` des Servers
+- [x] 🙋 Go-Port nur auf 127.0.0.1 binden (`X-Forwarded-For` wird vertraut) — in `DEVOPS-GUIDE.md` vermerken
+
+**4. ECTS sauber trennen**
+- [x] ECTS nicht aus Anzeigetext zurückparsen und nicht ins Geld-Ledger buchen
+- [x] ECTS-Stand anzeigen (Klausur-Seite, Dashboard)
+- [x] Auskommentierten Code in `klausur_store.go` löschen
+
+**5. Aufräumen**
+- [x] `gofmt -w .` (`game/klausur.go`, `klausur_test.go`, `shop_handlers.go`)
+- [x] Leerzeichen im Nebenverdienst-Text („…€ übrig“)
+- [x] Shop-Code verschlanken (drei gleiche Schleifen in `game/shop.go`, ungenutztes `CanPurchase`)
+- [x] Zeichen statt Bytes bei der Namenslänge (`character_handlers.go`)
+
+---
 
 ## UI-Redesign: Studigame-Look
 
@@ -104,20 +144,15 @@ Bewusst von der Kernschleife getrennt: hier geht es nicht um neuen Spielinhalt,
 sondern um dokumentierte Lücken und Balance-Fälle, die ein späterer Leser sonst
 übersieht. Jeder Punkt bezieht sich auf eine konkrete Fundstelle.
 
-- [ ] BAföG-Passivertrag prüfen: bezahlt 5 €/h fürs Nichtstun (30 €/6 h,
-  `internal/game/bafog.go`), der aktive Job 8 €/h (`job.go`). Passiv ist damit
-  fast so gut wie aktiv, ohne Laune-, Risiko- oder Aktionskosten. Entweder
-  Abstand vergrößern oder bewusst so lassen — Entscheidung festhalten
-- [ ] Endgame-Loch nach Behälter-Maxl: alle 4 Stufen kosten kumuliert ~477 €,
-  danach ist der Charity-Überlauf ohne Geld-Sink, bis der Shop kommt. Sink-Plan
-  für die Lücke zwischen „Bausparvertrag voll" und Shop klären, sonst kehrt
-  §3b „grindet ins Leere" zurück, nur verschoben
-- [ ] Schicksal der gestrichenen 6 Skills entscheiden (Bildungsstufe,
-  Sozialkontakte, Musik, Taschendiebstahl, ATT, DEF): kommen sie als
-  „Später"-Umfang zurück oder sind sie permanent weg? Wohnungsleiter
-  (WG-Zimmer→Eigentumswohnung) und die Fach-Boni (`studigame-plan.md` §3)
-  hängen genau an ihnen und sind sonst nicht baubar. Entscheidung im Plan
-  festhalten, damit der nächste Agent nicht in die Lücke tappt
+- [x] BAföG-Passivertrag: Auszahlung von 30 € auf 20 € je 6 h gesenkt
+  (≈3,33 €/h, `internal/game/bafog.go`), Abstand zum Job 8 €/h. Startwert,
+  Feinjustierung mit dem Balancing 🙋
+- [x] Endgame-Loch nach Behälter-Maxl: Campus-Shop (Wohnungen, Ausrüstung,
+  Instrumente) ist der Geld-Sink nach dem Bausparvertrag. Feintuning der Preise 🙋
+- [x] Schicksal der gestrichenen 6 Skills: **aufgeschoben, nicht gestrichen**.
+  Kommen als „Später"-Umfang zurück (Bildungsstufe, Sozialkontakte, Musik,
+  Taschendiebstahl, ATT, DEF). Wohnungsleiter und Fach-Boni hängen daran.
+  Festgehalten in `studigame-plan.md` §3
 - [x] Kaffee-Boost (`0009_coffee.sql`, `shop.go`) zum Abschluss in CHANGELOG &
   ROADMAP nachziehen — uncommitted WIP, nicht vergessen beim Commit
 
@@ -226,7 +261,7 @@ Der Code-Umbau ist umgesetzt und grün (`go test ./...`).
   `distance_rank`) entfernt, `subjects`-Tabelle (Studienfach) eingeführt;
   `characters.district_id` → `characters.subject_id`; Charaktererstellung
   fragt das Studienfach ab statt einer Stadt
-- [ ] Campus-Orte (Mensa/Bibliothek/Kneipenviertel) als reines Text-Label in
+- [x] Campus-Orte (Mensa/Bibliothek/Kneipenviertel) als reines Text-Label in
   Aktionen, ohne eigene Stats-Tabelle
 - [x] Editionen-Bootstrap auf eine fiktive Uni-Stadt reduziert (statt vier
   NRW-Städte); `editions`-Tabelle bleibt technisch für spätere Erweiterung
@@ -236,7 +271,7 @@ Der Code-Umbau ist umgesetzt und grün (`go test ./...`).
 - [ ] Skill-/Mechanik-Namen aus `studigame-plan.md` Abschnitt 3 übernehmen
   (ECTS-Punkte, Rabattcode-Jäger, Notenkonkurrenz, …), sobald die jeweilige
   Mechanik gebaut wird
-- [ ] `CLAUDE.md`/README-Verweise auf Bezirke/Städte final auf Studienfach/
+- [x] `CLAUDE.md`/README-Verweise auf Bezirke/Städte final auf Studienfach/
   Edition umziehen, sobald der Code-Umbau steht
 
 ## Editionen

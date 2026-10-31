@@ -9,13 +9,31 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ## [Unreleased]
 
+### Geändert
+- **Namenslänge** zählt Zeichen statt Bytes (Umlaute).
+- **Stimmung erholt sich**: +5 pro Stunde ohne laufende Schicht (Startwert).
+- **Shop-Effekte wirken**: Wohnung und Fahrrad erhöhen die Behälterkapazität, Instrumente und Studentenausweis zahlen stündlich (maximal 24 Stunden am Stück), das Notebook senkt die Erschöpfung.
+- **BAföG-Passivbetrag** gesenkt: 20,00 € statt 30,00 € alle 6 Stunden, Abstand zum Job bleibt sichtbar.
+- **Aktionen mit Ort**: Sammeln (Mensa-Hinterhof), Job (Campus-Bibliothek) und Nebenverdienst (Kneipenviertel) nennen jetzt ihren Ort als Text.
+
 ### Behoben
 
+- **Login verrät keine Konten mehr**: unbekannte E-Mail, falsches Passwort und unbestätigtes Konto sehen gleich aus und brauchen gleich lang. „Unbestätigt“ erfährt nur, wer das richtige Passwort kennt.
+- **Bestätigungsmail erneut senden** (Login und Registrierungsseite, höchstens eine pro Minute).
+- **Passwort-Reset und E-Mail-Bestätigung** verbrauchen ihren Token atomar, auch abgelaufene Tokens werden gelöscht.
+- **Logs** enthalten keine E-Mail-Adressen, Namen oder Tokens mehr.
+- **Passwörter** über 72 Byte werden mit Hinweis abgelehnt statt still abgeschnitten; Formular-Bodys sind auf 64 KiB begrenzt.
+- **Zeiten** in der Datenbank sind immer UTC, unabhängig von der Zeitzone des Servers.
+- **Geld-Races**: Alle Buchungen laufen über eine relative Abbuchung mit Deckungsprüfung (`postMoney`). Doppelklick auf Upgrade, Shop oder Abbruch einer Weiterbildung zahlt nichts mehr doppelt aus oder ab.
+- **BAföG-Kappung**: Verpasste Perioden über dem Limit verfallen, ein Reload holt sie nicht mehr nach.
+- **Weiterbildung**: Ein fälliges Training wird vor dem nächsten Start abgerechnet, das Level stimmt.
+- **ECTS** landen nicht mehr im Geld-Ledger, sondern getrennt am Charakter.
 - **Shop-Tests korrigiert**: Konflikte mit bestehenden Datenbankmigrationen behoben, um UNIQUE-Constraint-Verletzungen zu vermeiden
 - **Migrationsskripte angepasst**: Goose-spezifische Kommentare entfernt, um Kompatibilität mit dem bestehenden Migrationssystem sicherzustellen
 
 ### Hinzugefügt
 
+- **ECTS-Stand** auf Dashboard und Klausur-Seite.
 - **Campus-Shop**: Breiter Shop mit Ausrüstung, Instrumenten und Wohnung.
   Spieler können Geld ausgeben, um passive Einkommensquellen zu erhalten oder
   ihren Behälter zu erweitern. Der Shop enthält drei Kategorien:

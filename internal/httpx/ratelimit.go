@@ -98,3 +98,12 @@ func ClientIP(r *http.Request) string {
 	}
 	return host
 }
+
+// LimitBody caps request bodies so a form post cannot stream megabytes into
+// ParseForm. 64 KiB is far above any form in the game.
+func LimitBody(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.Body = http.MaxBytesReader(w, r.Body, 64<<10)
+		next.ServeHTTP(w, r)
+	})
+}

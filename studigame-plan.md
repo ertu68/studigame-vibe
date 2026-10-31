@@ -318,8 +318,8 @@ würde):
   kommt als eigener Block.
 - Weitere Zustands-Stats (Schlaflosigkeit, Motivation, Sauberkeit) – geparkt,
   Laune allein reicht.
-- Campus-Orte als Text-Label – billig, aber erst sinnvoll, wenn es eine zweite
-  Aktion mit Ortsbezug gibt.
+- Campus-Orte als Text-Label – umgesetzt, sobald es mehrere Aktionen mit Ortsbezug gab
+  (Sammeln: Mensa-Hinterhof, Job: Bibliothek, Nebenverdienst: Kneipenviertel).
 
 **Architektur-Stand, der Bestand hat:**
 Die generische `actions`-Tabelle mit `payload_json`/`result_json` und

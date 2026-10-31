@@ -14,6 +14,8 @@ type Character struct {
 	MoneyCents     int
 	ContainerLevel int
 	Mood           int
+	// ECTSCents is exam credit in hundredths of an ECTS point.
+	ECTSCents int
 	// BafogNextAt is the next BAföG payout; nil means the student has not applied.
 	BafogNextAt *time.Time
 	// CaffeineUntil is when a coffee boost runs out; nil means no boost.

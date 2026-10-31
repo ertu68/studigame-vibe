@@ -13,32 +13,29 @@ import (
 // boost pointer move in one transaction so money and effect can never
 // disagree. Returns the refreshed character.
 func BuyCoffee(db *sql.DB, char Character, now time.Time) (Character, error) {
-	if char.MoneyCents < game.CoffeeCostCents {
-		return char, ErrNotEnoughMoney
-	}
-
-	until := now.Add(game.CoffeeBoostWindow)
-	if char.CaffeineUntil != nil && char.CaffeineUntil.After(now) {
-		until = char.CaffeineUntil.Add(game.CoffeeBoostWindow)
-	}
-	balance := char.MoneyCents - game.CoffeeCostCents
-
 	tx, err := db.Begin()
 	if err != nil {
 		return char, err
 	}
 	defer tx.Rollback()
 
-	if _, err := tx.Exec(
-		`UPDATE characters SET money_cents = ?, caffeine_until = ? WHERE id = ?`,
-		balance, until.UTC().Format(time.RFC3339Nano), char.ID,
-	); err != nil {
+	// Read the boost inside the transaction so two quick coffees both stack.
+	var current sql.NullString
+	if err := tx.QueryRow(`SELECT caffeine_until FROM characters WHERE id = ?`, char.ID).Scan(&current); err != nil {
+		return char, err
+	}
+	until := now.Add(game.CoffeeBoostWindow)
+	if t := parseNextAt(current); t != nil && t.After(now) {
+		until = t.Add(game.CoffeeBoostWindow)
+	}
+
+	balance, err := postMoney(tx, char.ID, -game.CoffeeCostCents, "coffee", char.ID)
+	if err != nil {
 		return char, err
 	}
 	if _, err := tx.Exec(
-		`INSERT INTO ledger (character_id, delta_cents, balance_after, reason, ref_id)
-		 VALUES (?, ?, ?, 'coffee', ?)`,
-		char.ID, -game.CoffeeCostCents, balance, char.ID,
+		`UPDATE characters SET caffeine_until = ? WHERE id = ?`,
+		until.UTC().Format(time.RFC3339Nano), char.ID,
 	); err != nil {
 		return char, err
 	}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"time"
+	"unicode/utf8"
 
 	"golang.org/x/crypto/bcrypt"
 	"modernc.org/sqlite"
@@ -57,22 +58,45 @@ func Register(db *sql.DB, name, email, password, city string) (int64, error) {
 	return res.LastInsertId()
 }
 
+// dummyHash lets Authenticate spend the same bcrypt time for unknown emails
+// as for known ones, so response time does not reveal which accounts exist.
+var dummyHash, _ = bcrypt.GenerateFromPassword([]byte("dummy"), bcrypt.DefaultCost)
+
+// MaxPasswordBytes is bcrypt's input limit; longer passwords are rejected
+// instead of silently truncated.
+const MaxPasswordBytes = 72
+
+// PasswordProblem returns a German message if the password is unusable, else "".
+func PasswordProblem(password string) string {
+	switch {
+	case utf8.RuneCountInString(password) < 8:
+		return "Passwort muss mind. 8 Zeichen haben"
+	case len(password) > MaxPasswordBytes:
+		return "Passwort ist zu lang (max. 72 Bytes)"
+	}
+	return ""
+}
+
+// Authenticate checks the password first; only someone who knows it learns
+// that the account is still unverified. Unknown email and wrong password are
+// indistinguishable, in answer and in time.
 func Authenticate(db *sql.DB, email, password string) (int64, error) {
 	var id int64
 	var hash string
 	var verified bool
 	err := db.QueryRow(`SELECT id, password_hash, verified FROM users WHERE email = ?`, email).Scan(&id, &hash, &verified)
 	if err == sql.ErrNoRows {
+		bcrypt.CompareHashAndPassword(dummyHash, []byte(password))
 		return 0, ErrInvalidLogin
 	}
 	if err != nil {
 		return 0, err
 	}
-	if !verified {
-		return 0, ErrUnverifiedEmail
-	}
 	if bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) != nil {
 		return 0, ErrInvalidLogin
+	}
+	if !verified {
+		return 0, ErrUnverifiedEmail
 	}
 	return id, nil
 }
@@ -95,7 +119,7 @@ func RequestPasswordReset(db *sql.DB, mailer Mailer, siteDomain, email string, t
 	}
 	_, err = db.Exec(
 		`INSERT INTO password_resets (token_hash, user_id, expires_at) VALUES (?, ?, ?)`,
-		hashToken(rawToken), userID, time.Now().Add(ttl),
+		hashToken(rawToken), userID, time.Now().UTC().Add(ttl),
 	)
 	if err != nil {
 		return err
@@ -105,12 +129,23 @@ func RequestPasswordReset(db *sql.DB, mailer Mailer, siteDomain, email string, t
 	return mailer.Send(email, "Passwort zuruecksetzen", "Link: "+link)
 }
 
+// ResetPassword spends the token and sets the password in one transaction;
+// the DELETE ... RETURNING is the claim, so a token works exactly once.
 func ResetPassword(db *sql.DB, token, newPassword string) error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
 	var userID int64
 	var expiresAt time.Time
-	tokenHash := hashToken(token)
-	err := db.QueryRow(
-		`SELECT user_id, expires_at FROM password_resets WHERE token_hash = ?`, tokenHash,
+	err = tx.QueryRow(
+		`DELETE FROM password_resets WHERE token_hash = ? RETURNING user_id, expires_at`, hashToken(token),
 	).Scan(&userID, &expiresAt)
 	if err == sql.ErrNoRows {
 		return ErrInvalidResetLink
@@ -119,23 +154,17 @@ func ResetPassword(db *sql.DB, token, newPassword string) error {
 		return err
 	}
 	if time.Now().After(expiresAt) {
+		tx.Commit() // expired token stays deleted
 		return ErrInvalidResetLink
 	}
-
-	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-	if _, err := db.Exec(`UPDATE users SET password_hash = ? WHERE id = ?`, string(hash), userID); err != nil {
+	if _, err := tx.Exec(`UPDATE users SET password_hash = ? WHERE id = ?`, string(hash), userID); err != nil {
 		return err
 	}
 	// D4: Invalidate all sessions for this user
-	_, err = db.Exec(`DELETE FROM sessions WHERE user_id = ?`, userID)
-	if err != nil {
+	if _, err := tx.Exec(`DELETE FROM sessions WHERE user_id = ?`, userID); err != nil {
 		return err
 	}
-	_, err = db.Exec(`DELETE FROM password_resets WHERE token_hash = ?`, tokenHash)
-	return err
+	return tx.Commit()
 }
 
 // RequestEmailVerification sends a verification link to a newly registered user.
@@ -146,7 +175,7 @@ func RequestEmailVerification(db *sql.DB, mailer Mailer, siteDomain string, user
 	}
 	_, err = db.Exec(
 		`INSERT INTO verification_tokens (token_hash, user_id, expires_at) VALUES (?, ?, ?)`,
-		hashToken(rawToken), userID, time.Now().Add(ttl),
+		hashToken(rawToken), userID, time.Now().UTC().Add(ttl),
 	)
 	if err != nil {
 		return err
@@ -156,13 +185,39 @@ func RequestEmailVerification(db *sql.DB, mailer Mailer, siteDomain string, user
 	return mailer.Send(email, "Bestätige deine E-Mail", "Link: "+link)
 }
 
-// VerifyEmail marks a user as verified if the token is valid.
+// ResendVerification sends a fresh link to an unverified account. Like
+// RequestPasswordReset it returns nil whether or not the account exists. A
+// link sent within the last minute is not repeated (no mail bombing).
+func ResendVerification(db *sql.DB, mailer Mailer, siteDomain, email string, ttl time.Duration) error {
+	var userID int64
+	var recent bool
+	err := db.QueryRow(
+		`SELECT id, EXISTS(SELECT 1 FROM verification_tokens WHERE user_id = users.id
+		                   AND created_at > datetime('now', '-1 minute'))
+		 FROM users WHERE email = ? AND verified = FALSE`, email,
+	).Scan(&userID, &recent)
+	if err == sql.ErrNoRows || recent {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	return RequestEmailVerification(db, mailer, siteDomain, userID, email, ttl)
+}
+
+// VerifyEmail marks a user as verified if the token is valid. The token is
+// spent and the user updated in one transaction.
 func VerifyEmail(db *sql.DB, token string) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
 	var userID int64
 	var expiresAt time.Time
-	tokenHash := hashToken(token)
-	err := db.QueryRow(
-		`SELECT user_id, expires_at FROM verification_tokens WHERE token_hash = ?`, tokenHash,
+	err = tx.QueryRow(
+		`DELETE FROM verification_tokens WHERE token_hash = ? RETURNING user_id, expires_at`, hashToken(token),
 	).Scan(&userID, &expiresAt)
 	if err == sql.ErrNoRows {
 		return ErrInvalidVerifyLink
@@ -171,12 +226,11 @@ func VerifyEmail(db *sql.DB, token string) error {
 		return err
 	}
 	if time.Now().After(expiresAt) {
+		tx.Commit() // expired token stays deleted
 		return ErrInvalidVerifyLink
 	}
-
-	if _, err := db.Exec(`UPDATE users SET verified = TRUE WHERE id = ?`, userID); err != nil {
+	if _, err := tx.Exec(`UPDATE users SET verified = TRUE WHERE id = ?`, userID); err != nil {
 		return err
 	}
-	_, err = db.Exec(`DELETE FROM verification_tokens WHERE token_hash = ?`, tokenHash)
-	return err
+	return tx.Commit()
 }

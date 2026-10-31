@@ -55,7 +55,8 @@
     </h2>
     <p class="text-sm text-soft mb-4">
       Stunden vor deinen Büchern sitzen und Klausurinhalte lernen. Je länger du
-      büffelst, desto mehr ECTS-Punkte kannst du erreichen.
+      büffelst, desto mehr ECTS-Punkte kannst du erreichen. Bisher:
+      <strong>{{.ECTS}} ECTS</strong>.
     </p>
     <form method="post" action="/klausur/start">
       <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />

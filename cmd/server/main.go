@@ -80,6 +80,7 @@ func main() {
 	mux.HandleFunc("GET /register", deps.RegisterForm)
 	mux.HandleFunc("POST /register", loginLimiter.Middleware(handlers.RequireCSRF(deps.Register)))
 	mux.HandleFunc("GET /verify", deps.VerifyEmail)
+	mux.HandleFunc("POST /verify/resend", loginLimiter.Middleware(handlers.RequireCSRF(deps.ResendVerification)))
 	mux.HandleFunc("GET /login", deps.LoginForm)
 	mux.HandleFunc("POST /login", loginLimiter.Middleware(handlers.RequireCSRF(deps.Login)))
 	mux.HandleFunc("POST /logout", handlers.RequireCSRF(deps.Logout))
@@ -116,7 +117,7 @@ func main() {
 	addr := ":" + cfg.Port
 	server := &http.Server{
 		Addr:         addr,
-		Handler:      httpx.RecoveryMiddleware(httpx.SecurityHeadersMiddleware(mux)),
+		Handler:      httpx.RecoveryMiddleware(httpx.SecurityHeadersMiddleware(httpx.LimitBody(mux))),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  60 * time.Second,

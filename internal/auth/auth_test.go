@@ -233,3 +233,80 @@ func TestEmailVerification(t *testing.T) {
 		t.Fatalf("authenticate after verification: got id=%d err=%v, want id=%d", got, err, id)
 	}
 }
+
+func TestUnverifiedStatusOnlyForCorrectPassword(t *testing.T) {
+	conn := testDB(t)
+	Register(conn, "Finn", "finn@example.com", "hunter22", "Köln")
+	if _, err := Authenticate(conn, "finn@example.com", "wrong"); err != ErrInvalidLogin {
+		t.Fatalf("wrong password on unverified account: got %v, want ErrInvalidLogin", err)
+	}
+	if _, err := Authenticate(conn, "nobody@example.com", "hunter22"); err != ErrInvalidLogin {
+		t.Fatalf("unknown email: got %v, want ErrInvalidLogin", err)
+	}
+}
+
+func TestPasswordProblem(t *testing.T) {
+	cases := []struct {
+		pw string
+		ok bool
+	}{
+		{"short", false}, {"hunter22", true}, {strings.Repeat("a", 72), true},
+		{strings.Repeat("a", 73), false}, {"üüüüüüüü", true}, // 8 runes, 16 bytes
+	}
+	for _, tc := range cases {
+		if got := PasswordProblem(tc.pw) == ""; got != tc.ok {
+			t.Errorf("PasswordProblem(%d bytes) ok=%v, want %v", len(tc.pw), got, tc.ok)
+		}
+	}
+}
+
+func TestResendVerification(t *testing.T) {
+	conn := testDB(t)
+	id, _ := Register(conn, "Gina", "gina@example.com", "hunter22", "Köln")
+	var mailer fakeMailer
+
+	// Unknown address: nil, no mail.
+	if err := ResendVerification(conn, &mailer, "example.com", "nobody@example.com", time.Hour); err != nil || mailer.to != "" {
+		t.Fatalf("unknown: err=%v to=%q", err, mailer.to)
+	}
+	// Known, no recent link: mail goes out and the link works.
+	if err := ResendVerification(conn, &mailer, "example.com", "gina@example.com", time.Hour); err != nil || mailer.to == "" {
+		t.Fatalf("resend: err=%v to=%q", err, mailer.to)
+	}
+	if err := VerifyEmail(conn, tokenFromLink(t, mailer.body)); err != nil {
+		t.Fatalf("verify resent link: %v", err)
+	}
+	// Already verified: no second mail.
+	mailer = fakeMailer{}
+	if err := ResendVerification(conn, &mailer, "example.com", "gina@example.com", time.Hour); err != nil || mailer.to != "" {
+		t.Fatalf("verified: err=%v to=%q", err, mailer.to)
+	}
+	_ = id
+}
+
+func TestResendVerificationThrottled(t *testing.T) {
+	conn := testDB(t)
+	Register(conn, "Hans", "hans@example.com", "hunter22", "Köln")
+	var mailer fakeMailer
+	ResendVerification(conn, &mailer, "example.com", "hans@example.com", time.Hour)
+	mailer = fakeMailer{}
+	ResendVerification(conn, &mailer, "example.com", "hans@example.com", time.Hour)
+	if mailer.to != "" {
+		t.Fatal("second resend within a minute should not mail")
+	}
+}
+
+func TestExpiredResetTokenIsBurned(t *testing.T) {
+	conn := testDB(t)
+	id, _ := Register(conn, "Ida", "ida@example.com", "hunter22", "Köln")
+	conn.Exec(`INSERT INTO password_resets (token_hash, user_id, expires_at) VALUES (?, ?, ?)`,
+		hashToken("tok"), id, time.Now().UTC().Add(-time.Minute))
+	if err := ResetPassword(conn, "tok", "newpassword"); err != ErrInvalidResetLink {
+		t.Fatalf("got %v, want ErrInvalidResetLink", err)
+	}
+	var n int
+	conn.QueryRow(`SELECT COUNT(*) FROM password_resets`).Scan(&n)
+	if n != 0 {
+		t.Fatal("expired token should be deleted")
+	}
+}

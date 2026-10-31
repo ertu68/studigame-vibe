@@ -154,10 +154,14 @@ func TestCollectBafogClampsAtMaxPeriods(t *testing.T) {
 		t.Fatalf("money after clamp: got %d, want %d (clamped to %d periods)",
 			got, want, game.MaxBafogPeriods)
 	}
-	// Pointer advances only the clamped number of periods, not to now.
-	wantNext := on.BafogNextAt.Add(time.Duration(game.MaxBafogPeriods) * game.BafogPeriod)
-	if got := reloaded.BafogNextAt; got == nil || !got.Equal(wantNext) {
-		t.Fatalf("next payout after clamp: got %v, want %v", got, wantNext)
+	// Skipped periods are forfeited: the pointer jumps to the last full period
+	// before now, so an immediate reload pays nothing more.
+	if got := reloaded.BafogNextAt; got == nil || late.Sub(*got) >= game.BafogPeriod {
+		t.Fatalf("pointer not advanced to now: %v", got)
+	}
+	again, err := CollectBafog(conn, reloaded, late)
+	if err != nil || again != nil {
+		t.Fatalf("second collect after clamp: summary=%v err=%v, want nothing", again, err)
 	}
 }
 

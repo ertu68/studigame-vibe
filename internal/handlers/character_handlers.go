@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"studigame/internal/web"
 )
@@ -25,7 +26,7 @@ func (d *Deps) CharacterNew(u *user, w http.ResponseWriter, r *http.Request) {
 	name := strings.TrimSpace(r.FormValue("name"))
 	subjectID, err := strconv.ParseInt(r.FormValue("subject"), 10, 64)
 
-	if len(name) < 3 || len(name) > 20 {
+	if n := utf8.RuneCountInString(name); n < 3 || n > 20 {
 		d.renderCharacterForm(w, r, name, "Der Name braucht 3 bis 20 Zeichen.")
 		return
 	}

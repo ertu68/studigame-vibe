@@ -8,11 +8,12 @@
   </div>
 
   <!-- Stat row -->
-  <div class="grid grid-cols-3 gap-3 mb-6">
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
     {{template "stat" dict "Icon" "wallet" "Label" "Kasse" "Value" .Money}}
     {{template "stat" dict "Icon" "gauge" "Label" "Laune" "Value" (printf "%d%%"
     .Mood)}} {{template "stat" dict "Icon" "book-open" "Label" "Fach" "Value"
-    .Character.SubjectName}}
+    .Character.SubjectName}} {{template "stat" dict "Icon" "book-open" "Label"
+    "ECTS" "Value" .ECTS}}
   </div>
 
   <!-- Money pot progress -->

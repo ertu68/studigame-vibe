@@ -12,6 +12,14 @@
       {{template "button" dict "Type" "submit" "Text" "Login"}}
     </form>
 
+    {{if .Unverified}}
+    <form method="post" action="/verify/resend" class="mt-4 text-center">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+      <input type="hidden" name="email" value="{{.Email}}" />
+      <button type="submit" class="text-primary hover:text-primary-hover">Bestätigungsmail erneut senden</button>
+    </form>
+    {{end}}
+
     <div class="mt-4 text-center">
       <p>
         <a

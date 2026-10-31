@@ -53,7 +53,7 @@ func (s *SessionStore) Create(userID int64) (rawToken string, err error) {
 	}
 	_, err = s.db.Exec(
 		`INSERT INTO sessions (token_hash, user_id, expires_at) VALUES (?, ?, ?)`,
-		hashToken(rawToken), userID, time.Now().Add(sessionTTL),
+		hashToken(rawToken), userID, time.Now().UTC().Add(sessionTTL),
 	)
 	if err != nil {
 		return "", err

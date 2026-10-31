@@ -82,7 +82,7 @@ func TestResolveKlausurMoodBounds(t *testing.T) {
 }
 
 func TestResolveKlausurSkillDefaults(t *testing.T) {
-	rested := ECTSParams{Duration: time.Hour, Mood: 100, SkillFactor: 0}    // unset
+	rested := ECTSParams{Duration: time.Hour, Mood: 100, SkillFactor: 0}     // unset
 	skilled := ECTSParams{Duration: time.Hour, Mood: 100, SkillFactor: 1.05} // buffed
 
 	base := ResolveKlausur(rested).ECTSPoints

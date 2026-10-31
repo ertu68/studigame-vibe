@@ -36,7 +36,7 @@ func CollectBafog(db *sql.DB, char Character, now time.Time) (*ActionSummary, er
 	}
 
 	payout := periods * game.BafogPayoutCents
-	nextAt := game.BafogNextAfter(*char.BafogNextAt, periods)
+	nextAt := game.BafogNextAfter(*char.BafogNextAt, game.BafogFullPeriods(*char.BafogNextAt, now))
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -44,7 +44,10 @@ func CollectBafog(db *sql.DB, char Character, now time.Time) (*ActionSummary, er
 	}
 	defer tx.Rollback()
 
-	capacity := game.ContainerCapacity(char.ContainerLevel)
+	capacity, err := capacityOf(tx, char)
+	if err != nil {
+		return nil, err
+	}
 	kept, donated := game.SplitAtCapacity(char.MoneyCents, payout, capacity)
 	balance := char.MoneyCents + kept
 

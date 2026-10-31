@@ -177,15 +177,30 @@ func (d *Deps) settleDueAction(char Character) (*ActionSummary, Character, error
 	if err != nil {
 		return nil, char, err
 	}
-	if summary == nil && bafog == nil {
-		return nil, char, nil
+	rest, char, err := d.settleRest(char)
+	if err != nil {
+		return nil, char, err
+	}
+	switch {
+	case summary != nil:
+	case bafog != nil:
+		summary = bafog
+	default:
+		summary = rest
+	}
+	return summary, char, nil
+}
+
+// settleRest books mood regeneration and passive item income, then reloads the
+// character (cheap, and mood or money changed in most cases anyway).
+func (d *Deps) settleRest(char Character) (*ActionSummary, Character, error) {
+	summary, err := SettleRest(d.DB, char, d.now())
+	if err != nil {
+		return nil, char, err
 	}
 	refreshed, err := CharacterForUser(d.DB, char.UserID, char.EditionID)
 	if err != nil {
 		return summary, char, err
-	}
-	if summary == nil {
-		summary = bafog
 	}
 	return summary, refreshed, nil
 }

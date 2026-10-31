@@ -2,103 +2,38 @@ package game
 
 import (
 	"testing"
+	"time"
 )
 
-func TestPassiveIncome(t *testing.T) {
-	shopItems := []ShopItem{
-		{ID: 1, Name: "Guitar", EffectType: "passive_income", EffectValue: 50},
-		{ID: 2, Name: "Keyboard", EffectType: "passive_income", EffectValue: 75},
-		{ID: 3, Name: "Book", EffectType: "mood_bonus", EffectValue: 5},
+func TestRegenMood(t *testing.T) {
+	cases := []struct{ mood, hours, want int }{
+		{50, 0, 50}, {50, 2, 60}, {95, 3, 100}, {0, 100, 100},
 	}
-
-	characterItems := []CharacterItem{
-		{ItemID: 1, Quantity: 1},
-		{ItemID: 2, Quantity: 2},
-		{ItemID: 3, Quantity: 1},
-	}
-
-	expected := 50*1 + 75*2 // 50 + 150 = 200
-	actual := PassiveIncome(characterItems, shopItems)
-
-	if actual != expected {
-		t.Errorf("PassiveIncome() = %d; want %d", actual, expected)
+	for _, tc := range cases {
+		if got := RegenMood(tc.mood, tc.hours); got != tc.want {
+			t.Errorf("RegenMood(%d, %d) = %d, want %d", tc.mood, tc.hours, got, tc.want)
+		}
 	}
 }
 
-func TestContainerBonus(t *testing.T) {
-	shopItems := []ShopItem{
-		{ID: 1, Name: "Backpack", EffectType: "container_bonus", EffectValue: 1000},
-		{ID: 2, Name: "Bike", EffectType: "container_bonus", EffectValue: 2000},
-		{ID: 3, Name: "Book", EffectType: "mood_bonus", EffectValue: 5},
+func TestEaseExhaustion(t *testing.T) {
+	cases := []struct{ delta, bonus, want int }{
+		{-20, 0, -20}, {-20, 10, -18}, {-20, 90, -10}, // capped at 50 %
+		{5, 10, 5}, // gains are untouched
 	}
-
-	characterItems := []CharacterItem{
-		{ItemID: 1, Quantity: 1},
-		{ItemID: 2, Quantity: 1},
-		{ItemID: 3, Quantity: 1},
-	}
-
-	expected := 1000*1 + 2000*1 // 1000 + 2000 = 3000
-	actual := ContainerBonus(characterItems, shopItems)
-
-	if actual != expected {
-		t.Errorf("ContainerBonus() = %d; want %d", actual, expected)
+	for _, tc := range cases {
+		if got := EaseExhaustion(tc.delta, tc.bonus); got != tc.want {
+			t.Errorf("EaseExhaustion(%d, %d) = %d, want %d", tc.delta, tc.bonus, got, tc.want)
+		}
 	}
 }
 
-func TestMoodBonus(t *testing.T) {
-	shopItems := []ShopItem{
-		{ID: 1, Name: "Book", EffectType: "mood_bonus", EffectValue: 5},
-		{ID: 2, Name: "Plant", EffectType: "mood_bonus", EffectValue: 3},
-		{ID: 3, Name: "Guitar", EffectType: "passive_income", EffectValue: 50},
+func TestWholeHours(t *testing.T) {
+	base := time.Date(2026, 1, 1, 12, 0, 0, 0, time.UTC)
+	if got := WholeHours(base, base.Add(150*time.Minute)); got != 2 {
+		t.Errorf("got %d, want 2", got)
 	}
-
-	characterItems := []CharacterItem{
-		{ItemID: 1, Quantity: 2},
-		{ItemID: 2, Quantity: 1},
-		{ItemID: 3, Quantity: 1},
-	}
-
-	expected := 5*2 + 3*1 // 10 + 3 = 13
-	actual := MoodBonus(characterItems, shopItems)
-
-	if actual != expected {
-		t.Errorf("MoodBonus() = %d; want %d", actual, expected)
-	}
-}
-
-func TestCanPurchase(t *testing.T) {
-	item := ShopItem{
-		ID:          1,
-		Name:        "Test Item",
-		PriceCents:  1000,
-		MaxQuantity: 1,
-	}
-
-	ownedItems := []CharacterItem{
-		{ItemID: 1, Quantity: 0},
-	}
-
-	// Test case 1: Not enough money
-	if CanPurchase(500, item, ownedItems) {
-		t.Error("Expected CanPurchase to return false when character doesn't have enough money")
-	}
-
-	// Test case 2: Enough money, not owned yet
-	if !CanPurchase(1500, item, ownedItems) {
-		t.Error("Expected CanPurchase to return true when character has enough money and hasn't purchased the item")
-	}
-
-	// Test case 3: Already owns maximum quantity
-	ownedItems[0].Quantity = 1
-	if CanPurchase(1500, item, ownedItems) {
-		t.Error("Expected CanPurchase to return false when character already owns maximum quantity")
-	}
-
-	// Test case 4: Item with higher max quantity
-	item.MaxQuantity = 3
-	ownedItems[0].Quantity = 2
-	if !CanPurchase(1500, item, ownedItems) {
-		t.Error("Expected CanPurchase to return true when character can still purchase more of the item")
+	if got := WholeHours(base, base.Add(-time.Hour)); got != 0 {
+		t.Errorf("got %d, want 0", got)
 	}
 }

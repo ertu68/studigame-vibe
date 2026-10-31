@@ -88,6 +88,11 @@ func StartSkillTraining(db *sql.DB, char Character, slug string, now time.Time) 
 		return 0, ErrSkillUnknown
 	}
 
+	// A due training is settled first, so the player cannot stack two runs
+	// and the level read below already includes it.
+	if err := ResolveSkillTrainings(db, char.ID, now); err != nil {
+		return 0, err
+	}
 	levels, err := SkillLevels(db, char.ID)
 	if err != nil {
 		return 0, err
@@ -97,20 +102,11 @@ func StartSkillTraining(db *sql.DB, char Character, slug string, now time.Time) 
 		return 0, ErrSkillAtMax
 	}
 
-	// A due training is settled first, so the player cannot stack two runs.
-	if err := ResolveSkillTrainings(db, char.ID, now); err != nil {
-		return 0, err
-	}
-
 	base := game.SkillCostCents(*skill, level)
 	konz := levels["konzentration"]
 	boost := CoffeeBoostActive(char, now)
 	duration := game.BoostedSkillTrainingDuration(slug, konz, char.SubjectName, boost)
 	cost := int(float64(base) * game.SubjectSkillCostFactor(char.SubjectName, slug))
-	if char.MoneyCents < cost {
-		return 0, ErrNotEnoughMoney
-	}
-	balance := char.MoneyCents - cost
 	target := level + 1
 
 	tx, err := db.Begin()
@@ -129,20 +125,9 @@ func StartSkillTraining(db *sql.DB, char Character, slug string, now time.Time) 
 		}
 		return 0, err
 	}
-
-	if _, err := tx.Exec(
-		`UPDATE characters SET money_cents = ? WHERE id = ?`, balance, char.ID,
-	); err != nil {
+	if _, err := postMoney(tx, char.ID, -cost, "skill_train", char.ID); err != nil {
 		return 0, err
 	}
-	if _, err := tx.Exec(
-		`INSERT INTO ledger (character_id, delta_cents, balance_after, reason, ref_id)
-		 VALUES (?, ?, ?, 'skill_train', ?)`,
-		char.ID, -cost, balance, char.ID,
-	); err != nil {
-		return 0, err
-	}
-
 	if err := tx.Commit(); err != nil {
 		return 0, err
 	}
@@ -206,9 +191,17 @@ func ResolveSkillTrainings(db *sql.DB, characterID int64, now time.Time) error {
 // CancelSkillTraining aborts a run and refunds 80 % (plan §1.3) of its cost.
 // It returns the refunded amount.
 func CancelSkillTraining(db *sql.DB, char Character, id int64) (int, error) {
+	tx, err := db.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	// DELETE ... RETURNING is the claim: a second cancel finds no row and
+	// cannot refund twice.
 	var cost int
-	err := db.QueryRow(
-		`SELECT cost_cents FROM skill_trainings WHERE id = ? AND character_id = ?`,
+	err = tx.QueryRow(
+		`DELETE FROM skill_trainings WHERE id = ? AND character_id = ? RETURNING cost_cents`,
 		id, char.ID,
 	).Scan(&cost)
 	if err == sql.ErrNoRows {
@@ -219,24 +212,7 @@ func CancelSkillTraining(db *sql.DB, char Character, id int64) (int, error) {
 	}
 
 	refund := cost * 80 / 100
-	balance := char.MoneyCents + refund
-
-	tx, err := db.Begin()
-	if err != nil {
-		return 0, err
-	}
-	defer tx.Rollback()
-	if _, err := tx.Exec(`DELETE FROM skill_trainings WHERE id = ?`, id); err != nil {
-		return 0, err
-	}
-	if _, err := tx.Exec(`UPDATE characters SET money_cents = ? WHERE id = ?`, balance, char.ID); err != nil {
-		return 0, err
-	}
-	if _, err := tx.Exec(
-		`INSERT INTO ledger (character_id, delta_cents, balance_after, reason, ref_id)
-		 VALUES (?, ?, ?, 'skill_refund', ?)`,
-		char.ID, refund, balance, id,
-	); err != nil {
+	if _, err := postMoney(tx, char.ID, refund, "skill_refund", id); err != nil {
 		return 0, err
 	}
 	if err := tx.Commit(); err != nil {

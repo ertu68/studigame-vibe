@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"testing"
 )
 
@@ -99,7 +100,7 @@ func TestCharacterItems(t *testing.T) {
 	}
 
 	// Purchase an item
-	char.MoneyCents = 500
+	setMoney(t, db, &char, 500)
 	updatedChar, err := PurchaseItem(db, char, 103)
 	if err != nil {
 		t.Fatalf("PurchaseItem: %v", err)
@@ -139,7 +140,7 @@ func TestPurchaseItem(t *testing.T) {
 	}
 
 	char := newCharacter(t, db, "Test User", "test@example.com")
-	char.MoneyCents = 500
+	setMoney(t, db, &char, 500)
 
 	// Try to purchase an item that's too expensive
 	_, err = PurchaseItem(db, char, 104)
@@ -205,7 +206,7 @@ func TestGetShopItemEffects(t *testing.T) {
 	}
 
 	// Purchase items
-	char.MoneyCents = 1000
+	setMoney(t, db, &char, 1000)
 	for _, itemID := range []int{106, 107, 108} {
 		char, err = PurchaseItem(db, char, itemID)
 		if err != nil {
@@ -226,5 +227,39 @@ func TestGetShopItemEffects(t *testing.T) {
 	}
 	if moodBonus != 5 {
 		t.Errorf("expected 5 mood bonus, got %d", moodBonus)
+	}
+}
+
+// setMoney sets the balance in the DB and on the in-memory character.
+func setMoney(t *testing.T, db *sql.DB, char *Character, cents int) {
+	t.Helper()
+	if _, err := db.Exec(`UPDATE characters SET money_cents = ? WHERE id = ?`, cents, char.ID); err != nil {
+		t.Fatalf("set money: %v", err)
+	}
+	char.MoneyCents = cents
+}
+
+// Two overlapping purchases against one balance must not both succeed, and
+// the balance must reflect what was really spent.
+func TestPurchaseUsesDBBalanceNotStaleCharacter(t *testing.T) {
+	db := testDB(t)
+	if _, err := db.Exec(`INSERT INTO shop_items (id, name, description, price_cents, category, effect_type, effect_value, max_quantity)
+		VALUES (110, 'X', '', 800, 'equipment', 'mood_bonus', 1, 5)`); err != nil {
+		t.Fatal(err)
+	}
+	char := newCharacter(t, db, "Race", "race@example.com")
+	setMoney(t, db, &char, 1000)
+
+	stale := char // second request loaded the character before the first bought
+	if _, err := PurchaseItem(db, char, 110); err != nil {
+		t.Fatalf("first purchase: %v", err)
+	}
+	if _, err := PurchaseItem(db, stale, 110); err != ErrNotEnoughMoney {
+		t.Fatalf("second purchase with stale char: got %v, want ErrNotEnoughMoney", err)
+	}
+	var money int
+	db.QueryRow(`SELECT money_cents FROM characters WHERE id = ?`, char.ID).Scan(&money)
+	if money != 200 {
+		t.Fatalf("balance = %d, want 200", money)
 	}
 }

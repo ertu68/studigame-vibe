@@ -11,7 +11,7 @@ import (
 // SweepExpired removes expired sessions and password reset tokens from the database.
 // It should be called periodically (e.g., every minute) to prevent the tables from growing indefinitely.
 func SweepExpired(ctx context.Context, db *sql.DB) error {
-	now := time.Now()
+	now := time.Now().UTC()
 
 	// Delete expired sessions
 	sessionsResult, err := db.ExecContext(ctx, `DELETE FROM sessions WHERE expires_at < ?`, now)

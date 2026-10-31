@@ -122,3 +122,29 @@ func TestUpgradeContainerRefusesOneCentShort(t *testing.T) {
 		t.Fatalf("expected ErrNotEnoughMoney, got %v", err)
 	}
 }
+
+// A stale character (loaded before the first click) must not buy a second tier.
+func TestUpgradeContainerDoubleClickBuysOnce(t *testing.T) {
+	conn := testDB(t)
+	char := newCharacter(t, conn, "Dora", "dora@example.com")
+	if _, err := conn.Exec(`UPDATE characters SET money_cents = 100000 WHERE id = ?`, char.ID); err != nil {
+		t.Fatal(err)
+	}
+	char.MoneyCents = 100000
+	stale := char
+
+	if _, err := UpgradeContainer(conn, char); err != nil {
+		t.Fatalf("first: %v", err)
+	}
+	if _, err := UpgradeContainer(conn, stale); err != nil {
+		t.Fatalf("second: %v", err)
+	}
+	var level, money int
+	conn.QueryRow(`SELECT container_level, money_cents FROM characters WHERE id = ?`, char.ID).Scan(&level, &money)
+	cost1 := game.UpgradeCostCents(0, game.ContainerUpgradeBaseCents)
+	cost2 := game.UpgradeCostCents(1, game.ContainerUpgradeBaseCents)
+	// Two clicks = two tiers, each at its own price (never two tiers at one price).
+	if level != 2 || money != 100000-cost1-cost2 {
+		t.Fatalf("level=%d money=%d, want level 2 money %d", level, money, 100000-cost1-cost2)
+	}
+}

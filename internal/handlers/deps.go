@@ -3,6 +3,7 @@ package handlers
 
 import (
 	"database/sql"
+	"fmt"
 	"log/slog"
 	"math/rand"
 	"net/http"
@@ -29,7 +30,7 @@ func (d *Deps) now() time.Time {
 	if d.Now != nil {
 		return d.Now()
 	}
-	return time.Now()
+	return time.Now().UTC() // DB times are always UTC, whatever TZ the server has
 }
 
 func (d *Deps) roll() float64 {
@@ -44,8 +45,10 @@ func (d *Deps) addCharacterStatus(data map[string]any, char Character) {
 	data["Money"] = web.FormatCents(char.MoneyCents)
 	data["MoneyLevel"] = char.ContainerLevel
 	data["MoneyLevelName"] = game.ContainerLevelName(char.ContainerLevel)
-	data["MoneyFillPercent"] = fillPercent(char.MoneyCents, game.ContainerCapacity(char.ContainerLevel))
+	capacity, _ := capacityOf(d.DB, char) // on error the bar shows the base container
+	data["MoneyFillPercent"] = fillPercent(char.MoneyCents, capacity)
 	data["Mood"] = char.Mood
+	data["ECTS"] = fmt.Sprintf("%.2f", float64(char.ECTSCents)/100)
 
 	// Running activity badge: an open shift takes priority over a skill
 	// training, since only a shift blocks the character entirely.

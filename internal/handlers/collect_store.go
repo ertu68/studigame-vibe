@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"time"
 
 	"studigame/internal/game"
@@ -73,6 +74,7 @@ type ActionSummary struct {
 // actionOutcome carries what a resolution produces before it is booked.
 type actionOutcome struct {
 	EarningsCents int
+	ECTSCents     int // exam credit in hundredths of an ECTS point; never money
 	MoodDelta     int
 	Detail        string
 }
@@ -276,7 +278,7 @@ func resolveOutcome(kind, payloadJSON string, char Character, roll float64) (act
 			return actionOutcome{
 				EarningsCents: out.EarningsCents,
 				MoodDelta:     out.MoodDelta,
-				Detail:        "Erwischt worden, nur " + web.FormatCents(out.EarningsCents) + "übrig",
+				Detail:        "Erwischt worden, nur " + web.FormatCents(out.EarningsCents) + " übrig",
 			}, nil
 		}
 		return actionOutcome{
@@ -296,9 +298,9 @@ func resolveOutcome(kind, payloadJSON string, char Character, roll float64) (act
 			SkillFactor: p.SkillFactor,
 		})
 		return actionOutcome{
-			EarningsCents: 0, // No money earned
-			MoodDelta:     out.MoodDelta,
-			Detail:        fmt.Sprintf("%.2f ECTS-Punkte erreicht", out.ECTSPoints),
+			ECTSCents: int(math.Round(out.ECTSPoints * 100)),
+			MoodDelta: out.MoodDelta,
+			Detail:    fmt.Sprintf("%.2f ECTS-Punkte erreicht", out.ECTSPoints),
 		}, nil
 
 	default:
@@ -310,19 +312,29 @@ func resolveOutcome(kind, payloadJSON string, char Character, roll float64) (act
 // the ledger and updates the charity pool — the one booking path shared by all
 // action kinds, so a new action can never fork the money handling.
 func bookOutcome(tx *sql.Tx, char Character, kind string, actionID int64, out actionOutcome, now time.Time) (ActionSummary, error) {
-	capacity := game.ContainerCapacity(char.ContainerLevel)
-	kept, donated := game.SplitAtCapacity(char.MoneyCents, out.EarningsCents, capacity)
-	balance := char.MoneyCents + kept
-	mood := game.ApplyMood(char.Mood, out.MoodDelta)
-
-	// For klausur actions, parse ECTS points from detail text
-	ectsPoints := 0.0
-	ectsCents := 0
-	if kind == "klausur" {
-		// Parse "%.2f ECTS-Punkte erreicht" format
-		fmt.Sscanf(out.Detail, "%f ECTS-Punkte erreicht", &ectsPoints)
-		ectsCents = int(ectsPoints * 100)
+	// Balance and mood are read here, not taken from char: the character was
+	// loaded before the transaction and may be stale by now.
+	var money, mood int
+	if err := tx.QueryRow(
+		`SELECT money_cents, mood FROM characters WHERE id = ?`, char.ID,
+	).Scan(&money, &mood); err != nil {
+		return ActionSummary{}, err
 	}
+	capacity, err := capacityOf(tx, char)
+	if err != nil {
+		return ActionSummary{}, err
+	}
+	easeBonus, err := shopEffect(tx, char.ID, "mood_bonus")
+	if err != nil {
+		return ActionSummary{}, err
+	}
+	out.MoodDelta = game.EaseExhaustion(out.MoodDelta, easeBonus)
+	// Rest starts when the shift ends, not when the player comes back.
+	var endsAt time.Time
+	if err := tx.QueryRow(`SELECT ends_at FROM actions WHERE id = ?`, actionID).Scan(&endsAt); err != nil {
+		return ActionSummary{}, err
+	}
+	kept, donated := game.SplitAtCapacity(money, out.EarningsCents, capacity)
 
 	summary := ActionSummary{
 		Title:       actionTitle(kind),
@@ -338,45 +350,14 @@ func bookOutcome(tx *sql.Tx, char Character, kind string, actionID int64, out ac
 	); err != nil {
 		return ActionSummary{}, err
 	}
-
-	if kind == "klausur" {
-		// For klausur, update ECTS points and mood
-		if _, err := tx.Exec(
-			`UPDATE characters SET mood = ?, ects_cents = ects_cents + ? WHERE id = ?`,
-			mood, ectsCents, char.ID,
-		); err != nil {
-			return ActionSummary{}, err
-		}
-	} else {
-		// For other actions, update money and mood
-		if _, err := tx.Exec(
-			`UPDATE characters SET money_cents = ?, mood = ? WHERE id = ?`,
-			balance, mood, char.ID,
-		); err != nil {
-			return ActionSummary{}, err
-		}
+	if _, err := tx.Exec(
+		`UPDATE characters SET mood = ?, mood_at = ?, ects_cents = ects_cents + ? WHERE id = ?`,
+		game.ApplyMood(mood, out.MoodDelta), endsAt.UTC().Format(time.RFC3339Nano), out.ECTSCents, char.ID,
+	); err != nil {
+		return ActionSummary{}, err
 	}
-
-	// Book ledger entry for monetary gains or ECTS points
-	if kept > 0 || ectsCents > 0 {
-		reason := kind
-		if ectsCents > 0 {
-			reason = "klausur" // More specific reason for ECTS
-		}
-		balanceAfter := balance
-		if kind == "klausur" {
-			// For klausur, we don't track balance, so just use 0
-			balanceAfter = 0
-		}
-		deltaCents := kept
-		if ectsCents > 0 {
-			deltaCents = ectsCents // Use ECTS cents for klausur
-		}
-		if _, err := tx.Exec(
-			`INSERT INTO ledger (character_id, delta_cents, balance_after, reason, ref_id)
-			 VALUES (?, ?, ?, ?, ?)`,
-			char.ID, deltaCents, balanceAfter, reason, actionID,
-		); err != nil {
+	if kept > 0 {
+		if _, err := postMoney(tx, char.ID, kept, kind, actionID); err != nil {
 			return ActionSummary{}, err
 		}
 	}
@@ -440,44 +421,37 @@ func CharityPool(db *sql.DB, editionID int64) (int, error) {
 // hard max level, debits the ledger and bumps container_level — one transaction,
 // so money and level can never disagree. Returns the refreshed character.
 func UpgradeContainer(db *sql.DB, char Character) (Character, error) {
-	if char.ContainerLevel >= game.MaxContainerLevel {
-		return char, ErrContainerMax
-	}
-
-	cost := game.UpgradeCostCents(char.ContainerLevel, game.ContainerUpgradeBaseCents)
-	if char.MoneyCents < cost {
-		return char, ErrNotEnoughMoney
-	}
-
-	nextLevel := char.ContainerLevel + 1
-	balance := char.MoneyCents - cost
-
 	tx, err := db.Begin()
 	if err != nil {
 		return char, err
 	}
 	defer tx.Rollback()
 
+	// Level is read inside the transaction: a double click must not buy two
+	// tiers at the price of one.
+	var level int
+	if err := tx.QueryRow(`SELECT container_level FROM characters WHERE id = ?`, char.ID).Scan(&level); err != nil {
+		return char, err
+	}
+	if level >= game.MaxContainerLevel {
+		return char, ErrContainerMax
+	}
+
+	cost := game.UpgradeCostCents(level, game.ContainerUpgradeBaseCents)
+	balance, err := postMoney(tx, char.ID, -cost, "container_upgrade", nil)
+	if err != nil {
+		return char, err
+	}
 	if _, err := tx.Exec(
-		`UPDATE characters SET container_level = ?, money_cents = ? WHERE id = ?`,
-		nextLevel, balance, char.ID,
+		`UPDATE characters SET container_level = ? WHERE id = ?`, level+1, char.ID,
 	); err != nil {
 		return char, err
 	}
-
-	if _, err := tx.Exec(
-		`INSERT INTO ledger (character_id, delta_cents, balance_after, reason)
-		 VALUES (?, ?, ?, 'container_upgrade')`,
-		char.ID, -cost, balance,
-	); err != nil {
-		return char, err
-	}
-
 	if err := tx.Commit(); err != nil {
 		return char, err
 	}
 
-	char.ContainerLevel = nextLevel
+	char.ContainerLevel = level + 1
 	char.MoneyCents = balance
 	return char, nil
 }

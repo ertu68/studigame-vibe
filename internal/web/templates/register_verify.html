@@ -12,6 +12,12 @@
       <p>Link kam nicht an? Überprüfe deinen Spam-Ordner.</p>
     </div>
 
+    <form method="post" action="/verify/resend" class="mt-6 text-center">
+      <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+      <input type="hidden" name="email" value="{{.Email}}" />
+      <button type="submit" class="text-primary hover:text-primary-hover">Link erneut senden</button>
+    </form>
+
     <div class="mt-6 text-center">
       <p>
         <a href="/login" class="text-primary hover:text-primary-hover">

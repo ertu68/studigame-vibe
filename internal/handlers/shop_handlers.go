@@ -71,7 +71,7 @@ func (d *Deps) Shop(u *user, w http.ResponseWriter, r *http.Request) {
 	// Format the values for display
 	formattedPassiveIncome := web.FormatCents(passiveIncome)
 	formattedContainerBonus := web.FormatCents(containerBonus)
-	
+
 	data := d.baseData(w, r)
 	d.addCharacterStatus(data, char)
 	data["Character"] = char
@@ -83,8 +83,8 @@ func (d *Deps) Shop(u *user, w http.ResponseWriter, r *http.Request) {
 	data["MoodBonus"] = moodBonus
 	data["Error"] = r.URL.Query().Get("error")
 
-	slog.Info("Shop data", 
-		"characterID", char.ID, 
+	slog.Info("Shop data",
+		"characterID", char.ID,
 		"money", char.MoneyCents,
 		"totalItems", len(items),
 		"equipmentItems", len(equipmentItems),

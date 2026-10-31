@@ -31,6 +31,16 @@ func (d *Deps) Dashboard(u *user, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	rest, char, err := d.settleRest(char)
+	if err != nil {
+		slog.Error("Failed to settle rest", "error", err, "characterID", char.ID)
+		http.Error(w, "interner Fehler", http.StatusInternalServerError)
+		return
+	}
+	if bafog == nil {
+		bafog = rest
+	}
+
 	data := d.baseData(w, r)
 	d.addCharacterStatus(data, char)
 	data["Character"] = char

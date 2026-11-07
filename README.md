@@ -90,6 +90,10 @@ Die Tailwind-Standalone-CLI liegt nicht im Repo. `make css` lädt beim ersten Au
 das passende Binary für die eigene Plattform nach `./tailwindcss` (git-ignoriert);
 der Docker-Build holt sich die Linux-Variante selbst.
 
+Pull Requests nach `main` prüfen zusätzlich Branch-Namen und Commit-Betreffzeilen
+mit einem Bash-Skript auf das vereinbarte Format; dafür sind keine npm-
+Abhängigkeiten oder Commitlint nötig.
+
 ## Deploy
 
 ```

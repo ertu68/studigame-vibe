@@ -10,6 +10,7 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 ## [Unreleased]
 
 ### Geändert
+- **CI prüft Branch-Namen und Commit-Betreffzeilen** auf einfache Conventional-Commits-Formate, ohne Node.js-Abhängigkeit.
 - **DevOps-Leitfaden** empfiehlt für den VPS Hetzner CX23 mit Ubuntu 26.04 LTS statt ARM, um Kompatibilitäts-Überraschungen zu vermeiden.
 - **Namenslänge** zählt Zeichen statt Bytes (Umlaute).
 - **Stimmung erholt sich**: +5 pro Stunde ohne laufende Schicht (Startwert).

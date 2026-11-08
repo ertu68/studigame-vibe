@@ -88,7 +88,7 @@ Der Code liegt schon in Git, aber noch ohne Prozess. Richte ein:
 - [x] **Signierte Commits** (SSH-Key): `git config commit.gpgsign true` +
   `gpg.format ssh`. GitHub zeigt dann „Verified".
 - [x] `.gitattributes` mit `* text=auto` und `.editorconfig` anlegen.
-- [ ] **Niemals** committen: `*.db`, `.env`, `tailwindcss`-Binary. Prüfen:
+- [x] **Niemals** committen: `*.db`, `.env`, `tailwindcss`-Binary. Prüfen:
   `git check-ignore studigame.db .env tailwindcss` muss alle drei nennen.
 
 > Lern-Übung (Guide §5): Schreibe die Issues für den nächsten Milestone **bevor**

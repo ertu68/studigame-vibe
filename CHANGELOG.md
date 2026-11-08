@@ -10,6 +10,7 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 ## [Unreleased]
 
 ### Geändert
+- **Git-Konfiguration**: `.gitattributes` normalisiert erkannte Textdateien; `.editorconfig` setzt LF und Editor-Standards.
 - **Konventionsprüfung** läuft nach einer Änderung des Pull-Request-Titels erneut.
 - **CI prüft Branch-Namen und PR-Titel** auf einfache Conventional-Commits-Formate; einzelne Commits im Feature-Branch bleiben frei, ohne Node.js-Abhängigkeit.
 - **DevOps-Leitfaden** empfiehlt für den VPS Hetzner CX23 mit Ubuntu 26.04 LTS statt ARM, um Kompatibilitäts-Überraschungen zu vermeiden.

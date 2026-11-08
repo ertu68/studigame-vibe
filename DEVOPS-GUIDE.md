@@ -87,7 +87,7 @@ Der Code liegt schon in Git, aber noch ohne Prozess. Richte ein:
   ein Bash-Check in CI prüft Branch-Namen und PR-Titel, nicht einzelne Commits.
 - [x] **Signierte Commits** (SSH-Key): `git config commit.gpgsign true` +
   `gpg.format ssh`. GitHub zeigt dann „Verified".
-- [ ] `.gitattributes` mit `* text=lf`, `.editorconfig` anlegen.
+- [x] `.gitattributes` mit `* text=auto` und `.editorconfig` anlegen.
 - [ ] **Niemals** committen: `*.db`, `.env`, `tailwindcss`-Binary. Prüfen:
   `git check-ignore studigame.db .env tailwindcss` muss alle drei nennen.
 

@@ -81,9 +81,10 @@ Der Code liegt schon in Git, aber noch ohne Prozess. Richte ein:
 
 - [ ] **Branch-Schutz auf `main`** (GitHub → Settings → Rules → Rulesets):
   PR erzwingen, CI-Check als „required", linear history, kein force-push.
-- [ ] **Trunk-based Workflow** üben: kurze Branches `feat/…`, `ci/…`, `docs/…`,
+- [x] **Trunk-based Workflow** üben: kurze Branches `feat/…`, `ci/…`, `docs/…`,
   → PR → squash-merge. `main` ist immer deploybar. (ADR-1 im Guide.)
-- [ ] **Conventional Commits**: `feat(ci): add trivy scan`, `fix(deploy): …`.
+- [x] **Conventional Commits**: `feat(ci): add trivy scan`, `fix(deploy): …`;
+  ein Bash-Check in CI prüft Branch-Namen und PR-Titel, nicht einzelne Commits.
 - [ ] **Signierte Commits** (SSH-Key): `git config commit.gpgsign true` +
   `gpg.format ssh`. GitHub zeigt dann „Verified".
 - [ ] `.gitattributes` mit `* text=lf`, `.editorconfig` anlegen.

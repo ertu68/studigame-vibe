@@ -21,6 +21,7 @@ Kleine Fixes und das Fundament, das später teuer nachzurüsten wäre.
 - [x] htmx lokal ausliefern statt per CDN
 - [x] Sweeper: abgelaufene Sessions und Reset-Tokens löschen
 - [x] CI: `go vet` + `go test -race` bei jedem Push
+- [x] CI: Branch-Namen und PR-Titel bei Pull Requests ohne npm-Abhängigkeit prüfen
 - [x] Backup-Skript für die SQLite-Datei
 - [x] Name entschieden: Spiel = Studigame, Uni-Stadt = Studistadt, Studienfächer
   = Informatik/BWL/Jura/Geisteswissenschaften

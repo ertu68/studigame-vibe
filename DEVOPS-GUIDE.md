@@ -70,7 +70,7 @@ schreibt Spielcode, du baust die Pipeline drumherum.
 ---
 
 ## Phase A — Fundament (🟢 jetzt, parallel zum Agent, ~5 €/Monat)
-
+pinentry-program /opt/homebrew/bin/pinentry-mac
 Ziel: sauberer Git-Prozess, grüne CI-Pipeline, ein Image in der Registry **und**
 ein echter Server, auf dem die App privat läuft. Alles außer „öffentlich
 beworben" passiert hier.
@@ -85,10 +85,10 @@ Der Code liegt schon in Git, aber noch ohne Prozess. Richte ein:
   → PR → squash-merge. `main` ist immer deploybar. (ADR-1 im Guide.)
 - [x] **Conventional Commits**: `feat(ci): add trivy scan`, `fix(deploy): …`;
   ein Bash-Check in CI prüft Branch-Namen und PR-Titel, nicht einzelne Commits.
-- [ ] **Signierte Commits** (SSH-Key): `git config commit.gpgsign true` +
+- [x] **Signierte Commits** (SSH-Key): `git config commit.gpgsign true` +
   `gpg.format ssh`. GitHub zeigt dann „Verified".
-- [ ] `.gitattributes` mit `* text=lf`, `.editorconfig` anlegen.
-- [ ] **Niemals** committen: `*.db`, `.env`, `tailwindcss`-Binary. Prüfen:
+- [x] `.gitattributes` mit `* text=auto` und `.editorconfig` anlegen.
+- [x] **Niemals** committen: `*.db`, `.env`, `tailwindcss`-Binary. Prüfen:
   `git check-ignore studigame.db .env tailwindcss` muss alle drei nennen.
 
 > Lern-Übung (Guide §5): Schreibe die Issues für den nächsten Milestone **bevor**

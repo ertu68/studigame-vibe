@@ -22,6 +22,7 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ### Behoben
 
+- **CI-Linting**: Rückgabefehler werden behandelt; statische Inline-Icons maskieren CSS-Klassen jetzt für HTML.
 - **Login verrät keine Konten mehr**: unbekannte E-Mail, falsches Passwort und unbestätigtes Konto sehen gleich aus und brauchen gleich lang. „Unbestätigt“ erfährt nur, wer das richtige Passwort kennt.
 - **Bestätigungsmail erneut senden** (Login und Registrierungsseite, höchstens eine pro Minute).
 - **Passwort-Reset und E-Mail-Bestätigung** verbrauchen ihren Token atomar, auch abgelaufene Tokens werden gelöscht.

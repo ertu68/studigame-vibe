@@ -27,7 +27,9 @@ func TestKlausurBooksECTSOnCharacterNotLedger(t *testing.T) {
 		t.Fatalf("money changed: %d -> %d", char.MoneyCents, got.MoneyCents)
 	}
 	var n int
-	conn.QueryRow(`SELECT COUNT(*) FROM ledger WHERE character_id = ? AND reason LIKE '%klausur%'`, char.ID).Scan(&n)
+	if err := conn.QueryRow(`SELECT COUNT(*) FROM ledger WHERE character_id = ? AND reason LIKE '%klausur%'`, char.ID).Scan(&n); err != nil {
+		t.Fatalf("count klausur ledger rows: %v", err)
+	}
 	if n != 0 {
 		t.Fatalf("ledger has %d klausur rows", n)
 	}

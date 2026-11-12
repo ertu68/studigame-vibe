@@ -91,6 +91,7 @@ func (s *SessionStore) Delete(rawToken string) error {
 // secure should be true in production (TLS terminated at Caddy) and false for
 // plain-http local development, otherwise browsers drop the cookie.
 func SetSessionCookie(w http.ResponseWriter, rawToken string, secure bool) {
+	// #nosec G124 -- Secure is disabled only for local plain-HTTP development.
 	http.SetCookie(w, &http.Cookie{
 		Name:     sessionCookieName,
 		Value:    rawToken,
@@ -103,6 +104,7 @@ func SetSessionCookie(w http.ResponseWriter, rawToken string, secure bool) {
 }
 
 func ClearSessionCookie(w http.ResponseWriter, secure bool) {
+	// #nosec G124 -- Secure is disabled only for local plain-HTTP development.
 	http.SetCookie(w, &http.Cookie{
 		Name:     sessionCookieName,
 		Value:    "",

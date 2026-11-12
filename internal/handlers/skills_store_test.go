@@ -247,7 +247,7 @@ func TestSkillFactorFreezesIntoCollectShift(t *testing.T) {
 	if plainSum == nil || skilledSum == nil {
 		t.Fatal("expected both shifts to resolve")
 	}
-	if !(skilledSum.Detail != plainSum.Detail) {
+	if skilledSum.Detail == plainSum.Detail {
 		t.Fatalf("skilled yield must exceed plain: plain=%q skilled=%q", plainSum.Detail, skilledSum.Detail)
 	}
 }
@@ -270,7 +270,9 @@ func TestCancelSkillTrainingRefundsOnlyOnce(t *testing.T) {
 		t.Fatalf("second cancel: got %v, want ErrNoSkillTraining", err)
 	}
 	var money int
-	conn.QueryRow(`SELECT money_cents FROM characters WHERE id = ?`, char.ID).Scan(&money)
+	if err := conn.QueryRow(`SELECT money_cents FROM characters WHERE id = ?`, char.ID).Scan(&money); err != nil {
+		t.Fatalf("read character balance: %v", err)
+	}
 	if money != 800 {
 		t.Fatalf("money = %d, want 800 (one refund of 80%% of 1000)", money)
 	}

@@ -51,7 +51,9 @@ func TestSecurityHeadersMiddleware(t *testing.T) {
 func TestMiddlewareChain(t *testing.T) {
 	// Test that middleware chain works properly
 	handler := httpx.RecoveryMiddleware(httpx.SecurityHeadersMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("OK"))
+		if _, err := w.Write([]byte("OK")); err != nil {
+			t.Errorf("write response: %v", err)
+		}
 	})))
 
 	req := httptest.NewRequest("GET", "/", nil)

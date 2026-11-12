@@ -140,7 +140,9 @@ func TestUpgradeContainerDoubleClickBuysOnce(t *testing.T) {
 		t.Fatalf("second: %v", err)
 	}
 	var level, money int
-	conn.QueryRow(`SELECT container_level, money_cents FROM characters WHERE id = ?`, char.ID).Scan(&level, &money)
+	if err := conn.QueryRow(`SELECT container_level, money_cents FROM characters WHERE id = ?`, char.ID).Scan(&level, &money); err != nil {
+		t.Fatalf("read character after upgrades: %v", err)
+	}
 	cost1 := game.UpgradeCostCents(0, game.ContainerUpgradeBaseCents)
 	cost2 := game.UpgradeCostCents(1, game.ContainerUpgradeBaseCents)
 	// Two clicks = two tiers, each at its own price (never two tiers at one price).

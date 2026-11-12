@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"time"
 
 	"studigame/internal/game"
@@ -12,12 +14,17 @@ import (
 // a boost is active stacks it, per the migration comment. Booking and the
 // boost pointer move in one transaction so money and effect can never
 // disagree. Returns the refreshed character.
-func BuyCoffee(db *sql.DB, char Character, now time.Time) (Character, error) {
+func BuyCoffee(db *sql.DB, char Character, now time.Time) (retChar Character, retErr error) {
+	retChar = char
 	tx, err := db.Begin()
 	if err != nil {
 		return char, err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			retErr = errors.Join(retErr, fmt.Errorf("rollback coffee purchase: %w", err))
+		}
+	}()
 
 	// Read the boost inside the transaction so two quick coffees both stack.
 	var current sql.NullString

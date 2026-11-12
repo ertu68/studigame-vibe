@@ -26,6 +26,7 @@ func EnsureCSRFToken(w http.ResponseWriter, r *http.Request, secure bool) string
 	if err != nil {
 		panic(err) // crypto/rand failure is unrecoverable
 	}
+	// #nosec G124 -- Secure is disabled only for local plain-HTTP development.
 	http.SetCookie(w, &http.Cookie{
 		Name:     csrfCookieName,
 		Value:    token,

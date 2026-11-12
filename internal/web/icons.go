@@ -53,11 +53,12 @@ func icon(args ...string) template.HTML {
 	}
 	cls := ""
 	if len(args) > 1 && args[1] != "" {
-		cls = ` class="` + args[1] + `"`
+		cls = ` class="` + template.HTMLEscapeString(args[1]) + `"`
 	}
 	body, ok := icons[name]
 	if !ok {
 		return template.HTML("")
 	}
+	// #nosec G203 -- SVG paths are from the fixed icon map and class input is escaped above.
 	return template.HTML(`<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"` + cls + ` aria-hidden="true">` + body + `</svg>`)
 }

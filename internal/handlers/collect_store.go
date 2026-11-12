@@ -189,12 +189,16 @@ func StartCrime(db *sql.DB, char Character, d time.Duration, now time.Time) erro
 // ResolveDueAction settles a finished shift: it resolves the outcome by kind,
 // moves the money and marks the action resolved — all in one transaction, so a
 // reload mid-way cannot pay out twice. It returns nil if nothing was due.
-func ResolveDueAction(db *sql.DB, char Character, now time.Time, roll float64) (*ActionSummary, error) {
+func ResolveDueAction(db *sql.DB, char Character, now time.Time, roll float64) (retSummary *ActionSummary, retErr error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			retErr = errors.Join(retErr, fmt.Errorf("rollback action resolution: %w", err))
+		}
+	}()
 
 	// The row lock is the WHERE clause: resolved_at is set inside this
 	// transaction, so a concurrent request finds nothing to resolve.
@@ -420,12 +424,16 @@ func CharityPool(db *sql.DB, editionID int64) (int, error) {
 // UpgradeContainer buys the next container tier. It checks the price and the
 // hard max level, debits the ledger and bumps container_level — one transaction,
 // so money and level can never disagree. Returns the refreshed character.
-func UpgradeContainer(db *sql.DB, char Character) (Character, error) {
+func UpgradeContainer(db *sql.DB, char Character) (retChar Character, retErr error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return char, err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			retErr = errors.Join(retErr, fmt.Errorf("rollback container upgrade: %w", err))
+		}
+	}()
 
 	// Level is read inside the transaction: a double click must not buy two
 	// tiers at the price of one.

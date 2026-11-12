@@ -258,7 +258,9 @@ func TestPurchaseUsesDBBalanceNotStaleCharacter(t *testing.T) {
 		t.Fatalf("second purchase with stale char: got %v, want ErrNotEnoughMoney", err)
 	}
 	var money int
-	db.QueryRow(`SELECT money_cents FROM characters WHERE id = ?`, char.ID).Scan(&money)
+	if err := db.QueryRow(`SELECT money_cents FROM characters WHERE id = ?`, char.ID).Scan(&money); err != nil {
+		t.Fatalf("read character balance: %v", err)
+	}
 	if money != 200 {
 		t.Fatalf("balance = %d, want 200", money)
 	}

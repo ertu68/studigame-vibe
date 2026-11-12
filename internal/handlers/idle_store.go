@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 	"time"
 
 	"studigame/internal/game"
@@ -36,12 +38,16 @@ func capacityOf(q rowQuerier, char Character) (int, error) {
 // timestamp that moves by whole hours only, so partial hours are not lost and
 // a reload cannot pay twice. A running shift pauses regeneration. It returns
 // a summary when passive income arrived.
-func SettleRest(db *sql.DB, char Character, now time.Time) (*ActionSummary, error) {
+func SettleRest(db *sql.DB, char Character, now time.Time) (retSummary *ActionSummary, retErr error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			retErr = errors.Join(retErr, fmt.Errorf("rollback rest settlement: %w", err))
+		}
+	}()
 
 	var mood int
 	var moodAt, paidAt sql.NullString

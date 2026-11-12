@@ -27,7 +27,7 @@ type CharacterItem struct {
 }
 
 // GetAllShopItems retrieves all items available in the shop.
-func GetAllShopItems(db *sql.DB) ([]ShopItem, error) {
+func GetAllShopItems(db *sql.DB) (items []ShopItem, retErr error) {
 	rows, err := db.Query(`
 		SELECT id, name, description, price_cents, category, effect_type, effect_value, max_quantity
 		FROM shop_items
@@ -36,9 +36,12 @@ func GetAllShopItems(db *sql.DB) ([]ShopItem, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			retErr = errors.Join(retErr, fmt.Errorf("close shop items: %w", err))
+		}
+	}()
 
-	var items []ShopItem
 	for rows.Next() {
 		var item ShopItem
 		if err := rows.Scan(&item.ID, &item.Name, &item.Description, &item.PriceCents,
@@ -52,7 +55,7 @@ func GetAllShopItems(db *sql.DB) ([]ShopItem, error) {
 }
 
 // GetCharacterItems retrieves all items owned by a character.
-func GetCharacterItems(db *sql.DB, characterID int64) ([]CharacterItem, error) {
+func GetCharacterItems(db *sql.DB, characterID int64) (items []CharacterItem, retErr error) {
 	rows, err := db.Query(`
 		SELECT id, character_id, item_id, quantity
 		FROM character_items
@@ -61,9 +64,12 @@ func GetCharacterItems(db *sql.DB, characterID int64) ([]CharacterItem, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			retErr = errors.Join(retErr, fmt.Errorf("close character items: %w", err))
+		}
+	}()
 
-	var items []CharacterItem
 	for rows.Next() {
 		var item CharacterItem
 		if err := rows.Scan(&item.ID, &item.CharacterID, &item.ItemID, &item.Quantity); err != nil {
@@ -77,7 +83,8 @@ func GetCharacterItems(db *sql.DB, characterID int64) ([]CharacterItem, error) {
 
 // PurchaseItem attempts to purchase an item for a character.
 // It deducts the price from the character's money and adds the item to their inventory.
-func PurchaseItem(db *sql.DB, char Character, itemID int) (Character, error) {
+func PurchaseItem(db *sql.DB, char Character, itemID int) (retChar Character, retErr error) {
+	retChar = char
 	var item ShopItem
 	err := db.QueryRow(`
 		SELECT id, name, description, price_cents, category, effect_type, effect_value, max_quantity
@@ -95,7 +102,11 @@ func PurchaseItem(db *sql.DB, char Character, itemID int) (Character, error) {
 	if err != nil {
 		return char, err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			retErr = errors.Join(retErr, fmt.Errorf("rollback shop purchase: %w", err))
+		}
+	}()
 
 	// Quantity is checked inside the transaction so a double click cannot
 	// exceed max_quantity.

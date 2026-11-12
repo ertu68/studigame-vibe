@@ -86,7 +86,7 @@ func Authenticate(db *sql.DB, email, password string) (int64, error) {
 	var verified bool
 	err := db.QueryRow(`SELECT id, password_hash, verified FROM users WHERE email = ?`, email).Scan(&id, &hash, &verified)
 	if err == sql.ErrNoRows {
-		bcrypt.CompareHashAndPassword(dummyHash, []byte(password))
+		_ = bcrypt.CompareHashAndPassword(dummyHash, []byte(password))
 		return 0, ErrInvalidLogin
 	}
 	if err != nil {
@@ -131,7 +131,7 @@ func RequestPasswordReset(db *sql.DB, mailer Mailer, siteDomain, email string, t
 
 // ResetPassword spends the token and sets the password in one transaction;
 // the DELETE ... RETURNING is the claim, so a token works exactly once.
-func ResetPassword(db *sql.DB, token, newPassword string) error {
+func ResetPassword(db *sql.DB, token, newPassword string) (retErr error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return err
@@ -140,7 +140,11 @@ func ResetPassword(db *sql.DB, token, newPassword string) error {
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			retErr = errors.Join(retErr, fmt.Errorf("rollback password reset: %w", err))
+		}
+	}()
 
 	var userID int64
 	var expiresAt time.Time
@@ -154,7 +158,9 @@ func ResetPassword(db *sql.DB, token, newPassword string) error {
 		return err
 	}
 	if time.Now().After(expiresAt) {
-		tx.Commit() // expired token stays deleted
+		if err := tx.Commit(); err != nil {
+			return fmt.Errorf("delete expired reset token: %w", err)
+		}
 		return ErrInvalidResetLink
 	}
 	if _, err := tx.Exec(`UPDATE users SET password_hash = ? WHERE id = ?`, string(hash), userID); err != nil {
@@ -207,12 +213,16 @@ func ResendVerification(db *sql.DB, mailer Mailer, siteDomain, email string, ttl
 
 // VerifyEmail marks a user as verified if the token is valid. The token is
 // spent and the user updated in one transaction.
-func VerifyEmail(db *sql.DB, token string) error {
+func VerifyEmail(db *sql.DB, token string) (retErr error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			retErr = errors.Join(retErr, fmt.Errorf("rollback email verification: %w", err))
+		}
+	}()
 
 	var userID int64
 	var expiresAt time.Time
@@ -226,7 +236,9 @@ func VerifyEmail(db *sql.DB, token string) error {
 		return err
 	}
 	if time.Now().After(expiresAt) {
-		tx.Commit() // expired token stays deleted
+		if err := tx.Commit(); err != nil {
+			return fmt.Errorf("delete expired verification token: %w", err)
+		}
 		return ErrInvalidVerifyLink
 	}
 	if _, err := tx.Exec(`UPDATE users SET verified = TRUE WHERE id = ?`, userID); err != nil {

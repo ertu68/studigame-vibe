@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 
 	"modernc.org/sqlite"
@@ -18,14 +19,17 @@ var (
 )
 
 // ActiveEditions returns all editions currently open for play.
-func ActiveEditions(db *sql.DB) ([]Edition, error) {
+func ActiveEditions(db *sql.DB) (out []Edition, retErr error) {
 	rows, err := db.Query(`SELECT id, slug, name, active FROM editions WHERE active = TRUE ORDER BY name`)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			retErr = errors.Join(retErr, fmt.Errorf("close active editions: %w", err))
+		}
+	}()
 
-	var out []Edition
 	for rows.Next() {
 		var e Edition
 		if err := rows.Scan(&e.ID, &e.Slug, &e.Name, &e.Active); err != nil {
@@ -37,14 +41,17 @@ func ActiveEditions(db *sql.DB) ([]Edition, error) {
 }
 
 // ActiveSubjects returns the Studienfächer of an edition for the picker.
-func ActiveSubjects(db *sql.DB, editionID int64) ([]Subject, error) {
+func ActiveSubjects(db *sql.DB, editionID int64) (out []Subject, retErr error) {
 	rows, err := db.Query(`SELECT id, edition_id, name FROM subjects WHERE edition_id = ? ORDER BY id`, editionID)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			retErr = errors.Join(retErr, fmt.Errorf("close active subjects: %w", err))
+		}
+	}()
 
-	var out []Subject
 	for rows.Next() {
 		var s Subject
 		if err := rows.Scan(&s.ID, &s.EditionID, &s.Name); err != nil {
@@ -115,7 +122,7 @@ func AnyCharacterForUser(db *sql.DB, userID int64) (Character, error) {
 
 // CreateCharacter creates a character and books its starting capital in the
 // ledger. Both happen in one transaction so money never exists unrecorded.
-func CreateCharacter(db *sql.DB, userID int64, editionSlug string, subjectID int64, name string) (Character, error) {
+func CreateCharacter(db *sql.DB, userID int64, editionSlug string, subjectID int64, name string) (retChar Character, retErr error) {
 	name = strings.TrimSpace(name)
 
 	var editionID int64
@@ -136,7 +143,11 @@ func CreateCharacter(db *sql.DB, userID int64, editionSlug string, subjectID int
 	if err != nil {
 		return Character{}, err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			retErr = errors.Join(retErr, fmt.Errorf("rollback character creation: %w", err))
+		}
+	}()
 
 	const startCapital = 1000 // 10 € — mirrors the column default
 	res, err := tx.Exec(

@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"studigame/internal/game"
@@ -27,8 +28,8 @@ type SkillTraining struct {
 
 // SkillLevels returns the current level of every known skill for a character.
 // Unknown skills simply have no row and read as 0.
-func SkillLevels(db *sql.DB, characterID int64) (map[string]int, error) {
-	levels := make(map[string]int, len(game.SkillCatalog))
+func SkillLevels(db *sql.DB, characterID int64) (levels map[string]int, retErr error) {
+	levels = make(map[string]int, len(game.SkillCatalog))
 	for _, s := range game.SkillCatalog {
 		levels[s.Slug] = 0
 	}
@@ -36,7 +37,11 @@ func SkillLevels(db *sql.DB, characterID int64) (map[string]int, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			retErr = errors.Join(retErr, fmt.Errorf("close skill levels: %w", err))
+		}
+	}()
 	for rows.Next() {
 		var slug string
 		var level int
@@ -82,7 +87,7 @@ func KonzentrSkillFactor(konzentrationLevel int) float64 {
 // cost up front and recording the run — one transaction, one active training
 // per character, so money and level can never disagree. Returns the number of
 // minutes the run lasts.
-func StartSkillTraining(db *sql.DB, char Character, slug string, now time.Time) (int, error) {
+func StartSkillTraining(db *sql.DB, char Character, slug string, now time.Time) (retDuration int, retErr error) {
 	skill := game.SkillBySlug(slug)
 	if skill == nil {
 		return 0, ErrSkillUnknown
@@ -113,7 +118,11 @@ func StartSkillTraining(db *sql.DB, char Character, slug string, now time.Time) 
 	if err != nil {
 		return 0, err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			retErr = errors.Join(retErr, fmt.Errorf("rollback skill training start: %w", err))
+		}
+	}()
 
 	if _, err := tx.Exec(
 		`INSERT INTO skill_trainings (character_id, skill, level, started_at, ends_at, cost_cents)
@@ -137,12 +146,18 @@ func StartSkillTraining(db *sql.DB, char Character, slug string, now time.Time) 
 // ResolveSkillTrainings bumps the level of every training that is due (money
 // is already paid, so completion only writes the level). Called before showing
 // the skills page or starting a new run.
-func ResolveSkillTrainings(db *sql.DB, characterID int64, now time.Time) error {
+func ResolveSkillTrainings(db *sql.DB, characterID int64, now time.Time) (retErr error) {
 	rows, err := db.Query(
 		`SELECT skill, level FROM skill_trainings WHERE character_id = ? AND ends_at <= ?`,
 		characterID, now,
 	)
 	if err != nil {
+		return err
+	}
+	closeRows := func(err error) error {
+		if closeErr := rows.Close(); closeErr != nil {
+			return errors.Join(err, fmt.Errorf("close due skill trainings: %w", closeErr))
+		}
 		return err
 	}
 	var due []struct {
@@ -155,14 +170,15 @@ func ResolveSkillTrainings(db *sql.DB, characterID int64, now time.Time) error {
 			level int
 		}
 		if err := rows.Scan(&d.skill, &d.level); err != nil {
-			rows.Close()
-			return err
+			return closeRows(err)
 		}
 		due = append(due, d)
 	}
-	rows.Close()
 	if err := rows.Err(); err != nil {
-		return err
+		return closeRows(err)
+	}
+	if err := rows.Close(); err != nil {
+		return fmt.Errorf("close due skill trainings: %w", err)
 	}
 	if len(due) == 0 {
 		return nil
@@ -172,7 +188,11 @@ func ResolveSkillTrainings(db *sql.DB, characterID int64, now time.Time) error {
 	if err != nil {
 		return err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			retErr = errors.Join(retErr, fmt.Errorf("rollback skill training resolution: %w", err))
+		}
+	}()
 	for _, d := range due {
 		if _, err := tx.Exec(
 			`INSERT INTO skills (character_id, skill, level) VALUES (?, ?, ?)
@@ -190,12 +210,16 @@ func ResolveSkillTrainings(db *sql.DB, characterID int64, now time.Time) error {
 
 // CancelSkillTraining aborts a run and refunds 80 % (plan §1.3) of its cost.
 // It returns the refunded amount.
-func CancelSkillTraining(db *sql.DB, char Character, id int64) (int, error) {
+func CancelSkillTraining(db *sql.DB, char Character, id int64) (retRefund int, retErr error) {
 	tx, err := db.Begin()
 	if err != nil {
 		return 0, err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			retErr = errors.Join(retErr, fmt.Errorf("rollback skill training cancellation: %w", err))
+		}
+	}()
 
 	// DELETE ... RETURNING is the claim: a second cancel finds no row and
 	// cannot refund twice.

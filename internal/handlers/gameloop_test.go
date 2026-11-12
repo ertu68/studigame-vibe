@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/http/httptest"
@@ -103,17 +104,16 @@ func (gs *gameLoopServer) csrfToken() string {
 
 func readBody(t *testing.T, resp *http.Response) string {
 	t.Helper()
-	defer resp.Body.Close()
-	var sb strings.Builder
-	buf := make([]byte, 4096)
-	for {
-		n, err := resp.Body.Read(buf)
-		sb.Write(buf[:n])
-		if err != nil {
-			break
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			t.Errorf("close response body: %v", err)
 		}
+	}()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("read response body: %v", err)
 	}
-	return sb.String()
+	return string(body)
 }
 
 // registerVerified creates a user that can log in straight away.

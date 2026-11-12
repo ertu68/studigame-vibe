@@ -20,7 +20,9 @@ func TestSettleRestRegeneratesWholeHours(t *testing.T) {
 	}
 	var mood int
 	var at string
-	conn.QueryRow(`SELECT mood, mood_at FROM characters WHERE id = ?`, char.ID).Scan(&mood, &at)
+	if err := conn.QueryRow(`SELECT mood, mood_at FROM characters WHERE id = ?`, char.ID).Scan(&mood, &at); err != nil {
+		t.Fatalf("read mood after rest: %v", err)
+	}
 	if mood != 50 {
 		t.Fatalf("mood = %d, want 50", mood)
 	}
@@ -32,7 +34,9 @@ func TestSettleRestRegeneratesWholeHours(t *testing.T) {
 	if _, err := SettleRest(conn, char, t0.Add(151*time.Minute)); err != nil {
 		t.Fatal(err)
 	}
-	conn.QueryRow(`SELECT mood FROM characters WHERE id = ?`, char.ID).Scan(&mood)
+	if err := conn.QueryRow(`SELECT mood FROM characters WHERE id = ?`, char.ID).Scan(&mood); err != nil {
+		t.Fatalf("read mood after reload: %v", err)
+	}
 	if mood != 50 {
 		t.Fatalf("mood after reload = %d, want 50", mood)
 	}
@@ -53,7 +57,9 @@ func TestSettleRestNoRegenWhileBusy(t *testing.T) {
 		t.Fatal(err)
 	}
 	var mood int
-	conn.QueryRow(`SELECT mood FROM characters WHERE id = ?`, char.ID).Scan(&mood)
+	if err := conn.QueryRow(`SELECT mood FROM characters WHERE id = ?`, char.ID).Scan(&mood); err != nil {
+		t.Fatalf("read mood while busy: %v", err)
+	}
 	if mood != 40 {
 		t.Fatalf("mood = %d, want 40 (busy)", mood)
 	}
@@ -77,7 +83,9 @@ func TestSettleRestPaysPassiveIncomeOnce(t *testing.T) {
 		t.Fatalf("payout: %v %v", s, err)
 	}
 	var money int
-	conn.QueryRow(`SELECT money_cents FROM characters WHERE id = ?`, char.ID).Scan(&money)
+	if err := conn.QueryRow(`SELECT money_cents FROM characters WHERE id = ?`, char.ID).Scan(&money); err != nil {
+		t.Fatalf("read money after passive income: %v", err)
+	}
 	if money != 1000+3*50 {
 		t.Fatalf("money = %d, want %d", money, 1000+3*50)
 	}

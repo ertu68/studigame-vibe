@@ -4,6 +4,7 @@ package db
 import (
 	"database/sql"
 	"embed"
+	"errors"
 	"fmt"
 	"io/fs"
 	"sort"
@@ -27,14 +28,16 @@ func Open(path string) (*sql.DB, error) {
 	conn.SetMaxOpenConns(1)
 
 	if err := applyMigrations(conn); err != nil {
-		conn.Close()
+		if closeErr := conn.Close(); closeErr != nil {
+			return nil, errors.Join(fmt.Errorf("apply migrations: %w", err), fmt.Errorf("close database: %w", closeErr))
+		}
 		return nil, fmt.Errorf("apply migrations: %w", err)
 	}
 	return conn, nil
 }
 
 // applyMigrations applies all pending migrations in order.
-func applyMigrations(db *sql.DB) error {
+func applyMigrations(db *sql.DB) (retErr error) {
 	// Ensure migrations table exists - CREATE TABLE IF NOT EXISTS to handle existing table
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS schema_migrations (version TEXT PRIMARY KEY, applied_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP)`); err != nil {
 		return fmt.Errorf("create migrations table: %w", err)
@@ -46,7 +49,11 @@ func applyMigrations(db *sql.DB) error {
 	if err != nil {
 		return fmt.Errorf("query applied migrations: %w", err)
 	}
-	defer rows.Close()
+	defer func() {
+		if err := rows.Close(); err != nil {
+			retErr = errors.Join(retErr, fmt.Errorf("close applied migrations: %w", err))
+		}
+	}()
 	for rows.Next() {
 		var version string
 		if err := rows.Scan(&version); err != nil {
@@ -94,14 +101,18 @@ func applyMigrations(db *sql.DB) error {
 
 		// Execute migration SQL
 		if _, err := tx.Exec(string(content)); err != nil {
-			tx.Rollback()
-			return fmt.Errorf("apply migration %s: %w", filename, err)
+			return errors.Join(
+				fmt.Errorf("apply migration %s: %w", filename, err),
+				rollbackMigration(tx, filename),
+			)
 		}
 
 		// Record successful application
 		if _, err := tx.Exec(`INSERT INTO schema_migrations (version) VALUES (?)`, version); err != nil {
-			tx.Rollback()
-			return fmt.Errorf("record migration %s: %w", filename, err)
+			return errors.Join(
+				fmt.Errorf("record migration %s: %w", filename, err),
+				rollbackMigration(tx, filename),
+			)
 		}
 
 		if err := tx.Commit(); err != nil {
@@ -111,5 +122,12 @@ func applyMigrations(db *sql.DB) error {
 		fmt.Printf("Applied migration: %s\n", filename)
 	}
 
+	return nil
+}
+
+func rollbackMigration(tx *sql.Tx, filename string) error {
+	if err := tx.Rollback(); err != nil {
+		return fmt.Errorf("rollback migration %s: %w", filename, err)
+	}
 	return nil
 }

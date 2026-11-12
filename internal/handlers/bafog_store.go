@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"database/sql"
+	"errors"
+	"log/slog"
 	"time"
 
 	"studigame/internal/game"
@@ -42,7 +44,11 @@ func CollectBafog(db *sql.DB, char Character, now time.Time) (*ActionSummary, er
 	if err != nil {
 		return nil, err
 	}
-	defer tx.Rollback()
+	defer func() {
+		if err := tx.Rollback(); err != nil && !errors.Is(err, sql.ErrTxDone) {
+			slog.Error("Failed to roll back BAföG transaction", "error", err, "characterID", char.ID)
+		}
+	}()
 
 	capacity, err := capacityOf(tx, char)
 	if err != nil {

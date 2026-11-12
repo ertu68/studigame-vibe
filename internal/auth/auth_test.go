@@ -19,7 +19,11 @@ func testDB(t *testing.T) *sql.DB {
 	if err != nil {
 		t.Fatalf("open db: %v", err)
 	}
-	t.Cleanup(func() { conn.Close() })
+	t.Cleanup(func() {
+		if err := conn.Close(); err != nil {
+			t.Errorf("close test database: %v", err)
+		}
+	})
 	return conn
 }
 
@@ -236,7 +240,9 @@ func TestEmailVerification(t *testing.T) {
 
 func TestUnverifiedStatusOnlyForCorrectPassword(t *testing.T) {
 	conn := testDB(t)
-	Register(conn, "Finn", "finn@example.com", "hunter22", "Köln")
+	if _, err := Register(conn, "Finn", "finn@example.com", "hunter22", "Köln"); err != nil {
+		t.Fatalf("register: %v", err)
+	}
 	if _, err := Authenticate(conn, "finn@example.com", "wrong"); err != ErrInvalidLogin {
 		t.Fatalf("wrong password on unverified account: got %v, want ErrInvalidLogin", err)
 	}
@@ -286,11 +292,17 @@ func TestResendVerification(t *testing.T) {
 
 func TestResendVerificationThrottled(t *testing.T) {
 	conn := testDB(t)
-	Register(conn, "Hans", "hans@example.com", "hunter22", "Köln")
+	if _, err := Register(conn, "Hans", "hans@example.com", "hunter22", "Köln"); err != nil {
+		t.Fatalf("register: %v", err)
+	}
 	var mailer fakeMailer
-	ResendVerification(conn, &mailer, "example.com", "hans@example.com", time.Hour)
+	if err := ResendVerification(conn, &mailer, "example.com", "hans@example.com", time.Hour); err != nil {
+		t.Fatalf("first resend: %v", err)
+	}
 	mailer = fakeMailer{}
-	ResendVerification(conn, &mailer, "example.com", "hans@example.com", time.Hour)
+	if err := ResendVerification(conn, &mailer, "example.com", "hans@example.com", time.Hour); err != nil {
+		t.Fatalf("throttled resend: %v", err)
+	}
 	if mailer.to != "" {
 		t.Fatal("second resend within a minute should not mail")
 	}
@@ -298,14 +310,21 @@ func TestResendVerificationThrottled(t *testing.T) {
 
 func TestExpiredResetTokenIsBurned(t *testing.T) {
 	conn := testDB(t)
-	id, _ := Register(conn, "Ida", "ida@example.com", "hunter22", "Köln")
-	conn.Exec(`INSERT INTO password_resets (token_hash, user_id, expires_at) VALUES (?, ?, ?)`,
-		hashToken("tok"), id, time.Now().UTC().Add(-time.Minute))
+	id, err := Register(conn, "Ida", "ida@example.com", "hunter22", "Köln")
+	if err != nil {
+		t.Fatalf("register: %v", err)
+	}
+	if _, err := conn.Exec(`INSERT INTO password_resets (token_hash, user_id, expires_at) VALUES (?, ?, ?)`,
+		hashToken("tok"), id, time.Now().UTC().Add(-time.Minute)); err != nil {
+		t.Fatalf("insert expired token: %v", err)
+	}
 	if err := ResetPassword(conn, "tok", "newpassword"); err != ErrInvalidResetLink {
 		t.Fatalf("got %v, want ErrInvalidResetLink", err)
 	}
 	var n int
-	conn.QueryRow(`SELECT COUNT(*) FROM password_resets`).Scan(&n)
+	if err := conn.QueryRow(`SELECT COUNT(*) FROM password_resets`).Scan(&n); err != nil {
+		t.Fatalf("count reset tokens: %v", err)
+	}
 	if n != 0 {
 		t.Fatal("expired token should be deleted")
 	}

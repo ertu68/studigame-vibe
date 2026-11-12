@@ -22,6 +22,7 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ### Behoben
 
+- **CI-Linting**: Rückgabefehler werden behandelt; statische Inline-Icons maskieren CSS-Klassen jetzt für HTML.
 - **Login verrät keine Konten mehr**: unbekannte E-Mail, falsches Passwort und unbestätigtes Konto sehen gleich aus und brauchen gleich lang. „Unbestätigt“ erfährt nur, wer das richtige Passwort kennt.
 - **Bestätigungsmail erneut senden** (Login und Registrierungsseite, höchstens eine pro Minute).
 - **Passwort-Reset und E-Mail-Bestätigung** verbrauchen ihren Token atomar, auch abgelaufene Tokens werden gelöscht.
@@ -37,6 +38,7 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ### Hinzugefügt
 
+- **CI-Linting**: Go-Code wird zusätzlich mit `golangci-lint` und den Lintern `errcheck`, `gosec` und `staticcheck` geprüft.
 - **ECTS-Stand** auf Dashboard und Klausur-Seite.
 - **Campus-Shop**: Breiter Shop mit Ausrüstung, Instrumenten und Wohnung.
   Spieler können Geld ausgeben, um passive Einkommensquellen zu erhalten oder

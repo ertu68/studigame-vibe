@@ -30,7 +30,11 @@ func main() {
 		slog.Error("Failed to open database", "error", err)
 		os.Exit(1)
 	}
-	defer conn.Close()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			slog.Error("Failed to close database", "error", err)
+		}
+	}()
 
 	deps := &handlers.Deps{
 		DB:       conn,
@@ -71,7 +75,9 @@ func main() {
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
 		slog.Info("Health check", "method", r.Method, "path", r.URL.Path)
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		if _, err := w.Write([]byte("OK")); err != nil {
+			slog.Warn("Health check response failed", "error", err)
+		}
 	})
 
 	mux.HandleFunc("GET /{$}", deps.Landing)

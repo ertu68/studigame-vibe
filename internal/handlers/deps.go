@@ -37,6 +37,7 @@ func (d *Deps) roll() float64 {
 	if d.Roll != nil {
 		return d.Roll()
 	}
+	// #nosec G404 -- Gameplay odds are not security-sensitive; tests inject deterministic rolls.
 	return rand.Float64()
 }
 

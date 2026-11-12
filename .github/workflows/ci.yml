@@ -19,3 +19,4 @@ jobs:
           BRANCH_NAME: ${{ github.head_ref }}
           PULL_REQUEST_TITLE: ${{ github.event.pull_request.title }}
         run: bash scripts/check-conventions.sh "$BRANCH_NAME" "$PULL_REQUEST_TITLE"
+        

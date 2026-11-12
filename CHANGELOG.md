@@ -37,6 +37,7 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 
 ### Hinzugefügt
 
+- **CI-Linting**: Go-Code wird zusätzlich mit `golangci-lint` und den Lintern `errcheck`, `gosec` und `staticcheck` geprüft.
 - **ECTS-Stand** auf Dashboard und Klausur-Seite.
 - **Campus-Shop**: Breiter Shop mit Ausrüstung, Instrumenten und Wohnung.
   Spieler können Geld ausgeben, um passive Einkommensquellen zu erhalten oder

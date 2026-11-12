@@ -79,7 +79,7 @@ beworben" passiert hier.
 
 Der Code liegt schon in Git, aber noch ohne Prozess. Richte ein:
 
-- [ ] **Branch-Schutz auf `main`** (GitHub → Settings → Rules → Rulesets):
+- [x] **Branch-Schutz auf `main`** (GitHub → Settings → Rules → Rulesets):
   PR erzwingen, CI-Check als „required", linear history, kein force-push.
 - [x] **Trunk-based Workflow** üben: kurze Branches `feat/…`, `ci/…`, `docs/…`,
   → PR → squash-merge. `main` ist immer deploybar. (ADR-1 im Guide.)
@@ -99,8 +99,8 @@ Der Code liegt schon in Git, aber noch ohne Prozess. Richte ein:
 Baue die Pipeline in **einzelnen PRs** aus, jeder mit Changelog-Eintrag. So
 lernst du jede Stufe isoliert:
 
-- [ ] **PR 1:** `setup-go` mit Cache (`cache: true`), damit Builds schnell sind.
-- [ ] **PR 2:** `golangci-lint` dazu (staticcheck, gosec, errcheck). Legt
+- [x] **PR 1:** `setup-go` mit Cache (`cache: true`), damit Builds schnell sind.
+- [x] **PR 2:** `golangci-lint` dazu (staticcheck, gosec, errcheck). Legt
   `.golangci.yml` an.
 - [ ] **PR 3:** `govulncheck` (bekannte CVEs in Dependencies) + `gitleaks`
   (keine Secrets im Code).

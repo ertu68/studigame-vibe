@@ -10,6 +10,7 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 ## [Unreleased]
 
 ### Geändert
+- **DevOps-Leitfaden neu aufgebaut**: sechs Phasen von CI bis Kubernetes, jeder Schritt mit Hintergrund, Hinweisen und prüfbarem Fertig-Kriterium statt fertiger Lösungen.
 - **Git-Konfiguration**: `.gitattributes` normalisiert erkannte Textdateien; `.editorconfig` setzt LF und Editor-Standards.
 - **Konventionsprüfung** läuft nach einer Änderung des Pull-Request-Titels erneut.
 - **CI prüft Branch-Namen und PR-Titel** auf einfache Conventional-Commits-Formate; einzelne Commits im Feature-Branch bleiben frei, ohne Node.js-Abhängigkeit.

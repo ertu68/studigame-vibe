@@ -1,7 +1,7 @@
 FROM golang:1.27-alpine AS build
 ARG TARGETARCH
 WORKDIR /src
-RUN apk add --no-cache curl
+RUN apk add --no-cache curl libstdc++ libgcc
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
@@ -17,6 +17,8 @@ RUN CGO_ENABLED=0 go build -o /out/server ./cmd/server
 
 FROM alpine:3.20
 RUN adduser -D -u 10001 app
+RUN mkdir -p /data && chown app:app /data
+ENV DATABASE_PATH=/data/studigame.db
 WORKDIR /app
 COPY --from=build /out/server ./server
 COPY --from=build /src/static ./static

@@ -70,10 +70,9 @@ Multi-Stage-`Dockerfile`, `docker-compose.yml` mit Caddy, `scripts/backup.sh` (f
 **Ziel:** Du kannst alles, was die CI macht, auch lokal ausführen.
 
 **Aufgaben**
-- [ ] Installiert und im Terminal aufrufbar: `go`, `docker` (Docker Desktop oder Colima),
+- [x] Installiert und im Terminal aufrufbar: `go`, `docker` (Docker Desktop oder Colima),
       `gh` (GitHub CLI), `make`, `jq`, `curl`, `dig`.
-- [ ] `make test` und `docker build .` laufen lokal durch.
-- [ ] `docs/lernlog.md` angelegt.
+- [x] `make test` und `docker build .` laufen lokal durch.
 
 **Fertig, wenn:** `docker run --rm -p 8080:8080 <dein-image>` startet und
 `curl -i localhost:8080/healthz` liefert `200`.

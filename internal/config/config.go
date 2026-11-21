@@ -23,7 +23,7 @@ func Load() Config {
 	return Config{
 		Port:             getenv("PORT", "8080"),
 		DatabasePath:     getenv("DATABASE_PATH", "studigame.db"),
-		SiteName:         getenv("SITE_NAME", "TODO-Name"),
+		SiteName:         getenv("SITE_NAME", "Studigame"),
 		SiteDomain:       getenv("SITE_DOMAIN", "localhost:8080"),
 		MailFrom:         getenv("MAIL_FROM", "noreply@example.invalid"),
 		SMTPHost:         getenv("SMTP_HOST", ""),

@@ -85,12 +85,12 @@ Hetzner CX23 ist `amd64`. Für lokale Tests egal, für den Server wichtig (Phase
 **Ziel:** Du weißt, wie die App gestartet, konfiguriert und erreicht wird, ohne Spielcode zu lesen.
 
 **Aufgaben**
-- [ ] `internal/config/config.go` lesen: welche Env-Vars gibt es, welche Defaults?
+- [x] `internal/config/config.go` lesen: welche Env-Vars gibt es, welche Defaults?
       Vergleiche mit `.env.example`. Stimmt der Default-Port überein?
-- [ ] `cmd/server/main.go` überfliegen: wo werden Routen registriert, wo Timeouts gesetzt,
+- [x] `cmd/server/main.go` überfliegen: wo werden Routen registriert, wo Timeouts gesetzt,
       wie reagiert der Server auf SIGTERM?
-- [ ] `Dockerfile` Zeile für Zeile erklären können (in eigenen Worten ins Lernlog).
-- [ ] `docker-compose.yml` und `deploy/Caddyfile`: wer redet mit wem auf welchem Port?
+- [x] `Dockerfile` Zeile für Zeile erklären können (in eigenen Worten ins Lernlog).
+- [x] `docker-compose.yml` und `deploy/Caddyfile`: wer redet mit wem auf welchem Port?
 
 **Hintergrund**
 - **12-Factor-Config:** Konfiguration kommt aus Umgebungsvariablen, nicht aus Dateien im

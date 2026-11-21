@@ -15,7 +15,7 @@ RUN ARCH="${TARGETARCH:-$(uname -m)}"; \
 # CGO_ENABLED=0 works because modernc.org/sqlite is pure Go.
 RUN CGO_ENABLED=0 go build -o /out/server ./cmd/server
 
-FROM alpine:3.20
+FROM alpine:3.24
 RUN adduser -D -u 10001 app
 RUN mkdir -p /data && chown app:app /data
 ENV DATABASE_PATH=/data/studigame.db

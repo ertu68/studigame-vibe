@@ -133,7 +133,7 @@ Branch-Schutz, Conventions-Check, setup-go mit Cache, golangci-lint.
 **Ziel:** Die zwei Workflows sind konsistent und du verstehst jede Zeile.
 
 **Aufgaben**
-- [ ] In `go.yml` nutzt der Build-Job `actions/checkout@v4` und `setup-go@v5`, der Lint-Job
+- [x] In `go.yml` nutzt der Build-Job `actions/checkout@v4` und `setup-go@v5`, der Lint-Job
       `@v6`. Vereinheitliche auf die aktuelle Version.
 - [ ] `go test -race -v` erzeugt sehr viel Ausgabe. Überleg, ob `-v` nötig ist.
 - [ ] Prüfe in den Logs eines Runs: Wie lange dauert jeder Step? Wo wird der Cache getroffen

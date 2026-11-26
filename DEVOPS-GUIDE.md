@@ -151,12 +151,12 @@ Branch-Schutz, Conventions-Check, setup-go mit Cache, golangci-lint.
 grün, in der CI rot (oder umgekehrt). Ein gemeinsamer Einstiegspunkt verhindert das.
 
 **Aufgaben**
-- [ ] Ziel `fmt-check`: schlägt fehl, wenn `gofmt -l .` Dateien ausgibt.
-- [ ] Ziel `lint`: ruft golangci-lint auf.
-- [ ] Ziel `vuln`: ruft `govulncheck ./...` auf (siehe 1.3).
-- [ ] Ziel `ci`: hängt fmt-check, vet, lint, test, vuln hintereinander.
-- [ ] Ziel `help`: listet alle Ziele mit einer Zeile Beschreibung.
-- [ ] Die CI ruft danach `make …` statt einzelner Befehle.
+- [x] Ziel `fmt-check`: schlägt fehl, wenn `gofmt -l .` Dateien ausgibt.
+- [x] Ziel `lint`: ruft golangci-lint auf.
+- [x] Ziel `vuln`: ruft `govulncheck ./...` auf (siehe 1.3).
+- [x] Ziel `ci`: hängt fmt-check, vet, lint, test, vuln hintereinander.
+- [x] Ziel `help`: listet alle Ziele mit einer Zeile Beschreibung.
+- [x] Die CI ruft danach `make …` statt einzelner Befehle.
 
 **Hinweise**
 - `gofmt -l` gibt nur Dateinamen aus und endet trotzdem mit Exit-Code 0. Du musst selbst
@@ -165,6 +165,9 @@ grün, in der CI rot (oder umgekehrt). Ein gemeinsamer Einstiegspunkt verhindert
   danach `go tool <name>`). Dann braucht weder du noch die CI eine separate Installation.
 - Ein verbreitetes Muster für `make help` liest Kommentare hinter den Zielen per `grep`/`awk`
   aus. Such nach „self-documenting Makefile“.
+- `.PHONY` kann alle nicht-dateibasierten Ziele gesammelt an einer Stelle nennen. Eine
+  eigene `.PHONY`-Zeile pro Ziel ist ebenfalls gültig, aber nicht erforderlich. Ein Ziel,
+  das eine echte Datei erzeugt (hier `tailwindcss`), gehört nicht in `.PHONY`.
 
 **Fertig, wenn:** Du baust absichtlich einen Formatierungsfehler ein (Leerzeichen statt Tab),
 `make ci` schlägt lokal fehl und die CI im PR ebenfalls, mit verständlicher Meldung.

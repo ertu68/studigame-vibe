@@ -80,11 +80,16 @@ Name ist entschieden (Studigame), Domain ist noch offen — siehe `.env.example`
 
 ```
 cp .env.example .env
+make              # zeigt die verfügbaren Ziele (Standardziel)
 make run          # startet lokal auf :8410, SQLite-Datei landet lokal
 make test
+make ci           # Formatierung, vet, Lint, Tests und Schwachstellencheck
 make css          # baut CSS mit Tailwind
 make watch        # beobachtet CSS-Änderungen
 ```
+
+`golangci-lint` und `govulncheck` sind als Go-Tools in `go.mod` versioniert und werden
+über `go tool` ausgeführt; eine separate Installation ist nicht nötig.
 
 Die Tailwind-Standalone-CLI liegt nicht im Repo. `make css` lädt beim ersten Aufruf
 das passende Binary für die eigene Plattform nach `./tailwindcss` (git-ignoriert);

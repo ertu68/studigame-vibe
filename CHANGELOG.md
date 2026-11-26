@@ -10,6 +10,9 @@ Bis zum ersten öffentlichen Launch steht alles unter `[Unreleased]`.
 ## [Unreleased]
 
 ### Geändert
+- **Makefile-Prüfungen**: `make fmt-check` bricht jetzt mit einer Dateiliste ab,
+  wenn Go-Dateien nicht formatiert sind; `make` zeigt standardmäßig die verfügbaren Ziele.
+  Lint und Schwachstellenprüfung verwenden versionierte Go-Tools aus `go.mod`.
 - **DevOps-Leitfaden neu aufgebaut**: sechs Phasen von CI bis Kubernetes, jeder Schritt mit Hintergrund, Hinweisen und prüfbarem Fertig-Kriterium statt fertiger Lösungen.
 - **Git-Konfiguration**: `.gitattributes` normalisiert erkannte Textdateien; `.editorconfig` setzt LF und Editor-Standards.
 - **Konventionsprüfung** läuft nach einer Änderung des Pull-Request-Titels erneut.
